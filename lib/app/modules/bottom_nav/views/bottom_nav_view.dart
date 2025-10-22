@@ -2,6 +2,8 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/bottom_nav_controller.dart';
+import '../../../routes/app_pages.dart';
+import '../../office/views/office_view.dart';
 
 class BottomNavBar extends StatelessWidget {
   final BottomNavController controller = Get.find<BottomNavController>();
@@ -18,7 +20,21 @@ class BottomNavBar extends StatelessWidget {
       return Flexible(
         fit: FlexFit.tight,
         child: InkWell(
-          onTap: () => controller.changePage(index),
+          onTap: () {
+            // handle special routes first (do not change controller index before routing)
+            if (index == 3) {
+              // Profile -> Settings
+              Get.toNamed(Routes.SETTING);
+            }
+            if (index == 1) {
+              // Office page - navigate directly to view to avoid named-route lookup issues
+              Get.to(() => const OfficeView());
+            }
+
+            // default: update controller's current index (switch within bottom navigation)
+            controller.changePage(index);
+            return;
+          },
           customBorder: const CircleBorder(),
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),

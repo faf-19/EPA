@@ -11,7 +11,7 @@ void main() async {
 
   runApp(
     GetMaterialApp(
-      title: "CRRSA የሲቪል ምዝገባ እና የነዋሪነት አገልግሎት ኤጀንሲ",
+      title: "EPA",
       initialRoute: Routes.SPLASH, 
       getPages: AppPages.routes,
       debugShowCheckedModeBanner: false,
