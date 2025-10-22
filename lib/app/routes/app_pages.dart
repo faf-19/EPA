@@ -1,4 +1,5 @@
 import 'package:eprs/app/modules/setting/views/privacy_policy_view.dart';
+import 'package:eprs/app/modules/term_and_conditions/views/term_and_conditions_view.dart';
 import 'package:get/get.dart';
 
 import '../modules/bottom_nav/bindings/bottom_nav_binding.dart';
@@ -56,6 +57,10 @@ class AppPages {
     GetPage(
       name: _Paths.Privacy_Policy,
       page: () => const PrivacyPolicyView(),
-    )
+    ),
+    GetPage(
+      name: _Paths.TERM_AND_CONDITIONS,
+      page: () => const TermAndConditionsView(),
+    ),
   ];
 }

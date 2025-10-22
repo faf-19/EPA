@@ -9,6 +9,7 @@ abstract class Routes {
   static const OFFICE = _Paths.OFFICE;
   static const Privacy_Policy = _Paths.Privacy_Policy;
   static const FAQ = _Paths.FAQ;
+  static const TERM_AND_CONDITIONS = _Paths.TERM_AND_CONDITIONS;
 }
 
 abstract class _Paths {
@@ -20,4 +21,5 @@ abstract class _Paths {
   static const OFFICE = '/office';
   static const Privacy_Policy = '/privacy-policy';
   static const FAQ = '/faq';
+  static const TERM_AND_CONDITIONS = '/term-and-conditions';
 }

@@ -1,6 +1,7 @@
 import 'package:eprs/app/modules/bottom_nav/views/bottom_nav_view.dart';
 import 'package:eprs/app/modules/faq/views/faq_view.dart';
 import 'package:eprs/app/modules/setting/views/privacy_policy_view.dart';
+import 'package:eprs/app/modules/term_and_conditions/views/term_and_conditions_view.dart';
 import '../../language/views/language_view.dart';
 import '../../../widgets/custom_app_bar.dart';
 import 'package:flutter/material.dart';
@@ -80,7 +81,7 @@ class SettingView extends GetView<SettingController> {
                       _buildDivider(),
                       _buildOptionTile('Privacy Policy', () { Get.to(const PrivacyPolicyView()); }),
                       _buildDivider(),
-                      _buildOptionTile('Term and Conditions', () {}),
+                      _buildOptionTile('Term and Conditions', () { Get.to(const TermAndConditionsView()); }),
                       _buildDivider(),
                       _buildOptionTile('About EPA v1.1', () {}),
                       _buildDivider(),
