@@ -1,3 +1,4 @@
+import 'package:eprs/app/modules/about/views/about_view.dart';
 import 'package:eprs/app/modules/bottom_nav/views/bottom_nav_view.dart';
 import 'package:eprs/app/modules/contact_us/views/contact_us_view.dart';
 import 'package:eprs/app/modules/faq/views/faq_view.dart';
@@ -84,7 +85,7 @@ class SettingView extends GetView<SettingController> {
                       _buildDivider(),
                       _buildOptionTile('Term and Conditions', () { Get.to(const TermAndConditionsView()); }),
                       _buildDivider(),
-                      _buildOptionTile('About EPA v1.1', () {}),
+                      _buildOptionTile('About EPA v1.1', () { Get.to(const AboutView()); }),
                       _buildDivider(),
                       _buildOptionTile('Rate Us', () {}),
                     ],
