@@ -1,3 +1,4 @@
+import 'package:eprs/app/modules/setting/views/privacy_policy_view.dart';
 import 'package:get/get.dart';
 
 import '../modules/bottom_nav/bindings/bottom_nav_binding.dart';
@@ -51,5 +52,10 @@ class AppPages {
       page: () => const FaqView(),
       binding: FaqBinding(),
     ),
+
+    GetPage(
+      name: _Paths.Privacy_Policy,
+      page: () => const PrivacyPolicyView(),
+    )
   ];
 }

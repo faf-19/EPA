@@ -7,6 +7,7 @@ abstract class Routes {
   static const SETTING = _Paths.SETTING;
   static const LANGUAGE = _Paths.LANGUAGE;
   static const OFFICE = _Paths.OFFICE;
+  static const Privacy_Policy = _Paths.Privacy_Policy;
   static const FAQ = _Paths.FAQ;
 }
 
@@ -17,5 +18,6 @@ abstract class _Paths {
   static const SETTING = '/setting';
   static const LANGUAGE = '/language';
   static const OFFICE = '/office';
+  static const Privacy_Policy = '/privacy-policy';
   static const FAQ = '/faq';
 }
