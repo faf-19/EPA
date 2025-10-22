@@ -1,4 +1,5 @@
 import 'package:eprs/app/modules/bottom_nav/views/bottom_nav_view.dart';
+import 'package:eprs/app/modules/contact_us/views/contact_us_view.dart';
 import 'package:eprs/app/modules/faq/views/faq_view.dart';
 import 'package:eprs/app/modules/setting/views/privacy_policy_view.dart';
 import 'package:eprs/app/modules/term_and_conditions/views/term_and_conditions_view.dart';
@@ -77,7 +78,7 @@ class SettingView extends GetView<SettingController> {
                       _buildDivider(),
                       _buildOptionTile('Frequently Asked Questions', () { Get.to(const FaqView()); }),
                       _buildDivider(),
-                      _buildOptionTile('Contact Us', () {}),
+                      _buildOptionTile('Contact Us', () { Get.to(const ContactUsView()); }),
                       _buildDivider(),
                       _buildOptionTile('Privacy Policy', () { Get.to(const PrivacyPolicyView()); }),
                       _buildDivider(),
