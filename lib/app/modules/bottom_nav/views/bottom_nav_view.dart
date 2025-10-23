@@ -1,9 +1,10 @@
 // lib/modules/bottom_nav/views/bottom_nav_widget.dart
+import 'package:eprs/app/modules/home/views/home_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/bottom_nav_controller.dart';
 import '../../../routes/app_pages.dart';
-import '../../office/views/office_view.dart';
+//import '../../office/views/office_view.dart';
 
 class BottomNavBar extends StatelessWidget {
   final BottomNavController controller = Get.find<BottomNavController>();
@@ -26,10 +27,10 @@ class BottomNavBar extends StatelessWidget {
               // Profile -> Settings
               Get.toNamed(Routes.SETTING);
             }
-            if (index == 1) {
-              // Office page - navigate directly to view to avoid named-route lookup issues
-              Get.to(() => const OfficeView());
-            }
+            // if (index == 1) {
+            //   // Office page - navigate directly to view to avoid named-route lookup issues
+            //   Get.toNamed(Routes.HOME);
+            // }
 
             // default: update controller's current index (switch within bottom navigation)
             controller.changePage(index);
