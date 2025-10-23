@@ -9,9 +9,12 @@ abstract class Routes {
   static const OFFICE = _Paths.OFFICE;
   static const Privacy_Policy = _Paths.Privacy_Policy;
   static const FAQ = _Paths.FAQ;
+  static const BOTTOM_NAV = _Paths.BOTTOM_NAV;
   static const TERM_AND_CONDITIONS = _Paths.TERM_AND_CONDITIONS;
   static const CONTACT_US = _Paths.CONTACT_US;
   static const ABOUT = _Paths.ABOUT;
+  static const HOME = _Paths.HOME;
+  static const LOGIN = _Paths.LOGIN;
 }
 
 abstract class _Paths {
@@ -26,4 +29,6 @@ abstract class _Paths {
   static const TERM_AND_CONDITIONS = '/term-and-conditions';
   static const CONTACT_US = '/contact-us';
   static const ABOUT = '/about';
+  static const HOME = '/home';
+  static const LOGIN = '/login';
 }
