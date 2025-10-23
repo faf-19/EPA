@@ -6,7 +6,10 @@ import '../../../routes/app_pages.dart';
 import '../../office/views/office_view.dart';
 
 class BottomNavBar extends StatelessWidget {
-  final BottomNavController controller = Get.find<BottomNavController>();
+  // If controller hasn't been registered (navigated directly), create it here so Get.find doesn't throw.
+  final BottomNavController controller = Get.isRegistered<BottomNavController>()
+      ? Get.find<BottomNavController>()
+      : Get.put<BottomNavController>(BottomNavController());
 
   BottomNavBar({Key? key}) : super(key: key);
 
@@ -22,6 +25,9 @@ class BottomNavBar extends StatelessWidget {
         child: InkWell(
           onTap: () {
             // handle special routes first (do not change controller index before routing)
+            if (index == 0){
+              Get.toNamed(Routes.AWARENESS);
+            }
             if (index == 3) {
               // Profile -> Settings
               Get.toNamed(Routes.SETTING);
