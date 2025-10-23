@@ -25,7 +25,7 @@ Widget _buildDivider() {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(title: 'Setting', subtitle: 'Help improve your community'),
+      appBar: const CustomAppBar(title: 'Offices', subtitle: 'Help improve your community'),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
