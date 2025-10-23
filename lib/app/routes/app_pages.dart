@@ -2,6 +2,8 @@ import 'package:get/get.dart';
 
 import '../modules/about/bindings/about_binding.dart';
 import '../modules/about/views/about_view.dart';
+import '../modules/awareness/bindings/awareness_binding.dart';
+import '../modules/awareness/views/awareness_view.dart';
 import '../modules/bottom_nav/bindings/bottom_nav_binding.dart';
 import '../modules/bottom_nav/views/bottom_nav_view.dart';
 import '../modules/contact_us/bindings/contact_us_binding.dart';
@@ -89,6 +91,11 @@ class AppPages {
       name: _Paths.STATUS,
       page: () => const StatusView(),
       binding: StatusBinding(),
+    ),
+    GetPage(
+      name: _Paths.AWARENESS,
+      page: () => const AwarenessView(),
+      binding: AwarenessBinding(),
     ),
   ];
 }
