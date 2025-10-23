@@ -26,11 +26,15 @@ class BottomNavBar extends StatelessWidget {
               // Profile -> Settings
               Get.toNamed(Routes.SETTING);
             }
-            if (index == 1) {
+            else if (index == 1) {
               // Office page - navigate directly to view to avoid named-route lookup issues
               Get.to(() => const OfficeView());
             }
-
+            else if (index == 2) {
+              // Status page
+              Get.toNamed(Routes.STATUS);
+            }
+           
             // default: update controller's current index (switch within bottom navigation)
             controller.changePage(index);
             return;

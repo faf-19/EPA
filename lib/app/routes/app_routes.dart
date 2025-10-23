@@ -12,6 +12,8 @@ abstract class Routes {
   static const TERM_AND_CONDITIONS = _Paths.TERM_AND_CONDITIONS;
   static const CONTACT_US = _Paths.CONTACT_US;
   static const ABOUT = _Paths.ABOUT;
+  static const OFFICE_DETAIL_MAP_VIEW = _Paths.OFFICE_DETAIL_MAP_VIEW;
+  static const STATUS = _Paths.STATUS;
 }
 
 abstract class _Paths {
@@ -26,4 +28,6 @@ abstract class _Paths {
   static const TERM_AND_CONDITIONS = '/term-and-conditions';
   static const CONTACT_US = '/contact-us';
   static const ABOUT = '/about';
+  static const OFFICE_DETAIL_MAP_VIEW = '/office-detail-map-view';
+  static const STATUS = '/status';
 }
