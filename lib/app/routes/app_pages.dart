@@ -12,11 +12,15 @@ import '../modules/language/bindings/language_binding.dart';
 import '../modules/language/views/language_view.dart';
 import '../modules/office/bindings/office_binding.dart';
 import '../modules/office/views/office_view.dart';
+import '../modules/office_detail_map_view/bindings/office_detail_map_view_binding.dart';
+import '../modules/office_detail_map_view/views/office_detail_map_view.dart';
 import '../modules/setting/bindings/setting_binding.dart';
 import '../modules/setting/views/privacy_policy_view.dart';
 import '../modules/setting/views/setting_view.dart';
 import '../modules/splash/bindings/splash_binding.dart';
 import '../modules/splash/views/splash_view.dart';
+import '../modules/status/bindings/status_binding.dart';
+import '../modules/status/views/status_view.dart';
 import '../modules/term_and_conditions/views/term_and_conditions_view.dart';
 
 part 'app_routes.dart';
@@ -74,6 +78,17 @@ class AppPages {
       name: _Paths.ABOUT,
       page: () => const AboutView(),
       binding: AboutBinding(),
+    ),
+    GetPage(
+      name: _Paths.OFFICE_DETAIL_MAP_VIEW,
+      page: () =>
+          OfficeDetailMapView(officeName: Get.arguments ?? 'Addis Ketema'),
+      binding: OfficeDetailMapViewBinding(),
+    ),
+    GetPage(
+      name: _Paths.STATUS,
+      page: () => const StatusView(),
+      binding: StatusBinding(),
     ),
   ];
 }
