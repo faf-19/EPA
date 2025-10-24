@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import '../controllers/home_controller.dart';
+import 'package:eprs/app/modules/bottom_nav/views/bottom_nav_view.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({Key? key}) : super(key: key);
@@ -278,6 +279,7 @@ class HomeView extends GetView<HomeController> {
           ],
         ),
       ),
+      bottomNavigationBar: BottomNavBar(),
     );
   }
 }

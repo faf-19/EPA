@@ -28,17 +28,21 @@ class BottomNavBar extends StatelessWidget {
           onTap: () {
             // handle special routes first (do not change controller index before routing)
             if (index == 0){
-              Get.toNamed(Routes.AWARENESS);
+              Get.toNamed(Routes.HOME);
             }
             if (index == 3) {
               // Profile -> Settings
               Get.toNamed(Routes.SETTING);
             }
-            if (index == 1) {
+            else if (index == 1) {
               // Office page - navigate directly to view to avoid named-route lookup issues
               Get.to(() => const OfficeView());
             }
-
+            else if (index == 2) {
+              // Status page
+              Get.toNamed(Routes.STATUS);
+            }
+           
             // default: update controller's current index (switch within bottom navigation)
             controller.changePage(index);
             return;
@@ -101,67 +105,57 @@ class BottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BottomAppBar(
-      color: Colors.transparent,
-      elevation: 0,
-      shape: const CircularNotchedRectangle(),
-      notchMargin: 6,
-      child: Container(
-        height: 88,
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(0),
-            topRight: Radius.circular(0),
-            // bottomLeft: Radius.circular(20),
-            // bottomRight: Radius.circular(20),
-          ),
-        ),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            // purple glow behind center FAB (positioned above the bar)
-            // Positioned(
-            //   top: -28,
-            //   left: 0,
-            //   right: 0,
-            //   child: Center(
-            //     child: Container(
-            //       width: 72,
-            //       height: 72,
-            //       decoration: BoxDecoration(
-            //         color: const Color(0xFF1EA04A), // green base for the FAB glow layering
-            //         shape: BoxShape.circle,
-            //         boxShadow: [
-            //           BoxShadow(
-            //             color: const Color(0xFF8A5CFF).withOpacity(0.55),
-            //             spreadRadius: 8,
-            //             blurRadius: 26,
-            //           ),
-            //         ],
-            //       ),
-            //     ),
-            //   ),
-            // ),
-
-            // row of items with space for FAB
-            Positioned.fill(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  _buildNavItem(Icons.home_outlined, "Home", 0, color: _unselectedColor),
-                  _buildNavItem(Icons.map_outlined, "Office", 1, color: _unselectedColor),
-                  // center FAB slot
-                  _buildFabSlot(),
-                  _buildNavItem(Icons.monitor_heart_outlined, "Status", 2, color: _unselectedColor),
-                  _buildNavItem(Icons.person_outline, "Profile", 3, color: _unselectedColor),
-                ],
-              ),
-            ),
-          ],
+    // Build the inner bar content as a reusable widget so we can render it
+    // either inside a BottomAppBar (when a Scaffold ancestor exists) or
+    // as a plain Container (when the widget is used without a Scaffold).
+    Widget barContent = Container(
+      height: 88,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(0),
+          topRight: Radius.circular(0),
         ),
       ),
+      child: Stack(
+        clipBehavior: Clip.none,
+        children: [
+          Positioned.fill(
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                _buildNavItem(Icons.home_outlined, "Home", 0, color: _unselectedColor),
+                _buildNavItem(Icons.map_outlined, "Office", 1, color: _unselectedColor),
+                // center FAB slot
+                _buildFabSlot(),
+                _buildNavItem(Icons.monitor_heart_outlined, "Status", 2, color: _unselectedColor),
+                _buildNavItem(Icons.person_outline, "Profile", 3, color: _unselectedColor),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+
+    // If there is a Scaffold ancestor, return a BottomAppBar to integrate
+    // properly with Scaffold (notch, geometry, etc.). If not, return a
+    // plain Container so the widget can be used standalone without throwing.
+    final hasScaffold = context.findAncestorWidgetOfExactType<Scaffold>() != null;
+    if (hasScaffold) {
+      return BottomAppBar(
+        color: Colors.transparent,
+        elevation: 0,
+        shape: const CircularNotchedRectangle(),
+        notchMargin: 6,
+        child: barContent,
+      );
+    }
+
+    // No Scaffold ancestor — render a safe fallback (non-throwing) bar.
+    return Material(
+      elevation: 4,
+      child: barContent,
     );
   }
 }
