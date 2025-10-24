@@ -9,7 +9,6 @@ abstract class Routes {
   static const OFFICE = _Paths.OFFICE;
   static const Privacy_Policy = _Paths.Privacy_Policy;
   static const FAQ = _Paths.FAQ;
-  static const BOTTOM_NAV = _Paths.BOTTOM_NAV;
   static const TERM_AND_CONDITIONS = _Paths.TERM_AND_CONDITIONS;
   static const CONTACT_US = _Paths.CONTACT_US;
   static const ABOUT = _Paths.ABOUT;
@@ -23,7 +22,6 @@ abstract class Routes {
 abstract class _Paths {
   _Paths._();
   static const SPLASH = '/splash';
-  static const BOTTOM_NAV = '/bottom-nav';
   static const SETTING = '/setting';
   static const LANGUAGE = '/language';
   static const OFFICE = '/office';

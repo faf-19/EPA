@@ -1,3 +1,4 @@
+import 'package:eprs/app/modules/login/controllers/login_controller.dart';
 import 'package:get/get.dart';
 import 'package:eprs/app/modules/bottom_nav/controllers/bottom_nav_controller.dart';
 class HomeController extends GetxController {
@@ -63,9 +64,15 @@ class HomeController extends GetxController {
 
  @override
 void onInit() {
-  final bottomNavController = Get.find<BottomNavController>();
-  userName = bottomNavController.username;
-  phoneNumber = bottomNavController.phone;
+  // Safely read values from BottomNavController if it's registered. Some
+  // routes instantiate HomeController without the BottomNavController
+  // (for example when navigating directly to HomeView), so we must
+  // avoid calling Get.find when the controller isn't available.
+  if (Get.isRegistered<LoginController>()) {
+    final loginController = Get.find<LoginController>();
+     userName = loginController.userName as String;
+    phoneNumber = loginController.phoneNumber as String;
+  }
   super.onInit();
 }
 

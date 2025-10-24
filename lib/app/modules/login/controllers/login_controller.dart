@@ -81,7 +81,7 @@ class LoginController extends GetxController {
 
     // ✅ Proceed to next screen
     Get.offNamed(
-      Routes.BOTTOM_NAV,
+      Routes.HOME,
       arguments: {'username': username, 'phone': phone},
     );
   }
