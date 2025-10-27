@@ -13,7 +13,7 @@ class BottomNavBar extends StatelessWidget {
       ? Get.find<BottomNavController>()
       : Get.put<BottomNavController>(BottomNavController());
 
-  BottomNavBar({Key? key}) : super(key: key);
+  BottomNavBar({super.key});
 
   // default unselected color (muted blue) and selected color (orange)
   static const Color _unselectedColor = Color(0xFF9DB2CE);
@@ -79,7 +79,8 @@ class BottomNavBar extends StatelessWidget {
       child: Center(
         child: GestureDetector(
           onTap: () {
-            // TODO: handle FAB tap
+            // Navigate to report issue page
+            Get.toNamed(Routes.REPORT_ISSUE);
           },
           child: Container(
             width: 43,
