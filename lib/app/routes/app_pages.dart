@@ -121,7 +121,7 @@ class AppPages {
 
     GetPage(
       name: _Paths.LOGIN,
-      page: () => LoginOverlay(),
+      page: () => const LoginView(),
       binding: LoginBinding(),
     ),
   ];

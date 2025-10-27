@@ -15,57 +15,81 @@ class BottomNavBar extends StatelessWidget {
 
   BottomNavBar({Key? key}) : super(key: key);
 
-  // default unselected color (muted blue) and selected color (orange)
+  // default unselected color and selected color
   static const Color _unselectedColor = Color(0xFF9DB2CE);
   static const Color _selectedColor = Color(0xFF1EA04A);
+  static const Color _backgroundColor = Colors.white;
+  static const Color _fabColor = Color(0xFF1EA04A);
 
   Widget _buildNavItem(IconData icon, String label, int index, {Color? color}) {
     return Obx(() {
       final isSelected = controller.currentIndex.value == index;
       return Flexible(
         fit: FlexFit.tight,
-        child: InkWell(
-          onTap: () {
-            // handle special routes first (do not change controller index before routing)
-            if (index == 0){
-              Get.toNamed(Routes.HOME);
-            }
-            if (index == 3) {
-              // Profile -> Settings
-              Get.toNamed(Routes.SETTING);
-            }
-            else if (index == 1) {
-              // Office page - navigate directly to view to avoid named-route lookup issues
-              Get.to(() => const OfficeView());
-            }
-            else if (index == 2) {
-              // Status page
-              Get.toNamed(Routes.STATUS);
-            }
-           
-            // default: update controller's current index (switch within bottom navigation)
-            controller.changePage(index);
-            return;
-          },
-          customBorder: const CircleBorder(),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4.0, horizontal: 4.0),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, color: isSelected ? _selectedColor : (color ?? _unselectedColor), size: 24),
-                const SizedBox(height: 6),
-                Text(
-                  label,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: isSelected ? _selectedColor : (color ?? _unselectedColor),
-                    fontSize: 12,
-                    fontWeight: FontWeight.w500,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              // handle special routes first (do not change controller index before routing)
+              if (index == 0){
+                Get.toNamed(Routes.HOME);
+              }
+              if (index == 3) {
+                // Profile -> Settings
+                Get.toNamed(Routes.SETTING);
+              }
+              else if (index == 1) {
+                // Office page - navigate directly to view to avoid named-route lookup issues
+                Get.to(() => const OfficeView());
+              }
+              else if (index == 2) {
+                // Status page
+                Get.toNamed(Routes.STATUS);
+              }
+
+              // default: update controller's current index (switch within bottom navigation)
+              controller.changePage(index);
+              return;
+            },
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 4.0),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                color: isSelected ? _selectedColor.withOpacity(0.1) : Colors.transparent,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    padding: EdgeInsets.all(isSelected ? 8 : 0),
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: isSelected ? _selectedColor.withOpacity(0.15) : Colors.transparent,
+                    ),
+                    child: Icon(
+                      icon,
+                      color: isSelected ? _selectedColor : (color ?? _unselectedColor),
+                      size: isSelected ? 28 : 24,
+                    ),
                   ),
-                ),
-              ],
+                  const SizedBox(height: 4),
+                  AnimatedDefaultTextStyle(
+                    duration: const Duration(milliseconds: 200),
+                    style: TextStyle(
+                      color: isSelected ? _selectedColor : (color ?? _unselectedColor),
+                      fontSize: isSelected ? 13 : 12,
+                      fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    ),
+                    child: Text(
+                      label,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -75,28 +99,43 @@ class BottomNavBar extends StatelessWidget {
 
   Widget _buildFabSlot() {
     return SizedBox(
-      width: 64,
+      width: 72,
       child: Center(
         child: GestureDetector(
           onTap: () {
-            // TODO: handle FAB tap
+            // Navigate to report page
+            Get.toNamed(Routes.AWARENESS);
           },
           child: Container(
-            width: 43,
-            height: 43,
+            width: 56,
+            height: 56,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(7),
-              color: const Color(0xFF1EA04A),
-              // shape: BoxShape.square,
+              shape: BoxShape.circle,
+              gradient: LinearGradient(
+                colors: [_fabColor, _fabColor.withOpacity(0.8)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFF8A5CFF).withOpacity(0.55),
-                  spreadRadius: 6,
-                  blurRadius: 26,
+                  color: _fabColor.withOpacity(0.4),
+                  spreadRadius: 2,
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+                BoxShadow(
+                  color: _fabColor.withOpacity(0.2),
+                  spreadRadius: 1,
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
                 ),
               ],
             ),
-            child: const Icon(Icons.add, color: Colors.white, size: 30),
+            child: const Icon(
+              Icons.report_problem,
+              color: Colors.white,
+              size: 28,
+            ),
           ),
         ),
       ),
@@ -109,20 +148,27 @@ class BottomNavBar extends StatelessWidget {
     // either inside a BottomAppBar (when a Scaffold ancestor exists) or
     // as a plain Container (when the widget is used without a Scaffold).
     Widget barContent = Container(
-      height: 88,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(0),
-          topRight: Radius.circular(0),
+      height: 90,
+      decoration: BoxDecoration(
+        color: _backgroundColor,
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
         ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
       ),
       child: Stack(
         clipBehavior: Clip.none,
         children: [
           Positioned.fill(
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 _buildNavItem(Icons.home_outlined, "Home", 0, color: _unselectedColor),
