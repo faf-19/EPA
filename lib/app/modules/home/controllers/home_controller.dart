@@ -1,6 +1,5 @@
 import 'package:eprs/app/modules/login/controllers/login_controller.dart';
 import 'package:get/get.dart';
-import 'package:eprs/app/modules/bottom_nav/controllers/bottom_nav_controller.dart';
 class HomeController extends GetxController {
   // Use non-final variables to allow assignment in onInit
   String userName = 'Guest'; // Default value
@@ -70,8 +69,10 @@ void onInit() {
   // avoid calling Get.find when the controller isn't available.
   if (Get.isRegistered<LoginController>()) {
     final loginController = Get.find<LoginController>();
-     userName = loginController.userName as String;
-    phoneNumber = loginController.phoneNumber as String;
+    // LoginController stores reactive strings (RxString). Read the .value
+    // to obtain the underlying String instead of attempting an unsafe cast.
+    userName = loginController.userName.value;
+    phoneNumber = loginController.phoneNumber.value;
   }
   super.onInit();
 }

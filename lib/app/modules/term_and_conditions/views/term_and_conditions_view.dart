@@ -161,7 +161,7 @@ class TermAndConditionsView extends GetView<TermAndConditionsController> {
           const SizedBox(height: 6),
           Text(intro, style: paragraphStyle),
           const SizedBox(height: 8),
-          ...bullets.map((b) => _bulletRow(b, paragraphStyle)).toList(),
+          ...bullets.map((b) => _bulletRow(b, paragraphStyle)),
         ],
       ),
     );

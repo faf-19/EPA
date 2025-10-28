@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../../login/views/login_view.dart';
-import '../../home/views/home_view.dart';
-import '../../home/controllers/home_controller.dart'; // Import HomeController
+// Import HomeController
 
 class SplashView extends StatefulWidget {
   const SplashView({super.key});

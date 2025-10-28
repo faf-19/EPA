@@ -7,7 +7,7 @@ import '../../bottom_nav/views/bottom_nav_view.dart';
 
 
 class LanguageView extends GetView<LanguageController> {
-  const LanguageView({Key? key}) : super(key: key);
+  const LanguageView({super.key});
 
   @override
   Widget build(BuildContext context) {

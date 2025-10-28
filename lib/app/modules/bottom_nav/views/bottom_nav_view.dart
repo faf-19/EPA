@@ -131,7 +131,7 @@ class BottomNavBar extends StatelessWidget {
                 // center FAB slot
                 _buildFabSlot(),
                 _buildNavItem(Icons.monitor_heart_outlined, "Status", 2, color: _unselectedColor),
-                _buildNavItem(Icons.person_outline, "Profile", 3, color: _unselectedColor),
+                _buildNavItem(Icons.person_outline, "Settings", 3, color: _unselectedColor),
               ],
             ),
           ),
