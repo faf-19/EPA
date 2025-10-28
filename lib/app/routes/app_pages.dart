@@ -112,7 +112,7 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.REPORT,
-      page: () => ReportView(reportType: Get.arguments),
+      page: () => ReportView(reportType: Get.arguments as String),
       binding: ReportBinding(),
     ),
 
