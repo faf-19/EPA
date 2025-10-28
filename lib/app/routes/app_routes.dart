@@ -17,6 +17,8 @@ abstract class Routes {
   static const AWARENESS = _Paths.AWARENESS;
   static const HOME = _Paths.HOME;
   static const LOGIN = _Paths.LOGIN;
+  static const REPORT = _Paths.REPORT;
+  static const REPORT_ISSUE = _Paths.REPORT_ISSUE;
 }
 
 abstract class _Paths {
@@ -35,4 +37,6 @@ abstract class _Paths {
   static const AWARENESS = '/awareness';
   static const HOME = '/home';
   static const LOGIN = '/login';
+  static const REPORT = '/report';
+  static const REPORT_ISSUE = '/report-issue';
 }
