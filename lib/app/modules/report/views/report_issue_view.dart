@@ -1,3 +1,4 @@
+import 'package:eprs/app/routes/app_pages.dart';
 import 'package:eprs/app/widgets/custom_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -61,11 +62,7 @@ class ReportIssueView extends StatelessWidget {
                             onTap: () {
                               print(c['label']);
                               // simple placeholder action - you can replace with navigation
-                              Get.snackbar(
-                                'Selected',
-                                c['label'] as String,
-                                snackPosition: SnackPosition.TOP,
-                              );
+                              Get.toNamed(Routes.REPORT, arguments: c['label']);
                             },
                           );
                         }).toList(),
@@ -103,7 +100,7 @@ class _CategoryButton extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(10),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(10),

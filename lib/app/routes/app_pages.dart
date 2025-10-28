@@ -112,7 +112,7 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.REPORT,
-      page: () => const ReportView(),
+      page: () => ReportView(reportType: Get.arguments),
       binding: ReportBinding(),
     ),
 
