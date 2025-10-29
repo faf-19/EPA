@@ -9,7 +9,7 @@ import '../controllers/report_controller.dart';
 class ReportView extends GetView<ReportController> {
   final String reportType;
 
-  ReportView({super.key, required this.reportType});
+  const ReportView({super.key, required this.reportType});
 
   @override
   Widget build(BuildContext context) {
@@ -452,7 +452,7 @@ class ReportView extends GetView<ReportController> {
         Text(label, style: const TextStyle(color: Colors.black54)),
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
-          value: value,
+          initialValue: value,
           items: items
               .map((e) => DropdownMenuItem(value: e, child: Text(e)))
               .toList(),
@@ -541,14 +541,14 @@ class DashedBorder extends StatelessWidget {
   final BorderRadius borderRadius;
 
   const DashedBorder({
-    Key? key,
+    super.key,
     required this.child,
     this.strokeWidth = 1.5,
     this.dashWidth = 6,
     this.dashSpace = 6,
     this.color = const Color(0xFFBFCFE0),
     this.borderRadius = const BorderRadius.all(Radius.circular(10)),
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
