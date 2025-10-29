@@ -5,7 +5,7 @@ import 'package:get/get.dart';
 import 'package:eprs/app/modules/bottom_nav/views/bottom_nav_view.dart';
 
 class ReportIssueView extends StatelessWidget {
-  const ReportIssueView({Key? key}) : super(key: key);
+  const ReportIssueView({super.key});
 
   @override
   Widget build(BuildContext context) {
