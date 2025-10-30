@@ -1,4 +1,5 @@
 import 'package:eprs/app/modules/bottom_nav/views/bottom_nav_view.dart';
+import 'package:eprs/app/routes/app_pages.dart';
 import 'package:eprs/app/widgets/custom_app_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -385,7 +386,9 @@ class ReportView extends GetView<ReportController> {
               SizedBox(
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: () {
+                    Get.toNamed(Routes.Report_Success, arguments: 'report123');
+                  },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF1EA04A),
                     shape: RoundedRectangleBorder(
