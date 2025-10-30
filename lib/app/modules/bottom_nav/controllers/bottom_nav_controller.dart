@@ -12,9 +12,14 @@ class BottomNavController extends GetxController {
 
   @override
   void onInit() {
-    final args = Get.arguments as Map<String, String>?;
-    username = args?['username'] ?? 'Guest';
-    phone = args?['phone'] ?? '';
+    final arg = Get.arguments;
+    if (arg is Map<String, String>) {
+      username = arg['username'] ?? 'Guest';
+      phone = arg['phone'] ?? '';
+    } else {
+      username = 'Guest';
+      phone = '';
+    }
     super.onInit();
   }
 }
