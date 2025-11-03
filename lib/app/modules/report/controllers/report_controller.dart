@@ -10,7 +10,7 @@ class ReportController extends GetxController {
 
   /// When true, the app should attempt to auto-detect the user's location.
   final autoDetectLocation = true.obs;
-
+  
   /// Human-readable detected address (or placeholder) shown when auto-detect is enabled.
   final detectedAddress = 'Tap Search Location\nAddis Ababa | N.L | W-1'.obs;
 

@@ -6,7 +6,7 @@ class ReportSuccessView extends StatelessWidget {
   final String reportId;
   final DateTime? dateTime;
 
-  ReportSuccessView({super.key, required this.reportId, this.dateTime});
+  const ReportSuccessView({super.key, required this.reportId, this.dateTime});
 
   @override
   Widget build(BuildContext context) {

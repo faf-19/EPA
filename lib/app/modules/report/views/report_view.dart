@@ -387,7 +387,7 @@ class ReportView extends GetView<ReportController> {
                 height: 52,
                 child: ElevatedButton(
                   onPressed: () {
-                    Get.toNamed(Routes.Report_Success, arguments: 'report123');
+                    Get.toNamed(Routes.Report_Otp);
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF1EA04A),
