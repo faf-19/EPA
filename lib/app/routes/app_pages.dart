@@ -1,5 +1,7 @@
 import 'package:eprs/app/modules/report/views/report_issue_view.dart';
+import 'package:eprs/app/modules/report/views/report_otp_view.dart';
 import 'package:eprs/app/modules/report/views/report_success_view.dart';
+import '../modules/report/controllers/report_otp_controller.dart';
 import 'package:get/get.dart';
 
 import '../modules/about/bindings/about_binding.dart';
@@ -133,6 +135,16 @@ class AppPages {
         final date = DateTime.now();
         return ReportSuccessView(reportId: reportId, dateTime: date);
       }
+    ),
+
+    GetPage(
+      name: _Paths.Report_Otp,
+      page: () => const ReportOtpView(),
+      binding: BindingsBuilder(
+        () {
+          Get.lazyPut<ReportOtpController>(() => ReportOtpController());
+        },
+      ),
     )
   ];
 }
