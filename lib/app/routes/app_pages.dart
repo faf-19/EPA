@@ -1,4 +1,7 @@
 import 'package:eprs/app/modules/report/views/report_issue_view.dart';
+import 'package:eprs/app/modules/report/views/report_otp_view.dart';
+import 'package:eprs/app/modules/report/views/report_success_view.dart';
+import '../modules/report/controllers/report_otp_controller.dart';
 import 'package:get/get.dart';
 
 import '../modules/about/bindings/about_binding.dart';
@@ -57,11 +60,7 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.HOME,
-      page: () {
-        final args = Get.arguments as Map<String, String>?;
-        final username = args?['username'] ?? 'Guest';
-        return HomeView();
-      },
+      page: () => HomeView(),
       binding: HomeBinding(),
     ),
     GetPage(
@@ -91,8 +90,11 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.OFFICE_DETAIL_MAP_VIEW,
-      page: () =>
-          OfficeDetailMapView(officeName: Get.arguments ?? 'Addis Ketema'),
+      page: () {
+        final arg = Get.arguments;
+        final officeName = (arg is String) ? arg : 'Addis Ketema';
+        return OfficeDetailMapView(officeName: officeName);
+      },
       binding: OfficeDetailMapViewBinding(),
     ),
     GetPage(
@@ -112,7 +114,11 @@ class AppPages {
     ),
     GetPage(
       name: _Paths.REPORT,
-      page: () => const ReportView(),
+      page: () {
+        final arg = Get.arguments;
+        final reportType = (arg is String) ? arg : '';
+        return ReportView(reportType: reportType);
+      },
       binding: ReportBinding(),
     ),
 
@@ -120,5 +126,25 @@ class AppPages {
       name: _Paths.REPORT_ISSUE,
       page: () => const ReportIssueView(),
     ),
+
+    GetPage(
+      name: _Paths.Report_Success,
+      page: () {
+        final arg = Get.arguments;
+        final reportId = (arg is String) ? arg : '';
+        final date = DateTime.now();
+        return ReportSuccessView(reportId: reportId, dateTime: date);
+      }
+    ),
+
+    GetPage(
+      name: _Paths.Report_Otp,
+      page: () => const ReportOtpView(),
+      binding: BindingsBuilder(
+        () {
+          Get.lazyPut<ReportOtpController>(() => ReportOtpController());
+        },
+      ),
+    )
   ];
 }
