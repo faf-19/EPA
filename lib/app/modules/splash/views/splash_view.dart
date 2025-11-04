@@ -87,11 +87,8 @@ class _SplashViewState extends State<SplashView> {
                       children: [
                         ElevatedButton(
                           onPressed: () {
-                            Get.bottomSheet(
-                              const LoginOverlay(),
-                              isScrollControlled: true,
-                              backgroundColor: Colors.transparent,
-                            );
+                            // Bypass login with static credentials
+                            Get.offNamed('/home', arguments: {'username': 'EPA User', 'phone': '0912345678'});
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green,
