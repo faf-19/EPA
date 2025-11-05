@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../controllers/login_controller.dart';
 
 class LoginOverlay extends StatefulWidget {
@@ -9,100 +10,334 @@ class LoginOverlay extends StatefulWidget {
   State<LoginOverlay> createState() => _LoginOverlayState();
 }
 
-class _LoginOverlayState extends State<LoginOverlay> with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<Offset> _slideAnimation;
-  late Animation<double> _fadeAnimation;
+class _LoginOverlayState extends State<LoginOverlay> {
+  final _phoneCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
+  bool _obscure = true;
+  bool _remember = false;
 
   @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 800));
-    _slideAnimation = Tween<Offset>(begin: const Offset(0, 1), end: const Offset(0, 0.3)).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOut));
-    _fadeAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeIn);
-    _controller.forward();
+  void dispose() {
+    _phoneCtrl.dispose();
+    _passCtrl.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(LoginController());
+    final size = MediaQuery.of(context).size;
 
-    return SlideTransition(
-      position: _slideAnimation,
-      child: FadeTransition(
-        opacity: _fadeAnimation,
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 12)],
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+    const greenColor = Color(0xFF00A650);
+    const blueColor = Color(0xFF0047BA);
+    const darkText = Color(0xFF0F3B52);
+    const hintText = Color(0xFF9BA5B1);
+    const borderColor = Color(0xFFE0E6ED);
+
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          // Background gradient
+          Container(
+            decoration: const BoxDecoration(
+              gradient: RadialGradient(
+                colors: [
+                  Color(0xFFF8FAFB),
+                  Color(0xFFF5F7FA),
+                  Color(0xFFF8FAFB),
+                ],
+                center: Alignment.topCenter,
+                radius: 1.2,
+              ),
+            ),
           ),
 
-          child: SizedBox(
-            height: 300,
-            child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                keyboardType: TextInputType.phone,
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: const Color(0xFFF5F5F5),
-                  prefixIcon: const Icon(Icons.phone, color: Colors.green),
-                  labelText: 'Phone Number',
-                  labelStyle: const TextStyle(color: Colors.black54),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(22),
-                    borderSide: BorderSide.none,
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // 🔹 Top-right "Eng"
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: Text(
+                      'Eng',
+                      style: GoogleFonts.poppins(
+                        fontSize: 13,
+                        color: Colors.grey.shade700,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
-                ),
-                onChanged: (value) => controller.phoneNumber.value = value,
+
+                  const SizedBox(height: 60),
+
+                  // 🔹 EPA Logo
+                  Image.asset(
+                    'assets/logo.png',
+                    width: size.width * 0.90227273,
+                    fit: BoxFit.contain,
+                    // errorBuilder: (c, e, s) => const FlutterLogo(size: 120),
+                  ),
+
+                  const SizedBox(height: 33),
+
+                  // 🔹 Welcome Back
+                  Text(
+                    'Welcome Back!',
+                    style: GoogleFonts.poppins(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w600,
+                      color: darkText,
+                    ),
+                  ),
+
+                  const SizedBox(height: 26),
+
+                  // 🔹 Phone Input
+                  TextField(
+                    controller: _phoneCtrl,
+                    keyboardType: TextInputType.phone,
+                    style: GoogleFonts.poppins(fontSize: 15),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      prefixIcon: const Icon(
+                        Icons.phone_outlined,
+                        color: darkText,
+                      ),
+                      prefixIconConstraints: const BoxConstraints(
+                        minWidth: 50, // increase to add left padding
+                        minHeight: 0,
+                      ),
+                      hintText: 'Phone number',
+                      hintStyle: GoogleFonts.poppins(
+                        color: hintText,
+                        fontSize: 15,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 18,
+                        horizontal: 10,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(
+                          color: borderColor,
+                          width: 1.2,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(
+                          color: borderColor,
+                          width: 1.2,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(
+                          color: greenColor,
+                          width: 1.4,
+                        ),
+                      ),
+                    ),
+                    onChanged: (v) => controller.phoneNumber.value = v,
+                  ),
+
+                  const SizedBox(height: 16),
+
+                  // 🔹 Password Input
+                  TextField(
+                    controller: _passCtrl,
+                    obscureText: _obscure,
+                    style: GoogleFonts.poppins(fontSize: 15),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      prefixIcon: const Icon(
+                        Icons.lock_outline,
+                        color: darkText,
+                      ),
+                      prefixIconConstraints: const BoxConstraints(
+                        minWidth: 50, // increase to add left padding
+                        minHeight: 0,
+                      ),
+                      hintText: 'Password',
+                      hintStyle: GoogleFonts.poppins(
+                        color: hintText,
+                        fontSize: 15,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                        vertical: 18,
+                        horizontal: 10,
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscure
+                              ? Icons.visibility_off_outlined
+                              : Icons.visibility_outlined,
+                          color: hintText,
+                        ),
+                        onPressed: () => setState(() => _obscure = !_obscure),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(
+                          color: borderColor,
+                          width: 1.2,
+                        ),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(
+                          color: borderColor,
+                          width: 1.2,
+                        ),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(
+                          color: greenColor,
+                          width: 1.4,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // 🔹 Remember Me + Forgot Password
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => setState(() => _remember = !_remember),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 20,
+                              height: 20,
+                              decoration: BoxDecoration(
+                                border: Border.all(color: hintText, width: 1.2),
+                                borderRadius: BorderRadius.circular(4),
+                                color: _remember
+                                    ? greenColor
+                                    : Colors.transparent,
+                              ),
+                              child: _remember
+                                  ? const Icon(
+                                      Icons.check,
+                                      size: 16,
+                                      color: Colors.white,
+                                    )
+                                  : null,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Remember Me',
+                              style: GoogleFonts.poppins(
+                                fontSize: 14,
+                                color: darkText,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Spacer(),
+                      TextButton(
+                        onPressed: () {},
+                        style: TextButton.styleFrom(
+                          padding: EdgeInsets.zero,
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: Text(
+                          'Forget Password?',
+                          style: GoogleFonts.poppins(
+                            fontSize: 14,
+                            color: blueColor,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 100),
+
+                  // 🔹 Sign In Button
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: ElevatedButton(
+                      onPressed: () => controller.submitLogin(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: greenColor,
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        'Sign In',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 18),
+
+                  // 🔹 Create Account Button (Outlined)
+                  SizedBox(
+                    width: double.infinity,
+                    height: 54,
+                    child: OutlinedButton(
+                      onPressed: () {},
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: greenColor, width: 1.4),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: Text(
+                        'Create Account',
+                        style: GoogleFonts.poppins(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: greenColor,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // 🔹 Continue as Guest
+                  TextButton(
+                    onPressed: () {},
+                    child: Text(
+                      'Continue as Guest',
+                      style: GoogleFonts.poppins(
+                        fontSize: 15,
+                        color: hintText,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 40),
+                ],
               ),
-              const SizedBox(height: 16),
-              TextField(
-                decoration: InputDecoration(
-                  filled: true,
-                  fillColor: const Color(0xFFF5F5F5),
-                  prefixIcon: const Icon(Icons.person, color: Colors.green),
-                  labelText: 'Enter your username',
-                  labelStyle: const TextStyle(color: Colors.black54),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(22),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-                onChanged: (value) => controller.userName.value = value,
-              ),
-              const SizedBox(height: 34),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: controller.submitLogin,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                  ),
-                  child: const Text(
-                    'Login',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-                  ),
-                ),
-              ),
-            ],
+            ),
           ),
-          ),
-          
-          
-        ),
+        ],
       ),
     );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
   }
 }
