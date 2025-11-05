@@ -39,7 +39,7 @@ class ReportOtpView extends GetView<ReportOtpController> {
                     children: [
                       const SizedBox(height: 8),
                       const Text(
-                        'We have sent the OTP verification code to your email address. Check your email and enter the code below.',
+                        'We have sent the OTP verification code to your Phone number. Check your Phone and enter the code below.',
                         style: TextStyle(
                           fontSize: 16,
                           height: 1.5,
@@ -69,7 +69,7 @@ class ReportOtpView extends GetView<ReportOtpController> {
                           child: Column(
                             children: [
                               const Text(
-                                "Didn't receive email?",
+                                "Didn't receive code?",
                                 style: TextStyle(color: Colors.black87),
                               ),
                               const SizedBox(height: 8),
