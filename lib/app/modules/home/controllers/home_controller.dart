@@ -1,6 +1,8 @@
 // lib/app/modules/home/controllers/home_controller.dart
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+
 import 'package:get_storage/get_storage.dart';
 
 class HomeController extends GetxController {
@@ -8,6 +10,11 @@ class HomeController extends GetxController {
   final RxString userName = 'Guest'.obs;
   final RxString phoneNumber = ''.obs;
   final RxInt currentCarouselIndex = 0.obs;
+
+  // Carousel controller lives on the HomeController so it is not recreated
+  // every time the widget tree rebuilds. This prevents leaking controller
+  // instances and preserves carousel state across rebuilds.
+  final CarouselSliderController carouselCtrl = CarouselSliderController();
 
   // === Carousel Data ===
   final List<String> imageUrls = [
