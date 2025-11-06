@@ -103,6 +103,7 @@ class BottomNavBar extends StatelessWidget {
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
     // Build the inner bar content as a reusable widget so we can render it
