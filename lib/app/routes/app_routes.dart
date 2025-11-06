@@ -21,6 +21,7 @@ abstract class Routes {
   static const REPORT_ISSUE = _Paths.REPORT_ISSUE;
   static const Report_Success = _Paths.Report_Success;
   static const Report_Otp = _Paths.Report_Otp;
+  static const SIGNUP = _Paths.SIGNUP;
 }
 
 abstract class _Paths {
@@ -43,4 +44,5 @@ abstract class _Paths {
   static const REPORT_ISSUE = '/report-issue';
   static const Report_Success = '/report-success';
   static const Report_Otp = '/report-otp';
+  static const SIGNUP = '/signup';
 }
