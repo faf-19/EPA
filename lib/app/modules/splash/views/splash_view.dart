@@ -1,9 +1,13 @@
 // views/splash_view.dart
 import 'package:eprs/app/modules/auth/views/signup_view.dart';
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:eprs/app/modules/home/controllers/home_controller.dart';
+=======
+import '../../login/views/login_view.dart';
+>>>>>>> 70f8381050c9dbbb739d4088f4f215576f460a31
 
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
@@ -26,6 +30,7 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
+<<<<<<< HEAD
     _ctrl = AnimationController(vsync: this, duration: const Duration(milliseconds: 200));
 
     _logoUp     = Tween<double>(begin: 0, end: -220).animate(CurvedAnimation(parent: _ctrl, curve: const Interval(0.0, 0.45, curve: Curves.easeOutCubic)));
@@ -50,6 +55,27 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
             : 'Use 09/07xxxxxxxx (10 digits)';
       }
     });
+=======
+    _startAnimation();
+  }
+
+  Future<void> _startAnimation() async {
+    // Step 1: Fade in content
+    await Future.delayed(const Duration(milliseconds: 400));
+    setState(() => showContent = true);
+
+    // Step 2: Hold for a moment
+    await Future.delayed(const Duration(seconds: 2));
+
+    // Step 3: Fade out + scale down
+    setState(() => showContent = false);
+    await Future.delayed(const Duration(milliseconds: 700));
+
+    // Step 4: Navigate with custom transition
+    if (mounted) {
+      Navigator.of(context).pushReplacement(_createRoute());
+    }
+>>>>>>> 70f8381050c9dbbb739d4088f4f215576f460a31
   }
 
   @override
@@ -60,6 +86,7 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
     super.dispose();
   }
 
+<<<<<<< HEAD
   void _signIn() async {
     final phoneRaw = _phoneCtrl.text.trim();
     final password = _pwdCtrl.text;
@@ -115,11 +142,44 @@ class _SplashViewState extends State<SplashView> with SingleTickerProviderStateM
             onPressed: () => Get.back(),
             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF22C55E)),
             child: const Text('OK', style: TextStyle(color: Colors.white)),
+=======
+    return Scaffold(
+      backgroundColor: Colors.white,
+      extendBody: true,
+      body: SafeArea(
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 700),
+          opacity: showContent ? 1.0 : 0.0,
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                AnimatedScale(
+                  scale: showContent ? 1.0 : 0.85,
+                  duration: const Duration(milliseconds: 700),
+                  curve: Curves.easeInOut,
+                  child: Image.asset(
+                    'assets/logo.png',
+                    width: screenWidth * 0.9,
+                    errorBuilder: (context, error, stackTrace) => const Icon(
+                      Icons.error,
+                      size: 50,
+                      color: Colors.red,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 40),
+                
+                SizedBox(height: screenHeight * 0.1),
+              ],
+            ),
+>>>>>>> 70f8381050c9dbbb739d4088f4f215576f460a31
           ),
         ],
       ),
     );
   }
+<<<<<<< HEAD
 
   @override
   Widget build(BuildContext context) {
@@ -270,3 +330,35 @@ class _EPAButton extends StatelessWidget {
     );
   }
 }
+=======
+}
+
+// 🔹 Transition Route Builder
+Route _createRoute() {
+  return PageRouteBuilder(
+    transitionDuration: const Duration(milliseconds: 900),
+    reverseTransitionDuration: const Duration(milliseconds: 700),
+    pageBuilder: (context, animation, secondaryAnimation) => const LoginOverlay(),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      const beginOffset = Offset(0.0, 1.0); // Slide from bottom
+      const endOffset = Offset.zero;
+      final curve = Curves.easeInOutCubic;
+
+      final tween = Tween(begin: beginOffset, end: endOffset)
+          .chain(CurveTween(curve: curve));
+
+      return FadeTransition(
+        opacity: animation,
+        child: SlideTransition(
+          position: animation.drive(tween),
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.95, end: 1.0)
+                .animate(CurvedAnimation(parent: animation, curve: Curves.easeOutBack)),
+            child: child,
+          ),
+        ),
+      );
+    },
+  );
+}
+>>>>>>> 70f8381050c9dbbb739d4088f4f215576f460a31
