@@ -1,3 +1,4 @@
+import 'package:eprs/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -189,7 +190,9 @@ class _SignUpOverlayState extends State<SignUpOverlay> {
                     width: double.infinity,
                     height: 54,
                     child: ElevatedButton(
-                      onPressed: () => {},
+                      onPressed: () => {
+                        Get.toNamed(Routes.HOME)
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: greenColor,
                         foregroundColor: Colors.white,
