@@ -21,20 +21,36 @@ class StatusView extends GetView<StatusController> {
           children: [
             const SizedBox(height: 10),
 
-            // Filter Tabs
+            // Filter Tabs (compact pill chips matching screenshot)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  _filterButton('All', isActive: true),
-                  const SizedBox(width: 8),
-                  _filterButton('Pending'),
-                  const SizedBox(width: 8),
-                  _filterButton('In Progress'),
-                  const SizedBox(width: 8),
-                  _filterButton('Completed'),
-                ],
-              ),
+              child: Obx(() {
+                final sel = controller.selectedFilter.value;
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        const SizedBox(width: 6),
+                        _filterChip('All', sel == 'All'),
+                        const SizedBox(width: 10),
+                        _filterChip('Pending', sel == 'Pending'),
+                        const SizedBox(width: 10),
+                        _filterChip('In Progress', sel == 'In Progress'),
+                        const SizedBox(width: 10),
+                        _filterChip('Completed', sel == 'Completed'),
+                        const SizedBox(width: 10),
+                        _filterChip('Rejected', sel == 'Rejected'),
+                        const SizedBox(width: 6),
+                      ],
+                    ),
+                  ),
+                );
+              }),
             ),
 
             const SizedBox(height: 16),
@@ -76,6 +92,15 @@ class StatusView extends GetView<StatusController> {
                         'I saw a man throwing trash on the street near [location]. I am reporting this so that appropriate action can be taken to keep our community clean. I saw a man throwing trash on the street near [location]. I am reporting this so...',
                     date: 'June 29, 2025 12:00 AM',
                   ),
+                  // Rejected item (shows after scrolling)
+                  _complaintCard(
+                    title: 'Rejected Case',
+                    status: 'Rejected',
+                    statusColor: Colors.red,
+                    description:
+                        'This report was reviewed and rejected due to insufficient evidence. If you have additional information, please re-submit with clearer details or photos.',
+                    date: 'June 30, 2025 09:15 AM',
+                  ),
                   const SizedBox(height: 80),
                 ],
               ),
@@ -87,31 +112,28 @@ class StatusView extends GetView<StatusController> {
     );
   }
 
-  // Filter Button
-  Widget _filterButton(String label, {bool isActive = false}) {
-    return Expanded(
-      child: InkWell(
-        onTap: () {
-          isActive = !isActive;
-        },
+  // Compact filter chip (matches screenshot chips)
+  Widget _filterChip(String label, bool isActive) {
+    return InkWell(
+      onTap: () => controller.setFilter(label),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? const Color(0xFF16A34A) : Colors.white,
+          color: isActive ? const Color(0xFF16A34A) : const Color(0xFFF5F5F5),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: isActive ? const Color(0xFF16A34A) : const Color(0xFFE0E0E0)),
+          // border: isActive ? null : Border.all(color: const Color(0xFFECEFF6)),
+          // boxShadow: isActive
+          //     ? [BoxShadow(color: Colors.black12.withOpacity(0.04), blurRadius: 6, offset: const Offset(0, 2))]
+          //     : null,
         ),
-        child: Center(
-          child: Text(
-            label,
-            style: TextStyle(
-              color: isActive ? Colors.white : Colors.black87,
-              fontWeight: FontWeight.w600,
-            ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: isActive ? Colors.white : const Color(0xFF333333),
+            fontWeight: FontWeight.w600,
           ),
         ),
       ),
-    )
     );
   }
 
