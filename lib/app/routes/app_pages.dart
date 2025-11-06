@@ -32,6 +32,8 @@ import '../modules/splash/views/splash_view.dart';
 import '../modules/status/bindings/status_binding.dart';
 import '../modules/status/views/status_view.dart';
 import '../modules/term_and_conditions/views/term_and_conditions_view.dart';
+import '../modules/signup/bindings/signup_binding.dart';
+import '../modules/signup/views/signup_view.dart';
 
 part 'app_routes.dart';
 
@@ -111,6 +113,11 @@ class AppPages {
       name: _Paths.LOGIN,
       page: () => LoginOverlay(),
       binding: LoginBinding(),
+    ),
+    GetPage(
+      name: _Paths.SIGNUP,
+      page: () => SignUpOverlay(),
+      binding: SignupBinding(),
     ),
     GetPage(
       name: _Paths.REPORT,

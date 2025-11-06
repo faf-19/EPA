@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../controllers/login_controller.dart';
-import '../../signup/views/signup_view.dart';
-import '../../signup/bindings/signup_binding.dart';
+import '../controllers/signup_controller.dart';
 
-class LoginOverlay extends StatefulWidget {
-  const LoginOverlay({super.key});
+class SignUpOverlay extends StatefulWidget {
+  const SignUpOverlay({super.key});
 
   @override
-  State<LoginOverlay> createState() => _LoginOverlayState();
+  State<SignUpOverlay> createState() => _SignUpOverlayState();
 }
 
-class _LoginOverlayState extends State<LoginOverlay> {
+class _SignUpOverlayState extends State<SignUpOverlay> {
   final _phoneCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
+  final _nameCtrl = TextEditingController();
   bool _obscure = true;
   bool _remember = false;
 
@@ -27,7 +26,7 @@ class _LoginOverlayState extends State<LoginOverlay> {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(LoginController());
+    final controller = Get.put(SignUpController());
     final size = MediaQuery.of(context).size;
 
     const greenColor = Color(0xFF00A650);
@@ -79,7 +78,7 @@ class _LoginOverlayState extends State<LoginOverlay> {
                   ),
                   const SizedBox(height: 33),
                   Text(
-                    'Welcome Back!',
+                    'Create EPA PASS Account',
                     style: GoogleFonts.poppins(
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
@@ -88,7 +87,37 @@ class _LoginOverlayState extends State<LoginOverlay> {
                   ),
                   const SizedBox(height: 26),
 
-                  // 🔹 Phone Input
+
+                  // Full Name Input
+                  TextField(
+                    controller: _nameCtrl,
+                    keyboardType: TextInputType.name,
+                    style: GoogleFonts.poppins(fontSize: 15),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      prefixIcon: const Icon(Icons.person_outline, color: darkText),
+                      hintText: 'Full Name',
+                      hintStyle: GoogleFonts.poppins(color: hintText, fontSize: 15),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: borderColor, width: 1.2),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: borderColor, width: 1.2),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: greenColor, width: 1.4),
+                      ),
+                    ),
+                    onChanged: (v) => controller.fullName.value = v,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Phone Input
                   TextField(
                     controller: _phoneCtrl,
                     keyboardType: TextInputType.phone,
@@ -117,7 +146,7 @@ class _LoginOverlayState extends State<LoginOverlay> {
                   ),
                   const SizedBox(height: 16),
 
-                  // 🔹 Password Input
+                  // Password Input
                   TextField(
                     controller: _passCtrl,
                     obscureText: _obscure,
@@ -152,64 +181,15 @@ class _LoginOverlayState extends State<LoginOverlay> {
                   ),
                   const SizedBox(height: 20),
 
-                  // 🔹 Remember Me + Forgot Password
-                  Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () => setState(() => _remember = !_remember),
-                        child: Row(
-                          children: [
-                            Container(
-                              width: 20,
-                              height: 20,
-                              decoration: BoxDecoration(
-                                border: Border.all(color: hintText, width: 1.2),
-                                borderRadius: BorderRadius.circular(4),
-                                color: _remember ? greenColor : Colors.transparent,
-                              ),
-                              child: _remember
-                                  ? const Icon(Icons.check, size: 16, color: Colors.white)
-                                  : null,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Remember Me',
-                              style: GoogleFonts.poppins(
-                                fontSize: 14,
-                                color: darkText,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const Spacer(),
-                      TextButton(
-                        onPressed: () {},
-                        style: TextButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          minimumSize: Size.zero,
-                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        ),
-                        child: Text(
-                          'Forget Password?',
-                          style: GoogleFonts.poppins(
-                            fontSize: 14,
-                            color: blueColor,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                  
                   const SizedBox(height: 80),
 
-                  // 🔹 Buttons
+                  // Buttons
                   SizedBox(
                     width: double.infinity,
                     height: 54,
                     child: ElevatedButton(
-                      onPressed: () => controller.submitLogin(),
+                      onPressed: () => {},
                       style: ElevatedButton.styleFrom(
                         backgroundColor: greenColor,
                         foregroundColor: Colors.white,
@@ -219,7 +199,7 @@ class _LoginOverlayState extends State<LoginOverlay> {
                         elevation: 0,
                       ),
                       child: Text(
-                        'Sign In',
+                        'Continue',
                         style: GoogleFonts.poppins(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
@@ -227,44 +207,7 @@ class _LoginOverlayState extends State<LoginOverlay> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 18),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: OutlinedButton(
-                      onPressed: () {
-                        // Navigate directly to the SignUp page with its binding to bypass
-                        // the named route generator (helps debug route-generation nulls).
-                        Get.to(() => const SignUpOverlay(), binding: SignupBinding());
-                      },
-                      style: OutlinedButton.styleFrom(
-                        side: const BorderSide(color: greenColor, width: 1.4),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: Text(
-                        'Create Account',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: greenColor,
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  TextButton(
-                    onPressed: () {},
-                    child: Text(
-                      'Continue as Guest',
-                      style: GoogleFonts.poppins(
-                        fontSize: 15,
-                        color: hintText,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
+                  
                   const SizedBox(height: 40),
                 ],
               ),
