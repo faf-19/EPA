@@ -1,7 +1,6 @@
 // ─────────────────────────────────────────────────────────────────────────────
 //  home_view.dart
 // ─────────────────────────────────────────────────────────────────────────────
-import 'package:carousel_slider/carousel_slider.dart';
 import 'package:eprs/app/modules/bottom_nav/views/bottom_nav_view.dart';
 import 'package:eprs/app/modules/home/controllers/home_controller.dart';
 import 'package:eprs/app/modules/home/widgets/carousel_banner.dart';
@@ -16,7 +15,6 @@ class HomeView extends GetView<HomeController> {
   HomeView({super.key});
 
   // ── Carousel page controller ─────────────────────────────────────────────
-  final CarouselSliderController _carouselCtrl = CarouselSliderController();
   @override
   Widget build(BuildContext context) {
     // Ensure HomeController is available (defensive in case route bindings weren't set)
@@ -96,7 +94,7 @@ class HomeView extends GetView<HomeController> {
               sliver: SliverList(
                 delegate: SliverChildListDelegate([
                   CarouselBanner(
-                    carouselController: _carouselCtrl,
+                    carouselController: controller.carouselCtrl,
                     controller: controller,
                   ),
                   const SizedBox(height: 28),
