@@ -12,7 +12,7 @@ void main() async {
   runApp(
     GetMaterialApp(
       title: "EPA",
-      initialRoute: Routes.SPLASH, 
+      initialRoute: Routes.SPLASH,
       getPages: AppPages.routes,
       debugShowCheckedModeBanner: false,
       theme: ThemeData(

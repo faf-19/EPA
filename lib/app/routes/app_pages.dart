@@ -41,13 +41,13 @@ class AppPages {
   static const INITIAL = Routes.SPLASH;
 
   static final routes = [
-    GetPage(
-      name: _Paths.SPLASH,
-      page: () => const SplashView(),
-      binding: SplashBinding(),
-      transition: Transition.fade,
-      transitionDuration: Duration(milliseconds: 500),
-    ),
+    // GetPage(
+    //   name: _Paths.SPLASH,
+    //   page: () => const SplashView(),
+    //   binding: SplashBinding(),
+    //   transition: Transition.fade,
+    //   transitionDuration: Duration(milliseconds: 500),
+    // ),
     GetPage(
       name: _Paths.SETTING,
       page: () => const SettingView(),
