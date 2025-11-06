@@ -534,7 +534,7 @@ class ReportView extends GetView<ReportController> {
   }
 }
 
-/// Draws a rounded dashed border around [child].
+// /// Draws a rounded dashed border around [child].
 class DashedBorder extends StatelessWidget {
   final Widget child;
   final double strokeWidth;

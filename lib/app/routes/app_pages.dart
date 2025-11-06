@@ -16,8 +16,6 @@ import '../modules/home/bindings/home_binding.dart';
 import '../modules/home/views/home_view.dart';
 import '../modules/language/bindings/language_binding.dart';
 import '../modules/language/views/language_view.dart';
-import '../modules/login/bindings/login_binding.dart';
-import '../modules/login/views/login_view.dart';
 import '../modules/office/bindings/office_binding.dart';
 import '../modules/office/views/office_view.dart';
 import '../modules/office_detail_map_view/bindings/office_detail_map_view_binding.dart';
@@ -43,13 +41,13 @@ class AppPages {
   static const INITIAL = Routes.SPLASH;
 
   static final routes = [
-    GetPage(
-      name: _Paths.SPLASH,
-      page: () => const SplashView(),
-      binding: SplashBinding(),
-      transition: Transition.fade,
-      transitionDuration: Duration(milliseconds: 500),
-    ),
+    // GetPage(
+    //   name: _Paths.SPLASH,
+    //   page: () => const SplashView(),
+    //   binding: SplashBinding(),
+    //   transition: Transition.fade,
+    //   transitionDuration: Duration(milliseconds: 500),
+    // ),
     GetPage(
       name: _Paths.SETTING,
       page: () => const SettingView(),
@@ -60,11 +58,7 @@ class AppPages {
       page: () => const LanguageView(),
       binding: LanguageBinding(),
     ),
-    GetPage(
-      name: _Paths.HOME,
-      page: () => HomeView(),
-      binding: HomeBinding(),
-    ),
+    GetPage(name: _Paths.HOME, page: () => HomeView(), binding: HomeBinding()),
     GetPage(
       name: _Paths.OFFICE,
       page: () => const OfficeView(),
@@ -109,11 +103,11 @@ class AppPages {
       page: () => const AwarenessView(),
       binding: AwarenessBinding(),
     ),
-    GetPage(
-      name: _Paths.LOGIN,
-      page: () => LoginOverlay(),
-      binding: LoginBinding(),
-    ),
+    // GetPage(
+    //   name: _Paths.LOGIN,
+    //   page: () => const LoginView(),
+    //   binding: LoginBinding(),
+    // ),
     GetPage(
       name: _Paths.SIGNUP,
       page: () => SignUpOverlay(),
@@ -129,10 +123,7 @@ class AppPages {
       binding: ReportBinding(),
     ),
 
-    GetPage(
-      name: _Paths.REPORT_ISSUE,
-      page: () => const ReportIssueView(),
-    ),
+    GetPage(name: _Paths.REPORT_ISSUE, page: () => const ReportIssueView()),
 
     GetPage(
       name: _Paths.Report_Success,
@@ -141,17 +132,15 @@ class AppPages {
         final reportId = (arg is String) ? arg : '';
         final date = DateTime.now();
         return ReportSuccessView(reportId: reportId, dateTime: date);
-      }
+      },
     ),
 
     GetPage(
       name: _Paths.Report_Otp,
       page: () => const ReportOtpView(),
-      binding: BindingsBuilder(
-        () {
-          Get.lazyPut<ReportOtpController>(() => ReportOtpController());
-        },
-      ),
-    )
+      binding: BindingsBuilder(() {
+        Get.lazyPut<ReportOtpController>(() => ReportOtpController());
+      }),
+    ),
   ];
 }
