@@ -38,7 +38,7 @@ class _LoginOverlayState extends State<LoginOverlay> {
       backgroundColor: Colors.white,
       body: Stack(
         children: [
-          // Background gradient
+          // Subtle radial gradient background
           Container(
             decoration: const BoxDecoration(
               gradient: RadialGradient(
@@ -52,14 +52,12 @@ class _LoginOverlayState extends State<LoginOverlay> {
               ),
             ),
           ),
-
           SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  // 🔹 Top-right "Eng"
                   Align(
                     alignment: Alignment.topRight,
                     child: Text(
@@ -71,20 +69,13 @@ class _LoginOverlayState extends State<LoginOverlay> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 60),
-
-                  // 🔹 EPA Logo
                   Image.asset(
                     'assets/logo.png',
-                    width: size.width * 0.90227273,
+                    width: size.width * 0.9,
                     fit: BoxFit.contain,
-                    // errorBuilder: (c, e, s) => const FlutterLogo(size: 120),
                   ),
-
                   const SizedBox(height: 33),
-
-                  // 🔹 Welcome Back
                   Text(
                     'Welcome Back!',
                     style: GoogleFonts.poppins(
@@ -93,7 +84,6 @@ class _LoginOverlayState extends State<LoginOverlay> {
                       color: darkText,
                     ),
                   ),
-
                   const SizedBox(height: 26),
 
                   // 🔹 Phone Input
@@ -104,48 +94,25 @@ class _LoginOverlayState extends State<LoginOverlay> {
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: Colors.white,
-                      prefixIcon: const Icon(
-                        Icons.phone_outlined,
-                        color: darkText,
-                      ),
-                      prefixIconConstraints: const BoxConstraints(
-                        minWidth: 50, // increase to add left padding
-                        minHeight: 0,
-                      ),
+                      prefixIcon: const Icon(Icons.phone_outlined, color: darkText),
                       hintText: 'Phone number',
-                      hintStyle: GoogleFonts.poppins(
-                        color: hintText,
-                        fontSize: 15,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 18,
-                        horizontal: 10,
-                      ),
+                      hintStyle: GoogleFonts.poppins(color: hintText, fontSize: 15),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(
-                          color: borderColor,
-                          width: 1.2,
-                        ),
+                        borderSide: const BorderSide(color: borderColor, width: 1.2),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(
-                          color: borderColor,
-                          width: 1.2,
-                        ),
+                        borderSide: const BorderSide(color: borderColor, width: 1.2),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(
-                          color: greenColor,
-                          width: 1.4,
-                        ),
+                        borderSide: const BorderSide(color: greenColor, width: 1.4),
                       ),
                     ),
                     onChanged: (v) => controller.phoneNumber.value = v,
                   ),
-
                   const SizedBox(height: 16),
 
                   // 🔹 Password Input
@@ -156,56 +123,31 @@ class _LoginOverlayState extends State<LoginOverlay> {
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: Colors.white,
-                      prefixIcon: const Icon(
-                        Icons.lock_outline,
-                        color: darkText,
-                      ),
-                      prefixIconConstraints: const BoxConstraints(
-                        minWidth: 50, // increase to add left padding
-                        minHeight: 0,
-                      ),
+                      prefixIcon: const Icon(Icons.lock_outline, color: darkText),
                       hintText: 'Password',
-                      hintStyle: GoogleFonts.poppins(
-                        color: hintText,
-                        fontSize: 15,
-                      ),
-                      contentPadding: const EdgeInsets.symmetric(
-                        vertical: 18,
-                        horizontal: 10,
-                      ),
+                      hintStyle: GoogleFonts.poppins(color: hintText, fontSize: 15),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscure
-                              ? Icons.visibility_off_outlined
-                              : Icons.visibility_outlined,
+                          _obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
                           color: hintText,
                         ),
                         onPressed: () => setState(() => _obscure = !_obscure),
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(
-                          color: borderColor,
-                          width: 1.2,
-                        ),
+                        borderSide: const BorderSide(color: borderColor, width: 1.2),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(
-                          color: borderColor,
-                          width: 1.2,
-                        ),
+                        borderSide: const BorderSide(color: borderColor, width: 1.2),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(
-                          color: greenColor,
-                          width: 1.4,
-                        ),
+                        borderSide: const BorderSide(color: greenColor, width: 1.4),
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 20),
 
                   // 🔹 Remember Me + Forgot Password
@@ -221,16 +163,10 @@ class _LoginOverlayState extends State<LoginOverlay> {
                               decoration: BoxDecoration(
                                 border: Border.all(color: hintText, width: 1.2),
                                 borderRadius: BorderRadius.circular(4),
-                                color: _remember
-                                    ? greenColor
-                                    : Colors.transparent,
+                                color: _remember ? greenColor : Colors.transparent,
                               ),
                               child: _remember
-                                  ? const Icon(
-                                      Icons.check,
-                                      size: 16,
-                                      color: Colors.white,
-                                    )
+                                  ? const Icon(Icons.check, size: 16, color: Colors.white)
                                   : null,
                             ),
                             const SizedBox(width: 8),
@@ -264,10 +200,9 @@ class _LoginOverlayState extends State<LoginOverlay> {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 80),
 
-                  const SizedBox(height: 100),
-
-                  // 🔹 Sign In Button
+                  // 🔹 Buttons
                   SizedBox(
                     width: double.infinity,
                     height: 54,
@@ -290,10 +225,7 @@ class _LoginOverlayState extends State<LoginOverlay> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 18),
-
-                  // 🔹 Create Account Button (Outlined)
                   SizedBox(
                     width: double.infinity,
                     height: 54,
@@ -315,10 +247,7 @@ class _LoginOverlayState extends State<LoginOverlay> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 20),
-
-                  // 🔹 Continue as Guest
                   TextButton(
                     onPressed: () {},
                     child: Text(
@@ -330,7 +259,6 @@ class _LoginOverlayState extends State<LoginOverlay> {
                       ),
                     ),
                   ),
-
                   const SizedBox(height: 40),
                 ],
               ),
