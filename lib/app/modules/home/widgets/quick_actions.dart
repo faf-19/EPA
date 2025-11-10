@@ -18,16 +18,16 @@ class QuickActions extends StatelessWidget {
           children: [
             Expanded(
               child: ActionCard(
-                title: 'Report',
-                icon: 'assets/icons/report.svg',
-                bg: Color(0xFFDCFCE7),
-              ),
+                  title: 'Report',
+                  icon: 'assets/report.svg',
+                  bg: Color(0xFFDCFCE7),
+                ),
             ),
             SizedBox(width: 12),
             Expanded(
               child: ActionCard(
                 title: 'Awareness',
-                icon: 'assets/icons/lightbulb.svg',
+                icon: 'assets/awareness.svg',
                 bg: Color(0xFFFDE68A),
               ),
             ),
