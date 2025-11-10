@@ -1,9 +1,8 @@
+import 'package:eprs/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../controllers/login_controller.dart';
-import '../../signup/views/signup_view.dart';
-import '../../signup/bindings/signup_binding.dart';
 
 class LoginOverlay extends StatefulWidget {
   const LoginOverlay({super.key});
@@ -233,9 +232,7 @@ class _LoginOverlayState extends State<LoginOverlay> {
                     height: 54,
                     child: OutlinedButton(
                       onPressed: () {
-                        // Navigate directly to the SignUp page with its binding to bypass
-                        // the named route generator (helps debug route-generation nulls).
-                        Get.to(() => const SignUpOverlay(), binding: SignupBinding());
+                        Get.toNamed(Routes.SIGNUP);
                       },
                       style: OutlinedButton.styleFrom(
                         side: const BorderSide(color: greenColor, width: 1.4),
