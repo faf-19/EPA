@@ -85,11 +85,6 @@ class ReportView extends GetView<ReportController> {
                             Icons.videocam_outlined,
                             'Record Video',
                           ),
-                          _evidenceTile(
-                            Icons.photo_library_outlined,
-                            'From Gallery',
-                          ),
-                          _evidenceTile(Icons.mic_none_outlined, 'Voice Note'),
                         ],
                       ),
                       const SizedBox(height: 12),

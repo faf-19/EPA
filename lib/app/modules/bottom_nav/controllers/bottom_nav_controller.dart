@@ -22,4 +22,8 @@ class BottomNavController extends GetxController {
     }
     super.onInit();
   }
+
+  void resetToHome() {
+    currentIndex.value = 0;
+  }
 }

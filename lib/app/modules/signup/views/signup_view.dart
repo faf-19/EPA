@@ -16,7 +16,7 @@ class _SignUpOverlayState extends State<SignUpOverlay> {
   final _passCtrl = TextEditingController();
   final _nameCtrl = TextEditingController();
   bool _obscure = true;
-  bool _remember = false;
+  final bool _remember = false;
 
   @override
   void dispose() {
@@ -191,7 +191,7 @@ class _SignUpOverlayState extends State<SignUpOverlay> {
                     height: 54,
                     child: ElevatedButton(
                       onPressed: () => {
-                        Get.toNamed(Routes.HOME)
+                        Get.offAllNamed(Routes.HOME)
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: greenColor,

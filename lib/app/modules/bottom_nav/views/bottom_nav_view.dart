@@ -19,7 +19,7 @@ class BottomNavBar extends StatelessWidget {
   final List<_NavItemData> _items = const [
     _NavItemData(icon: Icons.home_outlined, label: "Home", route: Routes.HOME),
     _NavItemData(icon: Icons.map_outlined, label: "Office", route: Routes.OFFICE),
-    _NavItemData(icon: Icons.people_outline, label: "Community", route: Routes.AWARENESS),
+    _NavItemData(icon: Icons.people_outline, label: "Community", route: Routes.REPORT),
     _NavItemData(icon: Icons.monitor_heart_outlined, label: "Status", route: Routes.STATUS),
     _NavItemData(icon: Icons.person_outline, label: "Profile", route: Routes.SETTING),
   ];

@@ -12,7 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 class HomeView extends GetView<HomeController> {
-  HomeView({super.key});
+  const HomeView({super.key});
 
   // ── Carousel page controller ─────────────────────────────────────────────
   @override
@@ -36,8 +36,9 @@ class HomeView extends GetView<HomeController> {
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
-            // ── Header ───────────────────────────────────────────────────────
+            // ── Header 
             SliverAppBar(
+              automaticallyImplyLeading: false,
               backgroundColor: Colors.white,
               elevation: 0,
               floating: true,
