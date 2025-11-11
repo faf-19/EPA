@@ -4,7 +4,7 @@ import 'package:eprs/app/widgets/custom_app_bar.dart';
 import '../controllers/report_otp_controller.dart';
 
 class ReportOtpView extends GetView<ReportOtpController> {
-  const ReportOtpView({Key? key}) : super(key: key);
+  const ReportOtpView({super.key});
 
   @override
   Widget build(BuildContext context) {

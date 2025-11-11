@@ -21,7 +21,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       preferredSize: Size.fromHeight(height),
       child: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: Colors.white,
+        backgroundColor: const Color(0xFF387E53),
         elevation: 0,
         flexibleSpace: SafeArea(
           child: Padding(
@@ -31,7 +31,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               children: [
                 if (showBack)
                   IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.black),
+                    icon: const Icon(Icons.arrow_back, color: Colors.white),
                     onPressed: () => Get.back(),
                   ),
 
@@ -48,7 +48,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
-                          color: Colors.black,
+                          color: Colors.white,
                         ),
                       ),
                       if (subtitle != null) ...[
@@ -57,7 +57,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                           subtitle!,
                           style: const TextStyle(
                             fontSize: 14,
-                            color: Color(0xFF7B6FA9),
+                            color: Colors.white,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),
