@@ -114,8 +114,15 @@ class _BottomNavBarState extends State<BottomNavBar> {
   Widget build(BuildContext context) {
     const double navBarHeight = 70;
 
-    return WillPopScope(
-      onWillPop: controller.onWillPop,
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, result) async {
+        if (didPop) return;
+        final shouldPop = await controller.onWillPop();
+        if (shouldPop) {
+          Get.back(result: result);
+        }
+      },
       child: Obx(() => Scaffold(
             body: IndexedStack(
               index: controller.currentIndex.value,

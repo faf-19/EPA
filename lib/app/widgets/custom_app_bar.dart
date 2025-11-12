@@ -43,7 +43,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                           return; // Don't call Get.back()
                         }
                       } catch (e) {
-                        // Controller not found, fall back to normal back navigation
+                        print(e);
                       }
                       // Only use Get.back() if not in BottomNavBar context
                       Get.back();
