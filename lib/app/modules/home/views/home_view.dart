@@ -1,7 +1,8 @@
 // ─────────────────────────────────────────────────────────────────────────────
 //  home_view.dart
 // ─────────────────────────────────────────────────────────────────────────────
-import 'package:eprs/app/modules/bottom_nav/views/bottom_nav_view.dart';
+// Bottom nav is implemented as a separate shell. Do not import the shell here to avoid
+// recursive widget construction (the shell instantiates these pages).
 import 'package:eprs/app/modules/home/controllers/home_controller.dart';
 import 'package:eprs/app/modules/home/widgets/carousel_banner.dart';
 import 'package:eprs/app/modules/home/widgets/community_feed.dart';
@@ -111,7 +112,7 @@ class HomeView extends GetView<HomeController> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavBar(),
+  // BottomNavBar is provided by the top-level shell. Do not include it here.
     );
   }
 }
