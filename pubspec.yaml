@@ -94,6 +94,8 @@ flutter:
     - assets/image3.png
     - assets/image4.png
     - assets/awareness.png
+    - assets/awareness.svg
+    - assets/report.svg
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg

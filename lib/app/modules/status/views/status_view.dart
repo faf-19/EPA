@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/status_controller.dart';
 import 'package:eprs/app/widgets/custom_app_bar.dart';
-import 'package:eprs/app/modules/bottom_nav/views/bottom_nav_view.dart';
+// Bottom nav is provided by the app shell; don't import it in this page.
 
 class StatusView extends GetView<StatusController> {
   const StatusView({super.key});
@@ -10,12 +10,12 @@ class StatusView extends GetView<StatusController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
-      appBar: const CustomAppBar(
-        title: 'Complain Status',
-        subtitle: 'Help improve your community',
-        showBack: true,
-      ),
+        backgroundColor: const Color(0xFFF5F5F5),
+        appBar: const CustomAppBar(
+          title: 'Complain Status',
+          subtitle: 'Help improve your community',
+          showBack: true,
+        ),
       body: SafeArea(
         child: Column(
           children: [
@@ -108,7 +108,6 @@ class StatusView extends GetView<StatusController> {
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavBar(),
     );
   }
 
