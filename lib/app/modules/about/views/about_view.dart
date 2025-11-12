@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 
 import '../controllers/about_controller.dart';
 import 'package:eprs/app/widgets/custom_app_bar.dart';
-import 'package:eprs/app/modules/bottom_nav/views/bottom_nav_view.dart';
+import 'package:eprs/app/modules/bottom_nav/widgets/bottom_nav_footer.dart';
 
 class AboutView extends GetView<AboutController> {
   const AboutView({super.key});
@@ -75,7 +75,7 @@ class AboutView extends GetView<AboutController> {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavBar(),
+      bottomNavigationBar: const BottomNavBarFooter(),
     );
   }
 
