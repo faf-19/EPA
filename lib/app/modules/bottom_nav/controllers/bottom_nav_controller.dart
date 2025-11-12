@@ -26,4 +26,18 @@ class BottomNavController extends GetxController {
   void resetToHome() {
     currentIndex.value = 0;
   }
+
+  Future<bool> onWillPop() async {
+    // Always navigate to home if not already there
+    if (currentIndex.value != 0) {
+      resetToHome(); // Go back to Home tab
+      return false; // Prevent default back behavior (don't exit app)
+    }
+    // Only allow exit if already on Home page
+    return true; // Exit app if already on Home
+  }
+
+  void changeTabIndex(int index) {
+    currentIndex.value = index;
+  }
 }

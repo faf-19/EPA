@@ -1,27 +1,68 @@
+import 'package:eprs/app/modules/awareness/views/awareness_view.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import '../../../routes/app_pages.dart';
 import '../controllers/bottom_nav_controller.dart';
+import '../../home/views/home_view.dart';
 import '../../office/views/office_view.dart';
+import '../../status/views/status_view.dart';
+import '../../setting/views/setting_view.dart';
+// Import bindings so we can register controllers when the shell is created
+import '../../home/bindings/home_binding.dart';
+import '../../office/bindings/office_binding.dart';
+import '../../awareness/bindings/awareness_binding.dart';
+import '../../status/bindings/status_binding.dart';
+import '../../setting/bindings/setting_binding.dart';
 
-class BottomNavBar extends StatelessWidget {
+class BottomNavBar extends StatefulWidget {
   BottomNavBar({super.key});
 
-  final BottomNavController controller = Get.put(
-    BottomNavController(),
-    permanent: true,
-  );
+  @override
+  State<BottomNavBar> createState() => _BottomNavBarState();
+}
+
+class _BottomNavBarState extends State<BottomNavBar> {
+  late final BottomNavController controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Register the BottomNavController permanently
+    controller = Get.put(
+      BottomNavController(),
+      permanent: true,
+    );
+
+    // Ensure page-level controllers are registered before pages build.
+    // This mirrors what route-level bindings would normally do when
+    // navigating to each page. Registering here avoids "Controller not found"
+    // errors when the shell instantiates pages directly.
+    HomeBinding().dependencies();
+    OfficeBinding().dependencies();
+    AwarenessBinding().dependencies();
+    StatusBinding().dependencies();
+    SettingBinding().dependencies();
+  }
 
   static const Color _activeColor = Color(0xFF1EA04A);
   static const Color _inactiveColor = Colors.white70;
 
-  // ✅ Single source of tab configuration (scalable for big apps)
   final List<_NavItemData> _items = const [
-    _NavItemData(icon: Icons.home_outlined, label: "Home", route: Routes.HOME),
-    _NavItemData(icon: Icons.map_outlined, label: "Office", route: Routes.OFFICE),
-    _NavItemData(icon: Icons.people_outline, label: "Community", route: Routes.REPORT),
-    _NavItemData(icon: Icons.monitor_heart_outlined, label: "Status", route: Routes.STATUS),
-    _NavItemData(icon: Icons.person_outline, label: "Profile", route: Routes.SETTING),
+    _NavItemData(icon: Icons.home_outlined, label: "Home"),
+    _NavItemData(icon: Icons.map_outlined, label: "Office"),
+    _NavItemData(icon: Icons.people_outline, label: "Community"),
+    _NavItemData(icon: Icons.monitor_heart_outlined, label: "Status"),
+    _NavItemData(icon: Icons.person_outline, label: "Profile"),
+  ];
+
+  // Pages are created normally; controllers for these pages are registered
+  // in initState via their bindings so the pages can safely call Get.find().
+  final List<Widget> _pages = const [
+    HomeView(),
+    OfficeView(),
+    AwarenessView(),
+    StatusView(),
+    SettingView(),
   ];
 
   Widget _buildNavItem(BuildContext context, int index) {
@@ -32,21 +73,7 @@ class BottomNavBar extends StatelessWidget {
 
       return InkWell(
         borderRadius: BorderRadius.circular(16),
-        onTap: () {
-          controller.changePage(index);
-
-          // Routing logic — use offAllNamed for main tab pages
-          switch (data.route) {
-            case Routes.HOME:
-              Get.offAllNamed(Routes.HOME);
-              break;
-            case Routes.OFFICE:
-              Get.to(() => const OfficeView());
-              break;
-            default:
-              Get.toNamed(data.route);
-          }
-        },
+        onTap: () => controller.changePage(index),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 4.0),
           child: Column(
@@ -85,34 +112,42 @@ class BottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final media = MediaQuery.of(context);
-    final double bottomInset = media.padding.bottom;
-    final double navBarHeight = 70 + bottomInset;
+    const double navBarHeight = 70;
 
-    return SafeArea(
-      top: false,
-      child: Container(
-        height: navBarHeight,
-        decoration: const BoxDecoration(
-          color: _activeColor,
-          borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(22),
-            bottomRight: Radius.circular(22),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black26,
-              blurRadius: 6,
-              offset: Offset(0, -2),
+    return WillPopScope(
+      onWillPop: controller.onWillPop,
+      child: Obx(() => Scaffold(
+            body: IndexedStack(
+              index: controller.currentIndex.value,
+              children: _pages,
             ),
-          ],
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: List.generate(
-            _items.length,
-            (index) => Expanded(
-              child: _buildNavItem(context, index),
+          bottomNavigationBar: SafeArea(
+            top: false,
+            child: Container(
+              height: navBarHeight,
+              decoration: const BoxDecoration(
+                color: _activeColor,
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(15),
+                  bottomRight: Radius.circular(15),
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 6,
+                    offset: Offset(0, -2),
+                  ),
+                ],
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: List.generate(
+                  _items.length,
+                  (index) => Expanded(
+                    child: _buildNavItem(context, index),
+                  ),
+                ),
+              ),
             ),
           ),
         ),
@@ -121,15 +156,12 @@ class BottomNavBar extends StatelessWidget {
   }
 }
 
-// Data model for cleaner scaling
 class _NavItemData {
   final IconData icon;
   final String label;
-  final String route;
 
   const _NavItemData({
     required this.icon,
     required this.label,
-    required this.route,
   });
 }

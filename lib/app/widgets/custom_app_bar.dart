@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:eprs/app/modules/bottom_nav/controllers/bottom_nav_controller.dart';
 
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final String title;
@@ -32,7 +33,21 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                 if (showBack)
                   IconButton(
                     icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    onPressed: () => Get.back(),
+                    onPressed: () {
+                      // If we're inside BottomNavBar, always reset to home
+                      // This ensures consistent behavior: back button always goes to home
+                      try {
+                        if (Get.isRegistered<BottomNavController>()) {
+                          final navController = Get.find<BottomNavController>();
+                          navController.resetToHome();
+                          return; // Don't call Get.back()
+                        }
+                      } catch (e) {
+                        // Controller not found, fall back to normal back navigation
+                      }
+                      // Only use Get.back() if not in BottomNavBar context
+                      Get.back();
+                    },
                   ),
 
                 const SizedBox(width: 4),

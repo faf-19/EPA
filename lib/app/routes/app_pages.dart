@@ -13,7 +13,8 @@ import '../modules/contact_us/views/contact_us_view.dart';
 import '../modules/faq/bindings/faq_binding.dart';
 import '../modules/faq/views/faq_view.dart';
 import '../modules/home/bindings/home_binding.dart';
-import '../modules/home/views/home_view.dart';
+// HomeView is referenced inside the BottomNavBar's pages list; no direct import needed here.
+import '../modules/bottom_nav/views/bottom_nav_view.dart';
 import '../modules/language/bindings/language_binding.dart';
 import '../modules/language/views/language_view.dart';
 import '../modules/office/bindings/office_binding.dart';
@@ -59,7 +60,14 @@ class AppPages {
       page: () => const LanguageView(),
       binding: LanguageBinding(),
     ),
-    GetPage(name: _Paths.HOME, page: () => HomeView(), binding: HomeBinding()),
+    // Use the BottomNavBar as the app shell for the HOME route so the
+    // bottom navigation is shown once and each tab's view is rendered inside
+    // the shell's IndexedStack. Keep HomeBinding to register HomeController.
+    GetPage(
+      name: _Paths.HOME,
+      page: () => BottomNavBar(),
+      binding: HomeBinding(),
+    ),
     GetPage(
       name: _Paths.OFFICE,
       page: () => const OfficeView(),
@@ -104,10 +112,7 @@ class AppPages {
       page: () => const AwarenessView(),
       binding: AwarenessBinding(),
     ),
-    GetPage(
-      name: _Paths.LOGIN,
-      page: () => LoginOverlay(),
-    ),
+    GetPage(name: _Paths.LOGIN, page: () => LoginOverlay()),
     // GetPage(
     //   name: _Paths.LOGIN,
     //   page: () => const LoginView(),

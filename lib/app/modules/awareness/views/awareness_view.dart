@@ -2,7 +2,7 @@ import 'package:eprs/app/modules/bottom_nav/controllers/bottom_nav_controller.da
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/awareness_controller.dart';
-import 'package:eprs/app/modules/bottom_nav/views/bottom_nav_view.dart';
+// BottomNavBar provided by app shell; do not include here to prevent recursion.
 
 class AwarenessView extends GetView<AwarenessController> {
   const AwarenessView({super.key});
@@ -58,7 +58,6 @@ class AwarenessView extends GetView<AwarenessController> {
                         children: [
                           GestureDetector(
                             onTap: () { 
-                              Get.back(); 
                               Get.find<BottomNavController>().resetToHome();
                               },
                             child: const Icon(
@@ -243,7 +242,7 @@ class AwarenessView extends GetView<AwarenessController> {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavBar(),
+      // Bottom nav provided by app shell; remove the nested bar here.
     );
   }
 }

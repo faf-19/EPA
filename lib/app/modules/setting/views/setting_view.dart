@@ -1,5 +1,5 @@
 import 'package:eprs/app/modules/about/views/about_view.dart';
-import 'package:eprs/app/modules/bottom_nav/views/bottom_nav_view.dart';
+// Bottom nav is provided by the app shell; don't import it here to avoid recursion.
 import 'package:eprs/app/modules/contact_us/views/contact_us_view.dart';
 import 'package:eprs/app/modules/faq/views/faq_view.dart';
 import 'package:eprs/app/modules/setting/views/privacy_policy_view.dart';
@@ -9,6 +9,7 @@ import '../../../widgets/custom_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/setting_controller.dart';
+import 'package:eprs/app/routes/app_pages.dart';
 
 class SettingView extends GetView<SettingController> {
   const SettingView({super.key});
@@ -46,10 +47,10 @@ class SettingView extends GetView<SettingController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(
-        title: 'Setting',
-        subtitle: 'Help improve your community',
-      ),
+        appBar: const CustomAppBar(
+          title: 'Setting',
+          subtitle: 'Help improve your community',
+        ),
 
       body: SafeArea(
         child: Padding(
@@ -128,7 +129,7 @@ class SettingView extends GetView<SettingController> {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavBar(),
+      // BottomNavBar is provided by the top-level shell; remove 
     );
   }
 }
