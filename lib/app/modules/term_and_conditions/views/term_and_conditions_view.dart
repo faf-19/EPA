@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 
 import '../controllers/term_and_conditions_controller.dart';
 import 'package:eprs/app/widgets/custom_app_bar.dart';
-import 'package:eprs/app/modules/bottom_nav/views/bottom_nav_view.dart';
+import 'package:eprs/app/modules/bottom_nav/widgets/bottom_nav_footer.dart';
 
 class TermAndConditionsView extends GetView<TermAndConditionsController> {
   const TermAndConditionsView({super.key});
@@ -129,7 +129,7 @@ class TermAndConditionsView extends GetView<TermAndConditionsController> {
           ),
         ),
       ),
-  bottomNavigationBar: BottomNavBar(),
+      bottomNavigationBar: const BottomNavBarFooter(),
     );
   }
 
