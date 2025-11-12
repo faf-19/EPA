@@ -1,5 +1,4 @@
 // BottomNavBar is provided by the app shell; don't import it here to avoid recursion.
-import 'package:eprs/app/modules/bottom_nav/controllers/bottom_nav_controller.dart';
 import 'package:eprs/app/routes/app_pages.dart';
 import 'package:eprs/app/widgets/custom_app_bar.dart';
 import 'package:flutter/material.dart';
@@ -30,6 +29,7 @@ class OfficeView extends GetView<OfficeController> {
         appBar: const CustomAppBar(
           title: 'Offices',
           subtitle: 'Help improve your community',
+          forceHomeOnBack: true,
         ),
         body: SafeArea(
           child: Padding(

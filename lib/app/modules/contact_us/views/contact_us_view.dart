@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 
 import '../controllers/contact_us_controller.dart';
 import 'package:eprs/app/widgets/custom_app_bar.dart';
-import 'package:eprs/app/modules/bottom_nav/views/bottom_nav_view.dart';
+import 'package:eprs/app/modules/bottom_nav/widgets/bottom_nav_footer.dart';
 
 class ContactUsView extends GetView<ContactUsController> {
   const ContactUsView({super.key});
@@ -141,7 +141,7 @@ class ContactUsView extends GetView<ContactUsController> {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavBar(),
+      bottomNavigationBar: const BottomNavBarFooter(),
     );
   }
 }

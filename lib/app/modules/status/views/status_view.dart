@@ -15,6 +15,7 @@ class StatusView extends GetView<StatusController> {
           title: 'Complain Status',
           subtitle: 'Help improve your community',
           showBack: true,
+          forceHomeOnBack: true,
         ),
       body: SafeArea(
         child: Column(
