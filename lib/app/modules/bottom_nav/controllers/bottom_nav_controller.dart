@@ -1,9 +1,16 @@
 import 'package:get/get.dart';
+import 'package:eprs/app/routes/app_pages.dart';
 
 class BottomNavController extends GetxController {
   RxInt currentIndex = 0.obs;
 
   void changePage(int index) {
+    if (Get.currentRoute != Routes.HOME) {
+      Get.until((route) {
+        final name = route.settings.name;
+        return name == Routes.HOME || route.isFirst;
+      });
+    }
     currentIndex.value = index;
   }
 
@@ -37,7 +44,5 @@ class BottomNavController extends GetxController {
     return true; // Exit app if already on Home
   }
 
-  void changeTabIndex(int index) {
-    currentIndex.value = index;
-  }
+  void changeTabIndex(int index) => changePage(index);
 }

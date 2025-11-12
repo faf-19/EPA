@@ -1,10 +1,3 @@
-import 'package:eprs/app/modules/about/views/about_view.dart';
-// Bottom nav is provided by the app shell; don't import it here to avoid recursion.
-import 'package:eprs/app/modules/contact_us/views/contact_us_view.dart';
-import 'package:eprs/app/modules/faq/views/faq_view.dart';
-import 'package:eprs/app/modules/setting/views/privacy_policy_view.dart';
-import 'package:eprs/app/modules/term_and_conditions/views/term_and_conditions_view.dart';
-import '../../language/views/language_view.dart';
 import '../../../widgets/custom_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -99,22 +92,22 @@ class SettingView extends GetView<SettingController> {
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     children: [
                       _buildOptionTile(Icons.language, 'App Language',
-                          () => Get.to(const LanguageView())),
+                          () => Get.toNamed(Routes.LANGUAGE)),
                       _buildDivider(),
                       _buildOptionTile(Icons.help_outline,
-                          'Frequently Asked Questions', () => Get.to(const FaqView())),
+                          'Frequently Asked Questions', () => Get.toNamed(Routes.FAQ)),
                       _buildDivider(),
                       _buildOptionTile(Icons.contact_support_outlined, 'Contact Us',
-                          () => Get.to(const ContactUsView())),
+                          () => Get.toNamed(Routes.CONTACT_US)),
                       _buildDivider(),
                       _buildOptionTile(Icons.privacy_tip_outlined, 'Privacy Policy',
-                          () => Get.to(const PrivacyPolicyView())),
+                          () => Get.toNamed(Routes.Privacy_Policy)),
                       _buildDivider(),
                       _buildOptionTile(Icons.description_outlined,
-                          'Term and Conditions', () => Get.to(const TermAndConditionsView())),
+                          'Term and Conditions', () => Get.toNamed(Routes.TERM_AND_CONDITIONS)),
                       _buildDivider(),
                       _buildOptionTile(Icons.info_outline, 'About EPA v1.1',
-                          () => Get.to(const AboutView())),
+                          () => Get.toNamed(Routes.ABOUT)),
                       _buildDivider(),
                       _buildOptionTile(Icons.star_rate_outlined, 'Rate Us', () {}),
                       _buildDivider(),
