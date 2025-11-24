@@ -112,7 +112,7 @@ class AppPages {
       page: () => const AwarenessView(),
       binding: AwarenessBinding(),
     ),
-    GetPage(name: _Paths.LOGIN, page: () => LoginOverlay()),
+    GetPage(name: _Paths.LOGIN, page: () => const LoginOverlay()),
     // GetPage(
     //   name: _Paths.LOGIN,
     //   page: () => const LoginView(),

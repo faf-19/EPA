@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../../../core/theme/app_colors.dart';
 class BottomNavItemData {
   final IconData icon;
   final String label;
@@ -10,7 +10,7 @@ class BottomNavItemData {
   });
 }
 
-const Color bottomNavActiveColor = Color(0xFF1EA04A);
+const Color bottomNavActiveColor = AppColors.primary;
 const Color bottomNavInactiveColor = Colors.white70;
 
 const List<BottomNavItemData> bottomNavItems = [

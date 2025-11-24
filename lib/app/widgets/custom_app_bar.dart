@@ -1,3 +1,4 @@
+import 'package:eprs/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:eprs/app/modules/bottom_nav/controllers/bottom_nav_controller.dart';
@@ -25,7 +26,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       preferredSize: Size.fromHeight(height),
       child: AppBar(
         automaticallyImplyLeading: false,
-        backgroundColor: const Color(0xFF387E53),
+        backgroundColor: AppColors.primary,
         elevation: 0,
         flexibleSpace: SafeArea(
           child: Padding(
@@ -35,7 +36,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
               children: [
                 if (showBack)
                   IconButton(
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
+                    icon: const Icon(Icons.arrow_back, color: AppColors.onPrimary),
                     onPressed: () {
                       final navigator = Navigator.of(context);
 
@@ -76,7 +77,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                         style: const TextStyle(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
-                          color: Colors.white,
+                          color: AppColors.onPrimary,
                         ),
                       ),
                       if (subtitle != null) ...[
@@ -85,7 +86,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                           subtitle!,
                           style: const TextStyle(
                             fontSize: 14,
-                            color: Colors.white,
+                            color: AppColors.onPrimary,
                           ),
                           overflow: TextOverflow.ellipsis,
                         ),

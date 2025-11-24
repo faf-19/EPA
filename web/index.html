@@ -32,6 +32,18 @@
     <title>eprs</title>
     <link rel="manifest" href="manifest.json" />
 
+    <!-- Prevent runtime remote font fetches in restricted networks by preferring
+         local/system fonts. This reduces attempts to download Google-hosted
+         fonts (e.g. Noto Sans Math) which can fail behind some firewalls. -->
+    <style>
+      html, body {
+        /* Prefer system fonts and fallbacks to avoid external font fetches */
+        font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Helvetica Neue", Arial, sans-serif !important;
+      }
+      /* Also make sure Flutter's canvaskit/font css won't try to override */
+      @media (prefers-reduced-motion: reduce) { }
+    </style>
+
     <!-- <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places"></script> -->
   </head>
   <body>

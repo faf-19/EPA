@@ -15,7 +15,7 @@ import '../../status/bindings/status_binding.dart';
 import '../../setting/bindings/setting_binding.dart';
 
 class BottomNavBar extends StatefulWidget {
-  BottomNavBar({super.key});
+  const BottomNavBar({super.key});
 
   @override
   State<BottomNavBar> createState() => _BottomNavBarState();
