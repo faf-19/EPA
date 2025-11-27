@@ -1,4 +1,3 @@
-import 'package:eprs/app/modules/bottom_nav/views/bottom_nav_view.dart';
 import 'package:flutter/material.dart';
 //import 'package:intl/intl.dart';
 
@@ -160,7 +159,6 @@ class ReportSuccessView extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavBar(),
     );
   }
 }

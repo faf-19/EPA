@@ -18,8 +18,6 @@ class BottomNavBarFooter extends StatelessWidget {
         decoration: const BoxDecoration(
           color: bottomNavActiveColor,
           borderRadius: BorderRadius.only(
-            bottomLeft: Radius.circular(15),
-            bottomRight: Radius.circular(15),
           ),
           boxShadow: [
             BoxShadow(

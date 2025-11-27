@@ -1,5 +1,6 @@
 import 'package:eprs/app/modules/awareness/views/awareness_view.dart';
 import 'package:eprs/app/modules/bottom_nav/widgets/bottom_nav_footer.dart';
+import 'package:eprs/app/modules/report/bindings/report_binding.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/bottom_nav_controller.dart';
@@ -12,6 +13,7 @@ import '../../home/bindings/home_binding.dart';
 import '../../office/bindings/office_binding.dart';
 import '../../awareness/bindings/awareness_binding.dart';
 import '../../status/bindings/status_binding.dart';
+import '../../status/controllers/status_controller.dart';
 import '../../setting/bindings/setting_binding.dart';
 
 class BottomNavBar extends StatefulWidget {
@@ -22,62 +24,78 @@ class BottomNavBar extends StatefulWidget {
 }
 
 class _BottomNavBarState extends State<BottomNavBar> {
-  late final BottomNavController controller;
+  // Avoid storing controller in a late field to make hot-reload safe.
+  BottomNavController get _controller {
+    if (Get.isRegistered<BottomNavController>()) {
+      return Get.find<BottomNavController>();
+    }
+    // If not registered, register a permanent instance.
+    return Get.put(BottomNavController(), permanent: true);
+  }
 
   @override
   void initState() {
     super.initState();
 
-    if (Get.isRegistered<BottomNavController>()) {
-      controller = Get.find<BottomNavController>();
-    } else {
-      // Register the BottomNavController permanently
-      controller = Get.put(
-        BottomNavController(),
-        permanent: true,
-      );
-
-      // Ensure page-level controllers are registered before pages build.
-      // This mirrors what route-level bindings would normally do when
-      // navigating to each page. Registering here avoids "Controller not found"
-      // errors when the shell instantiates pages directly.
-      HomeBinding().dependencies();
-      OfficeBinding().dependencies();
-      AwarenessBinding().dependencies();
-      StatusBinding().dependencies();
-      SettingBinding().dependencies();
+    // Ensure a BottomNavController exists and register page bindings.
+    final c = _controller;
+    HomeBinding().dependencies();
+    OfficeBinding().dependencies();
+    AwarenessBinding().dependencies();
+    StatusBinding().dependencies();
+    // Ensure the StatusController is instantiated now so seeded data and
+    // `onInit` runs before the tab widget builds. This avoids the "No reports"
+    // symptom when the controller factory is registered but not yet created.
+    try {
+      Get.find<StatusController>();
+    } catch (_) {
+      // If not created yet, calling find will create it because the binding
+      // registered a lazyPut factory above.
+      // Swallow errors to avoid breaking init if some other lifecycle occurs.
     }
+    SettingBinding().dependencies();
+    ReportBinding().dependencies();
+    // Access navigatorKeys so they are initialized.
+    c.navigatorKeys;
   }
 
-  // Pages are created normally; controllers for these pages are registered
-  // in initState via their bindings so the pages can safely call Get.find().
-  final List<Widget> _pages = const [
-    HomeView(),
-    OfficeView(),
-    AwarenessView(),
-    StatusView(),
-    SettingView(),
-  ];
+  // (tab builders are created inside build to be hot-reload safe)
 
   @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (didPop, result) async {
-        if (didPop) return;
-        final shouldPop = await controller.onWillPop();
-        if (shouldPop) {
-          Get.back(result: result);
-        }
+    final controller = _controller;
+    // Create tab builders locally to avoid referencing stale fields after hot-reload.
+    final tabBuilders = [
+      () => HomeView(),
+      () => OfficeView(),
+      () => AwarenessView(),
+      () => StatusView(),
+      () => SettingView(),
+    ];
+
+    return WillPopScope(
+      onWillPop: () async {
+        final shouldExit = await controller.onWillPop();
+        return shouldExit;
       },
-      child: Obx(() => Scaffold(
-            body: IndexedStack(
-              index: controller.currentIndex.value,
-              children: _pages,
-            ),
+      child: Obx(() {
+        final currentIndex = controller.currentIndex.value;
+        return Scaffold(
+          body: IndexedStack(
+            index: currentIndex,
+            children: List.generate(tabBuilders.length, (i) {
+              return Navigator(
+                key: controller.navigatorKeys[i],
+                onGenerateRoute: (settings) => MaterialPageRoute(
+                  builder: (_) => tabBuilders[i](),
+                  settings: settings,
+                ),
+              );
+            }),
+          ),
           bottomNavigationBar: const BottomNavBarFooter(),
-        ),
-      ),
+        );
+      }),
     );
   }
 }

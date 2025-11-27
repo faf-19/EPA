@@ -107,33 +107,45 @@ class _OfficeViewState extends State<OfficeView> {
             ),
             SafeArea(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 15),
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Material(
-                      elevation: 6,
-                      borderRadius: BorderRadius.circular(18),
-                      child: TextField(
-                        controller: _searchController,
-                        focusNode: _searchFocus,
-                        textInputAction: TextInputAction.search,
-                        onChanged: controller.updateSearch,
-                        onSubmitted: (value) {
-                          final query = value.trim().toLowerCase();
-                          final match = controller.offices.firstWhere(
-                            (office) =>
-                                office.name.toLowerCase().contains(query) ||
-                                office.address.toLowerCase().contains(query),
-                            orElse: () => controller.offices.first,
-                          );
-                          _focusOffice(match);
-                        },
-                        decoration: InputDecoration(
-                          hintText: 'Search for Location',
-                          prefixIcon: const Icon(Icons.search, color: Color(0xFF9BA5B1)),
-                          border: InputBorder.none,
-                          contentPadding: const EdgeInsets.symmetric(vertical: 14),
+                    // Constrain the search field width to avoid it spanning full
+                    // width on large screens and to control its visual size.
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: ConstrainedBox(
+                        constraints: const BoxConstraints(maxWidth: 420),
+                        child: Material(
+                          elevation: 6,
+                          borderRadius: BorderRadius.circular(8),
+                          child: SizedBox(
+                            height: 40,
+                            child: TextField(
+                              controller: _searchController,
+                              focusNode: _searchFocus,
+                              textInputAction: TextInputAction.search,
+                              onChanged: controller.updateSearch,
+                              onSubmitted: (value) {
+                                final query = value.trim().toLowerCase();
+                                final match = controller.offices.firstWhere(
+                                  (office) =>
+                                      office.name.toLowerCase().contains(query) ||
+                                      office.address.toLowerCase().contains(query),
+                                  orElse: () => controller.offices.first,
+                                );
+                                _focusOffice(match);
+                              },
+                              decoration: const InputDecoration(
+                                hintText: 'Search for Location',
+                                hintStyle: TextStyle(fontSize: 14),
+                                prefixIcon: Icon(Icons.search, color: Color(0xFF9BA5B1), size: 14),
+                                border: InputBorder.none,
+                                contentPadding: EdgeInsets.symmetric(vertical: 12, horizontal: 12),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -216,7 +228,7 @@ class _SuggestionCard extends StatelessWidget {
     return Material(
       color: Colors.white,
       elevation: 4,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(5),
       child: child,
     );
   }

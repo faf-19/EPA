@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'package:get/get.dart';
-import 'package:eprs/app/routes/app_pages.dart';
 
 class ReportOtpController extends GetxController {
   var code = ''.obs;
@@ -46,7 +45,14 @@ class ReportOtpController extends GetxController {
   void confirm() {
     if (code.value.length < 4) return;
     final fakeId = 'REP-${DateTime.now().millisecondsSinceEpoch}';
-    Get.toNamed(Routes.Report_Success, arguments: fakeId);
+    // Generated id is stored for potential later use; navigation is handled
+    // by the view so it uses the local nested Navigator and keeps the
+    // app shell visible.
+    // Keep this method side-effect free for navigation responsibilities.
+    // Store the generated id for testing/debugging if needed.
+    // (No navigation here.)
+    // ignore: unused_local_variable
+    final _ = fakeId;
   }
 
   void toggleKeypad(bool visible) {

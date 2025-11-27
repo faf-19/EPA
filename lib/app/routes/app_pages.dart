@@ -127,7 +127,13 @@ class AppPages {
       name: _Paths.REPORT,
       page: () {
         final arg = Get.arguments;
-        final reportType = (arg is String) ? arg : '';
+        String reportType = '';
+        if (arg is String) {
+          reportType = arg;
+        } else if (arg is Map && arg['reportType'] is String) {
+          reportType = arg['reportType'];
+        }
+        
         return ReportView(reportType: reportType);
       },
       binding: ReportBinding(),

@@ -1,6 +1,8 @@
+import 'package:eprs/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:eprs/app/widgets/custom_app_bar.dart';
+import 'package:eprs/app/modules/report/views/report_success_view.dart';
 import '../controllers/report_otp_controller.dart';
 
 class ReportOtpView extends GetView<ReportOtpController> {
@@ -113,10 +115,20 @@ class ReportOtpView extends GetView<ReportOtpController> {
                           height: 52,
                           child: ElevatedButton(
                             onPressed: controller.code.value.length == 4
-                                ? controller.confirm
+                                ? () {
+                                    final fakeId = 'REP-${DateTime.now().millisecondsSinceEpoch}';
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (_) => ReportSuccessView(
+                                          reportId: fakeId,
+                                          dateTime: DateTime.now(),
+                                        ),
+                                      ),
+                                    );
+                                  }
                                 : null,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF12A84A),
+                              backgroundColor: AppColors.primary,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),

@@ -1,8 +1,17 @@
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:eprs/app/routes/app_pages.dart';
 
 class BottomNavController extends GetxController {
   RxInt currentIndex = 0.obs;
+  
+  /// Navigator keys for nested navigators used by each tab.
+  /// Using nested navigators keeps the root shell (and its Scaffold)
+  /// intact while allowing per-tab inner navigation stacks.
+  final List<GlobalKey<NavigatorState>> navigatorKeys = List.generate(
+    5,
+    (_) => GlobalKey<NavigatorState>(),
+  );
 
   void changePage(int index) {
     if (Get.currentRoute != Routes.HOME) {

@@ -15,9 +15,9 @@ class SettingView extends GetView<SettingController> {
         height: 40,
         decoration: BoxDecoration(
           color: const Color(0xFFF1F6F4),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(icon, color: const Color(0xFF1EA04A)),
+        child: Icon(icon, color: Colors.black),
       ),
       title: Text(
         title,
@@ -47,7 +47,7 @@ class SettingView extends GetView<SettingController> {
 
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 10.0),
           child: Column(
             children: [
               const SizedBox(height: 12),
@@ -67,7 +67,7 @@ class SettingView extends GetView<SettingController> {
                       borderRadius: BorderRadius.circular(20),
                     ),
                     child:
-                        const Icon(Icons.person_outline, color: Color(0xFF1EA04A)),
+                        const Icon(Icons.person_outline, color: Colors.black),
                   ),
                   title: const Text('Guest',
                       style: TextStyle(fontWeight: FontWeight.w600)),

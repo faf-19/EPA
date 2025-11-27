@@ -1,3 +1,4 @@
+import 'package:eprs/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/status_controller.dart';
@@ -12,7 +13,7 @@ class StatusView extends GetView<StatusController> {
     return Scaffold(
         backgroundColor: const Color(0xFFF5F5F5),
         appBar: const CustomAppBar(
-          title: 'Complain Status',
+          title: 'Report Status',
           subtitle: 'Help improve your community',
           showBack: true,
           forceHomeOnBack: true,
@@ -56,55 +57,52 @@ class StatusView extends GetView<StatusController> {
 
             const SizedBox(height: 16),
 
-            // List of Complaints
+            // List of Complaints (reactive: shows filteredReports from controller)
             Expanded(
-              child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                children: [
-                  _complaintCard(
-                    title: 'Family Registration',
-                    status: 'Pending',
-                    statusColor: Colors.grey,
-                    description:
-                        'I saw a man throwing trash on the street near [location]. I am reporting this so that appropriate action can be taken to keep our community clean. I saw a man throwing trash on the street near [location]. I am reporting this so...',
-                    date: 'June 29, 2025 12:00 AM',
-                  ),
-                  _complaintCard(
-                    title: 'Resident ID',
-                    status: 'In Progress',
-                    statusColor: Colors.orange,
-                    description:
-                        'I saw a man throwing trash on the street near [location]. I am reporting this so that appropriate action can be taken to keep our community clean. I saw a man throwing trash on the street near [location]. I am reporting this so...',
-                    date: 'June 29, 2025 12:00 AM',
-                  ),
-                  _complaintCard(
-                    title: 'Resident Transfer',
-                    status: 'Completed',
-                    statusColor: const Color(0xFF16A34A),
-                    description:
-                        'I saw a man throwing trash on the street near [location]. I am reporting this so that appropriate action can be taken to keep our community clean. I saw a man throwing trash on the street near [location]. I am reporting this so...',
-                    date: 'June 29, 2025 12:00 AM',
-                  ),
-                  _complaintCard(
-                    title: 'Unmarried',
-                    status: 'Completed',
-                    statusColor: const Color(0xFF16A34A),
-                    description:
-                        'I saw a man throwing trash on the street near [location]. I am reporting this so that appropriate action can be taken to keep our community clean. I saw a man throwing trash on the street near [location]. I am reporting this so...',
-                    date: 'June 29, 2025 12:00 AM',
-                  ),
-                  // Rejected item (shows after scrolling)
-                  _complaintCard(
-                    title: 'Rejected Case',
-                    status: 'Rejected',
-                    statusColor: Colors.red,
-                    description:
-                        'This report was reviewed and rejected due to insufficient evidence. If you have additional information, please re-submit with clearer details or photos.',
-                    date: 'June 30, 2025 09:15 AM',
-                  ),
-                  const SizedBox(height: 80),
-                ],
-              ),
+              child: Obx(() {
+                final reports = controller.filteredReports;
+                if (reports.isEmpty) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Text('No reports found', style: TextStyle(color: Colors.grey[600])),
+                    ),
+                  );
+                }
+                return ListView.separated(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  itemCount: reports.length + 1, // extra spacer at end
+                  separatorBuilder: (_, __) => const SizedBox(height: 0),
+                  itemBuilder: (context, index) {
+                    if (index == reports.length) return const SizedBox(height: 80);
+                    final r = reports[index];
+                    // convert status to a color for badge
+                    Color statusColor;
+                    switch (r.status) {
+                      case 'Pending':
+                        statusColor = Colors.grey;
+                        break;
+                      case 'In Progress':
+                        statusColor = Colors.orange;
+                        break;
+                      case 'Completed':
+                        statusColor = const Color(0xFF16A34A);
+                        break;
+                      case 'Rejected':
+                        statusColor = Colors.red;
+                        break;
+                      default:
+                        statusColor = Colors.grey;
+                    }
+                    return _complaintCard(
+                      title: r.title,
+                      status: r.status,
+                      description: r.description,
+                      date: r.date,
+                    );
+                  },
+                );
+              }),
             ),
           ],
         ),
@@ -137,92 +135,155 @@ class StatusView extends GetView<StatusController> {
     );
   }
 
-  // Complaint Card
+  // Complaint Card — updated to match the design in the provided image
   Widget _complaintCard({
-    required String title,
-    required String status,
-    required Color statusColor,
-    required String description,
-    required String date,
-  }) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(color: Colors.black12.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4)),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Title and status
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE7F8E9),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(Icons.notifications_none, color: Color(0xFF16A34A)),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 17,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.black87,
-                  ),
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                decoration: BoxDecoration(
-                  color: statusColor.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Text(
-                  status,
-                  style: TextStyle(
-                    color: statusColor,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 10),
+  required String title,
+  required String status,
+  required String description,
+  required String date,
+}) {
+  // STATUS COLORS
+  Color pillBg;
+  Color pillText;
 
-          // Description
-          Text(
-            description,
-            style: const TextStyle(
-              color: Colors.black54,
-              fontSize: 14,
-              height: 1.4,
-            ),
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-          ),
-
-          const SizedBox(height: 12),
-
-          // Date
-          Align(
-            alignment: Alignment.bottomRight,
-            child: Text(
-              date,
-              style: const TextStyle(color: Colors.grey, fontSize: 13),
-            ),
-          ),
-        ],
-      ),
-    );
+  switch (status.toLowerCase()) {
+    case "in progress":
+      pillBg = const Color(0xFFF7941D);
+      pillText = AppColors.onPrimary;
+      break;
+    case "completed":
+      pillBg = const Color(0xFF00A650);
+      pillText = AppColors.onPrimary;
+      break;
+    case "rejected":
+      pillBg = const Color(0xFFFF383C);
+      pillText = AppColors.onPrimary;
+      break;
+    default: // Pending
+      pillBg = const Color(0xFFAAAAAA);
+      pillText = AppColors.onPrimary; {}
   }
+
+  const outerGlow = Color(0xFFE8F1FF);
+
+  return Container(
+    margin: const EdgeInsets.only(bottom: 16),
+    padding: const EdgeInsets.only(top: 16, bottom: 16, left: 13, right: 13),
+    decoration: BoxDecoration(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(8),
+      boxShadow: [
+        BoxShadow(
+          color: outerGlow.withOpacity(0.8),
+          blurRadius: 18,
+          spreadRadius: 1,
+          offset: const Offset(0, 4),
+        ),
+      ],
+    ),
+    child: Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // TITLE + STATUS BADGE
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF0B1220),
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: pillBg,
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Text(
+                status,
+                style: TextStyle(
+                  color: pillText,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 5),
+
+        // DATE + TIME ROW
+        Row(
+          children: [
+            // DATE BOX
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEFF8EF),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.calendar_today,
+                  color: Color(0xFF1E9B47), size: 16),
+            ),
+            const SizedBox(width: 10),
+
+            // DATE TEXT
+            Text(
+              "Sep 12, 2022", // use your parsed date
+              style: const TextStyle(
+                color: Color(0xFF5A5F66),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+
+            const SizedBox(width: 20),
+
+            // TIME BOX
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEFF8EF),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.av_timer_sharp,
+                  color: Color(0xFF1E9B47), size: 16),
+            ),
+            const SizedBox(width: 10),
+
+            // TIME TEXT
+            Text(
+              "09:10:22 PM",
+              style: const TextStyle(
+                color: Color(0xFF5A5F66),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 12),
+
+        // DESCRIPTION
+        Text(
+          description,
+          maxLines: 3,
+          overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: Color(0xFF8A8F95),
+            fontSize: 14,
+            height: 1.4,
+          ),
+        ),
+      ],
+    ),
+  );
+}
 }

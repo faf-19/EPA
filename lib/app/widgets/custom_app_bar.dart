@@ -10,6 +10,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final double height;
   final bool showBack;
   final bool forceHomeOnBack;
+  final bool showHelp;
+  final String? helpRoute;
 
   const CustomAppBar({
     super.key,
@@ -18,6 +20,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.height = 64,
     this.showBack = true,
     this.forceHomeOnBack = false,
+    this.showHelp = false,
+    this.helpRoute,
   });
 
   @override
@@ -66,31 +70,57 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
                 const SizedBox(width: 4),
 
-                Flexible(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
+                // Title area with optional inline help icon (keeps icon next to title)
+                Expanded(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.onPrimary,
+                      Expanded(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              title,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.onPrimary,
+                              ),
+                            ),
+                            if (subtitle != null) ...[
+                              const SizedBox(height: 2),
+                              Text(
+                                subtitle!,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  color: AppColors.onPrimary,
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ]
+                          ],
                         ),
                       ),
-                      if (subtitle != null) ...[
-                        const SizedBox(height: 2),
-                        Text(
-                          subtitle!,
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: AppColors.onPrimary,
-                          ),
-                          overflow: TextOverflow.ellipsis,
+
+                      if (showHelp)
+                        IconButton(
+                          icon: const Icon(Icons.help_outlined, color: AppColors.onPrimary),
+                          onPressed: () {
+                            if (helpRoute != null) {
+                              Get.toNamed(helpRoute!);
+                              return;
+                            }
+                            // default help destination: FAQ, fallback to Contact Us
+                            try {
+                              Get.toNamed(Routes.FAQ);
+                              return;
+                            } catch (_) {
+                              Get.toNamed(Routes.CONTACT_US);
+                            }
+                          },
                         ),
-                      ]
                     ],
                   ),
                 ),
