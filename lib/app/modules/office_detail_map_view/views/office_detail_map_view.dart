@@ -1,4 +1,3 @@
-import 'package:eprs/app/modules/bottom_nav/views/bottom_nav_view.dart';
 import 'package:eprs/app/widgets/custom_app_bar.dart';
 import 'package:flutter/material.dart';
 
@@ -122,7 +121,6 @@ class _OfficeDetailMapViewState extends State<OfficeDetailMapView> {
           )
         ],
       ),
-      bottomNavigationBar: BottomNavBar(),
     );
   }
 }

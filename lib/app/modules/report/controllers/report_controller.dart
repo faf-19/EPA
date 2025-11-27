@@ -1,8 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:get/get.dart';
 import 'package:geocoding/geocoding.dart';
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ReportController extends GetxController {
   // Location & form state for the report view
@@ -18,6 +21,8 @@ class ReportController extends GetxController {
   final selectedRegion = 'Select Region'.obs;
   final selectedZone = 'Select Zone'.obs;
   final selectedWoreda = 'Select Woreda'.obs;
+  final pickedImages = <File>[].obs;
+
 
   /// Whether a location fetch is in progress.
   final isDetecting = false.obs;
@@ -27,6 +32,10 @@ class ReportController extends GetxController {
 
   /// Last detected Position.
   final detectedPosition = Rxn<Position>();
+
+  /// Whether the phone-field toggle is ON (separate from location auto-detect).
+  /// This prevents the phone toggle from triggering the location toggle.
+  final phoneOptIn = false.obs;
 
   @override
   void onInit() {
@@ -44,6 +53,31 @@ class ReportController extends GetxController {
 
   void increment() => count.value++;
 
+  final ImagePicker _picker = ImagePicker();
+
+  Future<void> pickFromCamera() async {
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 70,
+      maxWidth: 1280,
+    );
+
+    if (image != null) {
+      pickedImages.add(File(image.path));
+    }
+  }
+
+  Future<void> pickFromGallery() async {
+    final XFile? image = await _picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 70,
+      maxWidth: 1280,
+    );
+
+    if (image != null) {
+      pickedImages.add(File(image.path));
+    }
+  }
   /// Toggle automatic detection. When turned on we attempt to detect location.
   void toggleAutoDetect(bool value) {
     autoDetectLocation.value = value;
@@ -51,6 +85,11 @@ class ReportController extends GetxController {
     if (value) {
       detectLocation();
     }
+  }
+
+  /// Toggle the phone-field option independently from location detection.
+  void togglePhoneOptIn(bool value) {
+    phoneOptIn.value = value;
   }
 
   /// Orchestrates permission request, position fetch and reverse-geocoding.
@@ -78,23 +117,40 @@ class ReportController extends GetxController {
       // Reverse geocode to a human-readable placemark. If that fails, fall back
       // to lat/lng string.
       try {
-        final places = await placemarkFromCoordinates(position.latitude, position.longitude);
-        if (places.isNotEmpty) {
-          final p = places.first;
-          final parts = <String>[];
-          if ((p.name ?? '').isNotEmpty) parts.add(p.name!);
-          if ((p.subLocality ?? '').isNotEmpty) parts.add(p.subLocality!);
-          if ((p.locality ?? '').isNotEmpty) parts.add(p.locality!);
-          if ((p.administrativeArea ?? '').isNotEmpty) parts.add(p.administrativeArea!);
-          if ((p.country ?? '').isNotEmpty) parts.add(p.country!);
-          detectedAddress.value = parts.join(', ');
+        // On web reverse-geocoding via the geocoding package can be unreliable
+        // (permissions, browser limitations, or upstream API differences). Use
+        // a safe fallback: skip reverse lookup on web and show coordinates.
+        if (kIsWeb) {
+          detectedAddress.value =
+              'Lat ${position.latitude.toStringAsFixed(5)}, Lng ${position.longitude.toStringAsFixed(5)}';
         } else {
-          detectedAddress.value = 'Lat ${position.latitude.toStringAsFixed(5)}, Lng ${position.longitude.toStringAsFixed(5)}';
+          final places = await placemarkFromCoordinates(position.latitude, position.longitude);
+          // Defensive: some platforms/implementations may return an empty list.
+          if (places.isNotEmpty) {
+            final p = places.first;
+            final parts = <String>[];
+            final name = p.name ?? '';
+            final subLocality = p.subLocality ?? '';
+            final locality = p.locality ?? '';
+            final admin = p.administrativeArea ?? '';
+            final country = p.country ?? '';
+            if (name.isNotEmpty) parts.add(name);
+            if (subLocality.isNotEmpty) parts.add(subLocality);
+            if (locality.isNotEmpty) parts.add(locality);
+            if (admin.isNotEmpty) parts.add(admin);
+            if (country.isNotEmpty) parts.add(country);
+            detectedAddress.value = parts.join(', ');
+          } else {
+            // No usable placemark — fall back to latitude/longitude string.
+            detectedAddress.value =
+                'Lat ${position.latitude.toStringAsFixed(5)}, Lng ${position.longitude.toStringAsFixed(5)}';
+          }
         }
       } catch (e, st) {
         // Reverse geocoding failed — log and fall back to coordinates.
         detectionError.value = 'Unable to resolve address';
-        detectedAddress.value = 'Lat ${position.latitude.toStringAsFixed(5)}, Lng ${position.longitude.toStringAsFixed(5)}';
+        detectedAddress.value =
+            'Lat ${position.latitude.toStringAsFixed(5)}, Lng ${position.longitude.toStringAsFixed(5)}';
         // keep a developer-visible log
         print('reverseGeocode error: $e\n$st');
       }

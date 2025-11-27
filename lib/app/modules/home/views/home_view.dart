@@ -5,12 +5,14 @@
 // recursive widget construction (the shell instantiates these pages).
 import 'package:eprs/app/modules/home/controllers/home_controller.dart';
 import 'package:eprs/app/modules/home/widgets/carousel_banner.dart';
+import 'package:eprs/core/enums/report_type_enum.dart';
 import 'package:eprs/core/theme/app_colors.dart';
 // quick_actions and status_checker widgets were intentionally removed from
 // this view to match the requested layout; keep their files intact in the
 // project in case other screens use them.
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:eprs/app/routes/app_pages.dart';
 
 class HomeView extends GetView<HomeController> {
   const HomeView({super.key});
@@ -33,7 +35,7 @@ class HomeView extends GetView<HomeController> {
       }
     } catch (_) {}
     return Scaffold(
-      backgroundColor: const Color(0xFFFAFAFA),
+      backgroundColor: const Color(0xFFFCFCFC),
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
@@ -48,17 +50,24 @@ class HomeView extends GetView<HomeController> {
                     carouselController: controller.carouselCtrl,
                     controller: controller,
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
 
-                  // Check Your Status section (custom card)
                   _buildCheckStatusSection(),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 18),
 
                   // Report grid
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text('Report', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF134E4A))),
+                      const Text(
+                        'Report',
+                        style: TextStyle(
+                          fontFamily: 'Montserrat',
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.accentBlue,
+                        ),
+                      ),
                       const SizedBox(height: 12),
                       GridView.count(
                         crossAxisCount: 2,
@@ -67,11 +76,11 @@ class HomeView extends GetView<HomeController> {
                         mainAxisSpacing: 12,
                         crossAxisSpacing: 12,
                         childAspectRatio: 1.6,
-                        children: const [
-                          _ReportTile(image: "assets/pollution.png"),
-                          _ReportTile(image: "assets/waste.png"),
-                          _ReportTile(image: "assets/chemical.png"),
-                          _ReportTile(image: "assets/sound.png"),
+                        children: [
+                          _ReportTile(image: "assets/pollution.png", url: Routes.REPORT, reportType: ReportTypeEnum.pollution.name),
+                          _ReportTile(image: "assets/waste.png", url: Routes.REPORT, reportType: ReportTypeEnum.waste.name),
+                          _ReportTile(image: "assets/chemical.png", url: Routes.REPORT, reportType: ReportTypeEnum.chemical.name),
+                          _ReportTile(image: "assets/sound.png", url: Routes.REPORT, reportType: ReportTypeEnum.sound.name),
                         ],
                       ),
                     ],
@@ -92,8 +101,9 @@ class HomeView extends GetView<HomeController> {
 
 class _ReportTile extends StatelessWidget {
   final String image;
-
-  const _ReportTile({required this.image});
+  final String url;
+  final String reportType;
+  const _ReportTile({required this.image, required this.url, required this.reportType});
 
   @override
   Widget build(BuildContext context) {
@@ -102,7 +112,15 @@ class _ReportTile extends StatelessWidget {
       elevation: 2,
       borderRadius: BorderRadius.circular(8),
       child: InkWell(
-        onTap: () {},
+        onTap: () {
+          // Push onto the nearest Navigator (the nested navigator created by the shell)
+          Get.toNamed("/report", arguments: {'reportType': reportType}  );
+          // Navigator.of(context).push(
+          //   MaterialPageRoute(
+          //     builder: (_) => ReportView(reportType: reportType),
+          //   ),
+          // );
+        },
         borderRadius: BorderRadius.circular(8),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(8),
@@ -135,56 +153,40 @@ class _ReportTile extends StatelessWidget {
               height: 20,
               child: Text(
                 'Welcome, Yeshak Mesfin',
-                // style: AppFonts.bodyText1Style.copyWith(
-                //   fontWeight: AppFonts.medium,
-                //   color: AppColors.primary,
-                // ),
+                style: TextStyle(
+                  color: AppColors.accentBlue,
+                  fontWeight: FontWeight.w500,
+                ),
                 overflow: TextOverflow.ellipsis, // Handle text overflow
                 maxLines: 1,
               ),
             ),
           ),
 
-          // Notification icon positioned at specified location
-          Positioned(
-            top: 20,
-            right: 50, // Position from right edge
-            child: SizedBox(
-              width: 18,
-              height: 18,
-              child: IconButton(
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(), // Remove default constraints
-                icon: Icon(
-                  Icons.notifications,
-                  color: AppColors.primary,
-                  size: 18,
-                ),
-                onPressed: () {
-                  Get.snackbar('Notifications', 'Coming soon!');
-                },
-              ),
-            ),
-          ),
+          
 
           // Language selector positioned at specified location
           Positioned(
             top: 10, // Adjusted for smaller header
             right: 0, // Position from right edge
             child: SizedBox(
-              width: 45,
+              width: 60,
               height: 35,
               child: Padding(
                 padding: const EdgeInsets.all(10),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(
-                      Icons.language,
-                      color: AppColors.primary,
-                      size: 18,
+                    Text(
+                      'Eng',
+                      style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 10,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF073C59),
+                      ),
                     ),
-                    const SizedBox(width: 5),
+                    SizedBox(width: 5),
                     // Text(
                     //   'En',
                     //   style: TextStyle(
@@ -212,10 +214,12 @@ class _ReportTile extends StatelessWidget {
         // "Check Your Status" title
         Text(
           'Check Your Status',
+
           style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w700,
-            color: AppColors.tertiary,
+            fontFamily: 'Montserrat',
+            fontSize: 14,
+            fontWeight: FontWeight.w800,
+            color: AppColors.accentBlue,
           ),
         ),
         const SizedBox(height: 16),
@@ -226,7 +230,7 @@ class _ReportTile extends StatelessWidget {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(8),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,9 +239,9 @@ class _ReportTile extends StatelessWidget {
               Text(
                 'Enter Code',
                 style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.tertiary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w400,
+                  color: AppColors.accentBlue,
                 ),
               ),
               const SizedBox(height: 12),
@@ -249,7 +253,7 @@ class _ReportTile extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 decoration: BoxDecoration(
                   color: Colors.grey.shade200,
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(5),
                 ),
                 child: Row(
                   children: [
@@ -259,8 +263,8 @@ class _ReportTile extends StatelessWidget {
                           border: InputBorder.none,
                           hintText: 'MB XXXXXXXX ET',
                           hintStyle: TextStyle(
-                            color: AppColors.tertiary.withOpacity(0.7),
-                            fontSize: 14,
+                              color: AppColors.accentBlue,
+                            fontSize: 12,
                           ),
                           contentPadding: const EdgeInsets.symmetric(vertical: 12),
                         ),

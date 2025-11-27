@@ -1,9 +1,12 @@
-import 'package:eprs/app/modules/bottom_nav/views/bottom_nav_view.dart';
-import 'package:eprs/app/routes/app_pages.dart';
 import 'package:eprs/app/widgets/custom_app_bar.dart';
+import 'package:eprs/core/enums/report_type_enum.dart';
+import 'package:eprs/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 
 import 'package:get/get.dart';
+import 'package:flutter/foundation.dart';
+import 'package:eprs/app/routes/app_pages.dart';
+import 'package:eprs/app/modules/report/views/report_otp_view.dart';
 
 import '../controllers/report_controller.dart';
 
@@ -14,12 +17,40 @@ class ReportView extends GetView<ReportController> {
 
   @override
   Widget build(BuildContext context) {
+    // Category data used by the dropdown in the form. Declared here so
+    // they're regular statements (not placed inside the widget list).
+    final categories = [
+      'Select report type',
+      'Environmental Pollution',
+      'Urban Waste',
+      'Environmental Compliance',
+      'Chemical & Hazardous Waste',
+    ];
+
+    final areas = [
+      'Select land use type',
+      'Environmental Pollution',
+      'Urban Waste',
+      'Environmental Compliance',
+      'Chemical & Hazardous Waste',
+    ];
+
+    final categoryInitial =
+        reportType.isNotEmpty && categories.contains(reportType)
+        ? reportType
+        : categories.first;
+    final categoryNotifier = ValueNotifier<String?>(categoryInitial);
+    // Separate notifier for the area dropdown so it doesn't reuse the
+    // category notifier (avoids cross-updates when the user selects an area).
+    final areasNotifier = ValueNotifier<String?>(areas.first);
 
     return Scaffold(
       appBar: CustomAppBar(
         title: 'Report Issue',
         subtitle: 'Help improve your community',
         showBack: true,
+        showHelp: true,
+        helpRoute: Routes.FAQ,
       ),
       backgroundColor: const Color(0xFFF6F6FA),
       body: SafeArea(
@@ -28,6 +59,190 @@ class ReportView extends GetView<ReportController> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // --- Insert this Card ABOVE the Evidence Card ---
+
+              if (reportType != ReportTypeEnum.sound.name)
+              Card(
+                color: const Color(0xFFFFFFFF),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 6,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Report Category',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      ValueListenableBuilder<String?>(
+                        valueListenable: categoryNotifier,
+                        builder: (context, value, _) {
+                          return DropdownButtonFormField<String>(
+                            initialValue: value == categories.first ? null : value,
+                            items: categories
+                                .map(
+                                  (c) => DropdownMenuItem(
+                                    value: c == categories.first ? null : c,
+                                    child: Text(
+                                      c,
+                                      style: TextStyle(
+                                        color: c == categories.first
+                                            ? Colors.grey.shade500
+                                            : Colors.black87,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (v) {
+                              // persist locally — replace with controller logic if desired:
+                              categoryNotifier.value = v ?? categories.first;
+                              // Example wiring if your controller exposes a setter:
+                              // controller.setReportCategory?.call(v);
+                              // or if controller.selectedReportType exists:
+                              // controller.selectedReportType.value = v ?? '';
+                            },
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Colors.grey,
+                                  width: 0.2,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Color(0xFFD4D4D4),
+                                  width: 0.4, // 👉 thinner
+                                ),
+                              ),
+
+                              // 🔹 Focused border (also missing)
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Color(0xFF1E9B47), // green
+                                  width: 0.8, // slightly thicker for visibility
+                                ),
+                              ),
+                              filled: true,
+                              fillColor: Colors.white,
+                              hintText: categories.first,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              
+
+              const SizedBox(height: 18),
+
+              if (reportType == ReportTypeEnum.sound.name)
+              Card(
+                color: const Color(0xFFFFFFFF),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 6,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Area',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      ValueListenableBuilder<String?>(
+                        valueListenable: areasNotifier,
+                        builder: (context, value, _) {
+                          return DropdownButtonFormField<String>(
+                            initialValue: value == areas.first ? null : value,
+                            items: areas
+                                .map(
+                                  (c) => DropdownMenuItem(
+                                    value: c == areas.first ? null : c,
+                                    child: Text(
+                                      c,
+                                      style: TextStyle(
+                                        color: c == areas.first
+                                            ? Colors.grey.shade500
+                                            : Colors.black87,
+                                      ),
+                                    ),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (v) {
+                              // persist locally — replace with controller logic if desired:
+                              areasNotifier.value = v ?? areas.first;
+                              // Example wiring if your controller exposes a setter:
+                              // controller.setReportCategory?.call(v);
+                              // or if controller.selectedReportType exists:
+                              // controller.selectedReportType.value = v ?? '';
+                            },
+                            decoration: InputDecoration(
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Colors.grey,
+                                  width: 0.2,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Color(0xFFD4D4D4),
+                                  width: 0.4, // 👉 thinner
+                                ),
+                              ),
+
+                              // 🔹 Focused border (also missing)
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Color(0xFF1E9B47), // green
+                                  width: 0.8, // slightly thicker for visibility
+                                ),
+                              ),
+                              filled: true,
+                              fillColor: Colors.white,
+                              hintText: areas.first,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 18),
+
               // Evidence Card
               Card(
                 color: const Color(0xFFFFFFFF),
@@ -78,30 +293,89 @@ class ReportView extends GetView<ReportController> {
                         childAspectRatio: 1.9,
                         children: [
                           _evidenceTile(
+                            context,
                             Icons.camera_alt_outlined,
-                            'Take Photo',
+                            'Photo',
                           ),
+                          reportType != ReportTypeEnum.sound.name ?
                           _evidenceTile(
+                            context,
                             Icons.videocam_outlined,
-                            'Record Video',
-                          ),
+                            'Take Video',
+                          ) :
+                          _evidenceTile(
+                            context,
+                            Icons.keyboard_voice_outlined,
+                            'Voice Note',
+                          )
                         ],
                       ),
                       const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 10,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFEFF7F0),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text(
-                          '1 File(s) Uploaded',
-                          style: TextStyle(color: Colors.black87),
-                        ),
-                      ),
+                      Obx(() {
+                        final imgs = controller.pickedImages;
+                        final count = imgs.length;
+                        if (count == 0) {
+                          return Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 10,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFEFF7F0),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Text('No files uploaded', style: TextStyle(color: Colors.black87)),
+                          );
+                        }
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              height: 84,
+                              child: ListView.separated(
+                                scrollDirection: Axis.horizontal,
+                                itemCount: count,
+                                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                                itemBuilder: (ctx, i) {
+                                  final file = imgs[i];
+                                  return Stack(
+                                    children: [
+                                      ClipRRect(
+                                        borderRadius: BorderRadius.circular(8),
+                                        child: SizedBox(
+                                          width: 120,
+                                          height: 84,
+                                          child: kIsWeb
+                                              ? Image.network(file.path, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.image))
+                                              : Image.file(file, fit: BoxFit.cover),
+                                        ),
+                                      ),
+                                      Positioned(
+                                        top: 4,
+                                        right: 4,
+                                        child: GestureDetector(
+                                          onTap: () => controller.pickedImages.removeAt(i),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              color: Colors.black54,
+                                              borderRadius: BorderRadius.circular(16),
+                                            ),
+                                            padding: const EdgeInsets.all(4),
+                                            child: const Icon(Icons.close, size: 14, color: Colors.white),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                },
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text('$count File(s) Uploaded', style: const TextStyle(color: Colors.black87)),
+                          ],
+                        );
+                      }),
                     ],
                   ),
                 ),
@@ -222,12 +496,13 @@ class ReportView extends GetView<ReportController> {
 
               // Description Card
               Card(
+                color: AppColors.onPrimary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
                 elevation: 6,
                 child: Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.fromLTRB(13, 12, 13, 12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -240,15 +515,32 @@ class ReportView extends GetView<ReportController> {
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
-                        maxLines: 6,
+                        maxLines: 3,
                         decoration: InputDecoration(
                           hintText:
                               'Describe the issue in detail. What exactly is the Problem? When did you notice it?',
+                          hintStyle: TextStyle(fontSize: 13),
                           fillColor: const Color(0xFFF3F7F4),
                           filled: true,
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            borderSide: BorderSide.none,
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Color(0xFFD4D4D4)),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                              color: Color(0xFFD4D4D4),
+                              width: 0.4, // 👉 thinner
+                            ),
+                          ),
+
+                          // 🔹 Focused border (also missing)
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                              color: Color(0xFF1E9B47), // green
+                              width: 0.8, // slightly thicker for visibility
+                            ),
                           ),
                         ),
                       ),
@@ -261,6 +553,7 @@ class ReportView extends GetView<ReportController> {
 
               // Phone Number Card
               Card(
+                color: AppColors.onPrimary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -278,21 +571,59 @@ class ReportView extends GetView<ReportController> {
                         ),
                       ),
                       const SizedBox(height: 8),
-                      TextFormField(
-                        keyboardType: TextInputType.phone,
-                        decoration: InputDecoration(
-                          hintText: 'Enter Your Phone Number',
-                          filled: true,
-                          fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 14,
+                      // Place the phone field and the ON/OFF toggle side-by-side
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextFormField(
+                              keyboardType: TextInputType.phone,
+                              decoration: InputDecoration(
+                                hintText: 'Enter Your Phone Number',
+                                hintStyle: TextStyle(fontSize: 13),
+                                filled: true,
+                                fillColor: Colors.white,
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 14,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: const BorderSide(
+                                    color: Color(0xFFD4D4D4),
+                                    width: 0.5,
+                                  ),
+                                ),
+
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: Color(0xFFD4D4D4),
+                                    width: 0.4,
+                                  ),
+                                ),
+
+                                // Focused border
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: Color(0xFF1E9B47), // green
+                                    width: 0.8,
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide.none,
+                          const SizedBox(width: 12),
+                          // Keep the toggle compact and vertically centered
+                          Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Bind the phone toggle to a separate observable so it
+                              // doesn't trigger location auto-detect when toggled.
+                              _onOffToggle(bound: controller.phoneOptIn, onChanged: (v) => controller.togglePhoneOptIn(v)),
+                            ],
                           ),
-                        ),
+                        ],
                       ),
                     ],
                   ),
@@ -303,6 +634,7 @@ class ReportView extends GetView<ReportController> {
 
               // Time & Date Card
               Card(
+                color: AppColors.onPrimary,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
@@ -382,33 +714,86 @@ class ReportView extends GetView<ReportController> {
                 height: 52,
                 child: ElevatedButton(
                   onPressed: () {
-                    Get.toNamed(Routes.Report_Otp);
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const ReportOtpView()),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1EA04A),
+                    backgroundColor: AppColors.primary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
                   child: const Text(
                     'SEND',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontFamily: 'Montserrat',
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.onPrimary,
+                    ),
                   ),
                 ),
               ),
-
-              const SizedBox(height: 80), // give space for bottom nav
             ],
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavBar(),
     );
   }
 
-  Widget _evidenceTile(IconData icon, String label) {
+  Widget _evidenceTile(BuildContext ctx, IconData icon, String label) {
     return InkWell(
-      onTap: () {},
+      onTap: () async {
+        final choice = await showModalBottomSheet<int>(
+          context: ctx,
+          builder: (sheetCtx) {
+            return SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.camera_alt_outlined),
+                    title: const Text('Take Photo'),
+                    onTap: () => Navigator.of(sheetCtx).pop(1),
+                  ),
+                  ListTile(
+                    leading: const Icon(Icons.photo_library_outlined),
+                    title: const Text('Upload from Gallery'),
+                    onTap: () => Navigator.of(sheetCtx).pop(2),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            );
+          },
+        );
+
+        if (choice == 1 || choice == 2) {
+          // show a small progress indicator while the picker runs
+          showDialog(
+            context: ctx,
+            barrierDismissible: false,
+            builder: (_) => const Center(child: CircularProgressIndicator()),
+          );
+          try {
+            if (choice == 1) {
+              await controller.pickFromCamera();
+            } else {
+              await controller.pickFromGallery();
+            }
+            // optional: brief success feedback
+            Get.snackbar('Upload', 'File added', snackPosition: SnackPosition.BOTTOM);
+          } catch (e) {
+            Get.snackbar('Upload failed', e.toString(), snackPosition: SnackPosition.BOTTOM);
+          } finally {
+            // close the progress dialog
+            try {
+              Navigator.of(ctx, rootNavigator: true).pop();
+            } catch (_) {}
+          }
+        }
+      },
       child: LayoutBuilder(
         builder: (context, constraints) {
           // make the dashed box responsive to available width; keep a sensible min height
@@ -424,7 +809,7 @@ class ReportView extends GetView<ReportController> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(icon, size: 28, color: const Color(0xFF6B46FF)),
+                    Icon(icon, size: 28, color: const Color(0xFF63557F)),
                     const SizedBox(height: 8),
                     Text(label, style: const TextStyle(color: Colors.black87)),
                   ],
@@ -473,18 +858,30 @@ class ReportView extends GetView<ReportController> {
   }
 
   /// Custom rounded toggle with internal ON/OFF label to match the design.
-  Widget _onOffToggle() {
+  // Generic toggle widget. If [bound] is provided it will control that
+  // observable; otherwise it defaults to controlling the location auto-detect.
+  Widget _onOffToggle({RxBool? bound, void Function(bool)? onChanged}) {
     return Obx(() {
-      final isOn = controller.autoDetectLocation.value;
+      final rx = bound ?? controller.autoDetectLocation;
+      final isOn = rx.value;
       return GestureDetector(
-        onTap: () => controller.toggleAutoDetect(!isOn),
+        onTap: () {
+          final newVal = !isOn;
+          if (onChanged != null) {
+            onChanged(newVal);
+          } else if (bound != null) {
+            bound.value = newVal;
+          } else {
+            controller.toggleAutoDetect(newVal);
+          }
+        },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 220),
           width: 92,
           height: 36,
           padding: const EdgeInsets.symmetric(horizontal: 6),
           decoration: BoxDecoration(
-            color: isOn ? Colors.green : Colors.grey.shade300,
+            color: isOn ? AppColors.primary : Colors.grey.shade300,
             borderRadius: BorderRadius.circular(20),
           ),
           child: Stack(

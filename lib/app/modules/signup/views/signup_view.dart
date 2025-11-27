@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../controllers/signup_controller.dart';
-
+import 'package:eprs/core/theme/app_colors.dart';
 class SignUpOverlay extends StatefulWidget {
   const SignUpOverlay({super.key});
 
@@ -15,6 +15,7 @@ class _SignUpOverlayState extends State<SignUpOverlay> {
   final _phoneCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   final _nameCtrl = TextEditingController();
+  final _confirmPassCtrl = TextEditingController();
   bool _obscure = true;
   final bool _remember = false;
 
@@ -30,7 +31,7 @@ class _SignUpOverlayState extends State<SignUpOverlay> {
     final controller = Get.put(SignUpController());
     final size = MediaQuery.of(context).size;
 
-    const greenColor = Color(0xFF00A650);
+    const greenColor = AppColors.primary;
     const blueColor = Color(0xFF0047BA);
     const darkText = Color(0xFF0F3B52);
     const hintText = Color(0xFF9BA5B1);
@@ -83,7 +84,7 @@ class _SignUpOverlayState extends State<SignUpOverlay> {
                     style: GoogleFonts.poppins(
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
-                      color: darkText,
+                      color: AppColors.secondary,
                     ),
                   ),
                   const SizedBox(height: 26),
@@ -180,8 +181,40 @@ class _SignUpOverlayState extends State<SignUpOverlay> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 16),
 
+                  TextField(
+                    controller: _confirmPassCtrl,
+                    obscureText: _obscure,
+                    style: GoogleFonts.poppins(fontSize: 15),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      prefixIcon: const Icon(Icons.lock_outline, color: darkText),
+                      hintText: 'Password Confirmation',
+                      hintStyle: GoogleFonts.poppins(color: hintText, fontSize: 15),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                          color: hintText,
+                        ),
+                        onPressed: () => setState(() => _obscure = !_obscure),
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: borderColor, width: 1.2),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: borderColor, width: 1.2),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: greenColor, width: 1.4),
+                      ),
+                    ),
+                  ),
                   
                   const SizedBox(height: 80),
 

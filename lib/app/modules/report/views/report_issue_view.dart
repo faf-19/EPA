@@ -1,8 +1,6 @@
-import 'package:eprs/app/routes/app_pages.dart';
 import 'package:eprs/app/widgets/custom_app_bar.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get.dart';
-import 'package:eprs/app/modules/bottom_nav/views/bottom_nav_view.dart';
+import 'package:eprs/app/modules/report/views/report_view.dart';
 
 class ReportIssueView extends StatelessWidget {
   const ReportIssueView({super.key});
@@ -55,14 +53,17 @@ class ReportIssueView extends StatelessWidget {
                         crossAxisSpacing: 12,
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        children: categories.map((c) {
+                          children: categories.map((c) {
                           return _CategoryButton(
                             icon: c['icon'] as IconData,
                             label: c['label'] as String,
                             onTap: () {
-                              print(c['label']);
-                              // simple placeholder action - you can replace with navigation
-                              Get.toNamed(Routes.REPORT, arguments: c['label']);
+                              final label = c['label'] as String;
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => ReportView(reportType: label),
+                                ),
+                              );
                             },
                           );
                         }).toList(),
@@ -78,7 +79,6 @@ class ReportIssueView extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: BottomNavBar(),
     );
   }
 }
