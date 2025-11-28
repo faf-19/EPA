@@ -1,3 +1,4 @@
+import 'package:eprs/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -71,17 +72,13 @@ class _BottomNavItemButton extends StatelessWidget {
               AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 padding: const EdgeInsets.all(6),
-                decoration: BoxDecoration(
-                  color: isSelected ? Colors.white : Colors.transparent,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  data.icon,
-                  color: isSelected
-                      ? bottomNavActiveColor
-                      : bottomNavInactiveColor,
-                  size: isSelected ? 22 : 24,
-                ),
+                
+                child: Image.asset(
+                  'assets/navbarIcons/${data.icon}',
+                  color: isSelected ? AppColors.onPrimary : bottomNavInactiveColor,
+                  width: isSelected ? 22 : 24,
+                  height: isSelected ? 22 : 24,
+                )
               ),
               const SizedBox(height: 4),
               Text(

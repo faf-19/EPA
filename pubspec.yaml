@@ -103,6 +103,7 @@ flutter:
     - assets/waste.png
     - assets/chemical.png
     - assets/sound.png
+    - assets/navbarIcons/
   fonts:
     - family: Montserrat
       fonts:
