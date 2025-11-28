@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
+
+/// Bottom navigation uses PNG assets. Place PNG files under
+/// `assets/navbarIcons/` (for example `home.png`, `office.png`, ...)
+/// and add the folder to `pubspec.yaml` under `flutter.assets:`.
 class BottomNavItemData {
-  final IconData icon;
+  /// Asset filename (without the `assets/navbarIcons/` prefix).
+  final String icon;
   final String label;
 
   const BottomNavItemData({
@@ -11,13 +16,13 @@ class BottomNavItemData {
 }
 
 const Color bottomNavActiveColor = AppColors.primary;
-const Color bottomNavInactiveColor = Colors.white70;
+const Color bottomNavInactiveColor = Color(0xFFA0E4FF);
 
 const List<BottomNavItemData> bottomNavItems = [
-  BottomNavItemData(icon: Icons.home_outlined, label: 'Home'),
-  BottomNavItemData(icon: Icons.map_outlined, label: 'Office'),
-  BottomNavItemData(icon: Icons.people_outline, label: 'Awareness'),
-  BottomNavItemData(icon: Icons.monitor_heart_outlined, label: 'Status'),
-  BottomNavItemData(icon: Icons.person_outline, label: 'Settings'),
+  BottomNavItemData(icon: 'home.png', label: 'Home'),
+  BottomNavItemData(icon: 'office.png', label: 'Office'),
+  BottomNavItemData(icon: 'awareness.png', label: 'Awareness'),
+  BottomNavItemData(icon: 'status.png', label: 'Status'),
+  BottomNavItemData(icon: 'profile.png', label: 'Settings'),
 ];
 

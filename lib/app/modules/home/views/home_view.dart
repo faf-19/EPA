@@ -109,7 +109,7 @@ class _ReportTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: AppColors.onPrimary,
-      elevation: 2,
+      elevation: 1,
       borderRadius: BorderRadius.circular(8),
       child: InkWell(
         onTap: () {
@@ -141,7 +141,7 @@ class _ReportTile extends StatelessWidget {
       child: Container(
         width: double.infinity,
         height: 60, // Reduced height for header
-        padding: const EdgeInsets.symmetric(horizontal: 14), // Add horizontal padding
+        padding: const EdgeInsets.symmetric(horizontal: 10), // Add horizontal padding
         child: Stack(
           children: [
           // Welcome Yeshak Mesfin text positioned at top left
@@ -168,25 +168,19 @@ class _ReportTile extends StatelessWidget {
           // Language selector positioned at specified location
           Positioned(
             top: 10, // Adjusted for smaller header
-            right: 0, // Position from right edge
+            right: -15, // Shift slightly more to the right edge
             child: SizedBox(
               width: 60,
               height: 35,
-              child: Padding(
-                padding: const EdgeInsets.all(10),
-                child: Row(
+              child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      'Eng',
-                      style: TextStyle(
-                        fontFamily: 'Montserrat',
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                        color: const Color(0xFF073C59),
-                      ),
+                    Icon(
+                      Icons.language,
+                      color: AppColors.accentBlue,
+                      size: 20,
                     ),
-                    SizedBox(width: 5),
+                    
                     // Text(
                     //   'En',
                     //   style: TextStyle(
@@ -198,7 +192,7 @@ class _ReportTile extends StatelessWidget {
                     // ),
                   ],
                 ),
-              ),
+            
             ),
           ),
           ],
@@ -213,7 +207,7 @@ class _ReportTile extends StatelessWidget {
       children: [
         // "Check Your Status" title
         Text(
-          'Check Your Status',
+          'Check Report Status',
 
           style: TextStyle(
             fontFamily: 'Montserrat',
@@ -222,7 +216,7 @@ class _ReportTile extends StatelessWidget {
             color: AppColors.accentBlue,
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 10),
         
         // White card with rounded corners containing the search section
         Container(

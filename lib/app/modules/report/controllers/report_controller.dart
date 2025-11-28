@@ -1,200 +1,262 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:eprs/core/theme/app_colors.dart';
 import 'package:get/get.dart';
 import 'package:geocoding/geocoding.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ReportController extends GetxController {
-  // Location & form state for the report view
+  // State
   final count = 0.obs;
 
-  /// When true, the app should attempt to auto-detect the user's location.
   final autoDetectLocation = true.obs;
-  
-  /// Human-readable detected address (or placeholder) shown when auto-detect is enabled.
   final detectedAddress = 'Tap Search Location\nAddis Ababa | N.L | W-1'.obs;
 
-  // Manual selection values (used when autoDetectLocation is false)
   final selectedRegion = 'Select Region'.obs;
   final selectedZone = 'Select Zone'.obs;
   final selectedWoreda = 'Select Woreda'.obs;
+
   final pickedImages = <File>[].obs;
 
-
-  /// Whether a location fetch is in progress.
   final isDetecting = false.obs;
-
-  /// Last error message (if any).
   final detectionError = RxnString();
-
-  /// Last detected Position.
   final detectedPosition = Rxn<Position>();
 
-  /// Whether the phone-field toggle is ON (separate from location auto-detect).
-  /// This prevents the phone toggle from triggering the location toggle.
   final phoneOptIn = false.obs;
+
+  final selectedDate = Rxn<DateTime>();
+  final selectedTime = Rxn<TimeOfDay>();
+
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void onInit() {
     super.onInit();
-    // If auto-detect is enabled by default, start detection asynchronously.
     if (autoDetectLocation.value) {
-      // do not await here (onInit must remain synchronous) — detectLocation will
-      // perform async permission requests and fetching internally and update
-      // reactive fields when ready.
       detectLocation();
     }
   }
 
+  // ----------------------------
+  // DATE PICKER
+  // ----------------------------
+  Future<void> pickDate(BuildContext context) async {
+    final now = DateTime.now();
+    final first = DateTime(now.year - 5);
+    final last = DateTime(now.year, now.month, now.day);
 
+    DateTime initial = selectedDate.value ?? now;
+    if (initial.isAfter(last)) initial = last;
 
-  void increment() => count.value++;
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: first,
+      lastDate: last,
+      builder: (ctx, child) {
+        return Theme(
+          data: Theme.of(ctx).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppColors.primary,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Colors.black87,
+            ),
+            dialogBackgroundColor: const Color(0xFFF6F6FA),
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.primary,
+              ),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
 
-  final ImagePicker _picker = ImagePicker();
+    if (picked != null) selectedDate.value = picked;
+  }
 
+  // ----------------------------
+  // TIME PICKER (CUSTOM AM/PM)
+  // ----------------------------
+  Future<void> pickTime(BuildContext context) async {
+    final initial = selectedTime.value ?? TimeOfDay.now();
+
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: initial,
+      builder: (ctx, child) {
+        return Theme(
+          data: Theme.of(ctx).copyWith(
+            colorScheme: ColorScheme.light(
+              primary: AppColors.primary,
+              onPrimary: Colors.white,
+              surface: Colors.white,
+              onSurface: Colors.black87,
+            ),
+
+            timePickerTheme: TimePickerThemeData(
+              backgroundColor: AppColors.onPrimary,
+              dialBackgroundColor: Colors.white,
+
+              // Custom AM/PM background (use plain Color for compatibility)
+              dayPeriodColor: AppColors.primary.withOpacity(0.12),
+
+              // Custom AM/PM text color
+              dayPeriodTextColor: AppColors.primary,
+
+              dayPeriodTextStyle: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+
+              // Hour/minute text color
+              hourMinuteTextColor: AppColors.onPrimary,
+            ),
+
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.primary,
+              ),
+            ),
+          ),
+
+          child: MediaQuery(
+            data: MediaQuery.of(ctx).copyWith(alwaysUse24HourFormat: false),
+            child: child!,
+          ),
+        );
+      },
+    );
+
+    if (picked != null) selectedTime.value = picked;
+  }
+
+  // ----------------------------
+  // IMAGE PICKING
+  // ----------------------------
   Future<void> pickFromCamera() async {
-    final XFile? image = await _picker.pickImage(
+    final XFile? img = await _picker.pickImage(
       source: ImageSource.camera,
       imageQuality: 70,
       maxWidth: 1280,
     );
-
-    if (image != null) {
-      pickedImages.add(File(image.path));
-    }
+    if (img != null) pickedImages.add(File(img.path));
   }
 
   Future<void> pickFromGallery() async {
-    final XFile? image = await _picker.pickImage(
+    final XFile? img = await _picker.pickImage(
       source: ImageSource.gallery,
       imageQuality: 70,
       maxWidth: 1280,
     );
-
-    if (image != null) {
-      pickedImages.add(File(image.path));
-    }
+    if (img != null) pickedImages.add(File(img.path));
   }
-  /// Toggle automatic detection. When turned on we attempt to detect location.
-  void toggleAutoDetect(bool value) {
-    autoDetectLocation.value = value;
+
+  // ----------------------------
+  // LOCATION LOGIC
+  // ----------------------------
+  void toggleAutoDetect(bool v) {
+    autoDetectLocation.value = v;
     detectionError.value = null;
-    if (value) {
-      detectLocation();
-    }
+    if (v) detectLocation();
   }
 
-  /// Toggle the phone-field option independently from location detection.
-  void togglePhoneOptIn(bool value) {
-    phoneOptIn.value = value;
+  void togglePhoneOptIn(bool v) {
+    phoneOptIn.value = v;
   }
 
-  /// Orchestrates permission request, position fetch and reverse-geocoding.
-  /// Updates [detectedAddress], [detectedPosition], [isDetecting] and
-  /// [detectionError] appropriately.
   Future<void> detectLocation({int timeoutSeconds = 12}) async {
     detectionError.value = null;
     isDetecting.value = true;
+
     try {
-      final ok = await _ensurePermission();
-      if (!ok) {
-        // Permission denied — leave the placeholder and show error.
+      final allowed = await _ensurePermission();
+      if (!allowed) {
         detectedAddress.value = 'Tap Search Location\nAddis Ababa | N.L | W-1';
         isDetecting.value = false;
         return;
       }
 
-      // Fetch current position with a reasonable timeout.
-      final position = await Geolocator.getCurrentPosition(
+      final pos = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       ).timeout(Duration(seconds: timeoutSeconds));
 
-      detectedPosition.value = position;
+      detectedPosition.value = pos;
 
-      // Reverse geocode to a human-readable placemark. If that fails, fall back
-      // to lat/lng string.
+      // Reverse geocode
       try {
-        // On web reverse-geocoding via the geocoding package can be unreliable
-        // (permissions, browser limitations, or upstream API differences). Use
-        // a safe fallback: skip reverse lookup on web and show coordinates.
         if (kIsWeb) {
           detectedAddress.value =
-              'Lat ${position.latitude.toStringAsFixed(5)}, Lng ${position.longitude.toStringAsFixed(5)}';
+              'Lat ${pos.latitude.toStringAsFixed(5)}, Lng ${pos.longitude.toStringAsFixed(5)}';
         } else {
-          final places = await placemarkFromCoordinates(position.latitude, position.longitude);
-          // Defensive: some platforms/implementations may return an empty list.
-          if (places.isNotEmpty) {
-            final p = places.first;
-            final parts = <String>[];
-            final name = p.name ?? '';
-            final subLocality = p.subLocality ?? '';
-            final locality = p.locality ?? '';
-            final admin = p.administrativeArea ?? '';
-            final country = p.country ?? '';
-            if (name.isNotEmpty) parts.add(name);
-            if (subLocality.isNotEmpty) parts.add(subLocality);
-            if (locality.isNotEmpty) parts.add(locality);
-            if (admin.isNotEmpty) parts.add(admin);
-            if (country.isNotEmpty) parts.add(country);
-            detectedAddress.value = parts.join(', ');
-          } else {
-            // No usable placemark — fall back to latitude/longitude string.
+          final places =
+              await placemarkFromCoordinates(pos.latitude, pos.longitude);
+
+          if (places.isEmpty) {
             detectedAddress.value =
-                'Lat ${position.latitude.toStringAsFixed(5)}, Lng ${position.longitude.toStringAsFixed(5)}';
+                'Lat ${pos.latitude.toStringAsFixed(5)}, Lng ${pos.longitude.toStringAsFixed(5)}';
+          } else {
+            final p = places.first;
+            final parts = [
+              p.name,
+              p.subLocality,
+              p.locality,
+              p.administrativeArea,
+              p.country
+            ].where((e) => e != null && e!.isNotEmpty).toList();
+
+            detectedAddress.value = parts.join(', ');
           }
         }
-      } catch (e, st) {
-        // Reverse geocoding failed — log and fall back to coordinates.
+      } catch (_) {
         detectionError.value = 'Unable to resolve address';
         detectedAddress.value =
-            'Lat ${position.latitude.toStringAsFixed(5)}, Lng ${position.longitude.toStringAsFixed(5)}';
-        // keep a developer-visible log
-        print('reverseGeocode error: $e\n$st');
+            'Lat ${pos.latitude.toStringAsFixed(5)}, Lng ${pos.longitude.toStringAsFixed(5)}';
       }
-    } on TimeoutException catch (e, st) {
-      detectionError.value = 'Location request timed out';
-      detectedAddress.value = 'Tap Search Location\nAddis Ababa | N.L | W-1';
-      print('detectLocation timeout: $e\n$st');
-    } catch (e, st) {
+    } catch (_) {
       detectionError.value = 'Could not detect location';
       detectedAddress.value = 'Tap Search Location\nAddis Ababa | N.L | W-1';
-      print('detectLocation error: $e\n$st');
     } finally {
       isDetecting.value = false;
     }
   }
 
-  /// Ensure location permission is granted. Returns true if permission is
-  /// available, false otherwise. Sets [detectionError] on denial.
   Future<bool> _ensurePermission() async {
     try {
-      bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
-      if (!serviceEnabled) {
+      bool enabled = await Geolocator.isLocationServiceEnabled();
+      if (!enabled) {
         detectionError.value = 'Location services are disabled.';
         return false;
       }
 
-      LocationPermission permission = await Geolocator.checkPermission();
-      if (permission == LocationPermission.denied) {
-        permission = await Geolocator.requestPermission();
+      LocationPermission perm = await Geolocator.checkPermission();
+      if (perm == LocationPermission.denied) {
+        perm = await Geolocator.requestPermission();
       }
-      if (permission == LocationPermission.denied) {
+
+      if (perm == LocationPermission.denied) {
         detectionError.value = 'Location permission denied.';
         return false;
       }
-      if (permission == LocationPermission.deniedForever) {
-        detectionError.value = 'Location permission permanently denied. Enable it from settings.';
+
+      if (perm == LocationPermission.deniedForever) {
+        detectionError.value =
+            'Location permanently denied. Enable it in settings.';
         return false;
       }
+
       return true;
-    } catch (e, st) {
-      detectionError.value = 'Permission check failed';
-      print('permission error: $e\n$st');
+    } catch (_) {
+      detectionError.value = 'Permission check failed.';
       return false;
     }
   }
-}
 
+  void increment() => count.value++;
+}
