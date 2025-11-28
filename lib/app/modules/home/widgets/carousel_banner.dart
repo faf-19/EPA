@@ -1,5 +1,6 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:eprs/app/modules/home/controllers/home_controller.dart';
+import 'package:eprs/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -18,7 +19,6 @@ class CarouselBanner extends StatelessWidget {
     return Column(
       children: [
         Obx(() {
-          final current = controller.currentCarouselIndex.value;
           return CarouselSlider(
             carouselController: carouselController,
             options: CarouselOptions(
@@ -33,6 +33,8 @@ class CarouselBanner extends StatelessWidget {
             ),
             items: controller.imageUrls.map((url) {
               final caption = controller.imageCaptions[url] ?? '';
+              final date = controller.imageDates[url] ?? '';
+              final city = controller.imageCities[url] ?? '';
               return Builder(
                 builder: (_) => Container(
                   width: double.infinity,
@@ -43,25 +45,79 @@ class CarouselBanner extends StatelessWidget {
                       fit: StackFit.expand,
                       children: [
                         Image.asset(url, fit: BoxFit.cover),
+                        // Top-left: Date and City
+                        Positioned(
+                          top: 12,
+                          left: 12,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              // Date with dark overlay
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.black.withOpacity(0.5),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: Text(
+                                  date,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 6),
+                              // City in green pill shape
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 5,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  city,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Bottom: Green gradient with caption
                         Positioned(
                           bottom: 0,
                           left: 0,
                           right: 0,
                           child: Container(
                             padding: const EdgeInsets.all(16),
-                            decoration: const BoxDecoration(
+                            decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 begin: Alignment.bottomCenter,
                                 end: Alignment.topCenter,
-                                colors: [Colors.black87, Colors.transparent],
+                                colors: [
+                                  AppColors.primary.withOpacity(0.85),
+                                  AppColors.primary.withOpacity(0.0),
+                                ],
                               ),
                             ),
                             child: Text(
                               caption,
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                height: 1.3,
                               ),
                             ),
                           ),
@@ -87,7 +143,7 @@ class CarouselBanner extends StatelessWidget {
                 margin: const EdgeInsets.symmetric(horizontal: 4),
                 decoration: BoxDecoration(
                   color: e.key == current
-                      ? const Color(0xFF22C55E)
+                      ? AppColors.primary
                       : const Color(0xFFE5E7EB),
                   borderRadius: BorderRadius.circular(4),
                 ),
