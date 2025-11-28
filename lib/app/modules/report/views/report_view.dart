@@ -60,186 +60,187 @@ class ReportView extends GetView<ReportController> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // --- Insert this Card ABOVE the Evidence Card ---
-
               if (reportType != ReportTypeEnum.sound.name)
-              Card(
-                color: const Color(0xFFFFFFFF),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 6,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Report Category',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                Card(
+                  color: const Color(0xFFFFFFFF),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  // elevation: 6,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Report Category',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      ValueListenableBuilder<String?>(
-                        valueListenable: categoryNotifier,
-                        builder: (context, value, _) {
-                          return DropdownButtonFormField<String>(
-                            initialValue: value == categories.first ? null : value,
-                            items: categories
-                                .map(
-                                  (c) => DropdownMenuItem(
-                                    value: c == categories.first ? null : c,
-                                    child: Text(
-                                      c,
-                                      style: TextStyle(
-                                        color: c == categories.first
-                                            ? Colors.grey.shade500
-                                            : Colors.black87,
+                        const SizedBox(height: 12),
+                        ValueListenableBuilder<String?>(
+                          valueListenable: categoryNotifier,
+                          builder: (context, value, _) {
+                            return DropdownButtonFormField<String>(
+                              initialValue: value == categories.first
+                                  ? null
+                                  : value,
+                              items: categories
+                                  .map(
+                                    (c) => DropdownMenuItem(
+                                      value: c == categories.first ? null : c,
+                                      child: Text(
+                                        c,
+                                        style: TextStyle(
+                                          color: c == categories.first
+                                              ? Colors.grey.shade500
+                                              : Colors.black87,
+                                        ),
                                       ),
                                     ),
+                                  )
+                                  .toList(),
+                              onChanged: (v) {
+                                // persist locally — replace with controller logic if desired:
+                                categoryNotifier.value = v ?? categories.first;
+                                // Example wiring if your controller exposes a setter:
+                                // controller.setReportCategory?.call(v);
+                                // or if controller.selectedReportType exists:
+                                // controller.selectedReportType.value = v ?? '';
+                              },
+                              decoration: InputDecoration(
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 12,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey,
+                                    width: 0.2,
                                   ),
-                                )
-                                .toList(),
-                            onChanged: (v) {
-                              // persist locally — replace with controller logic if desired:
-                              categoryNotifier.value = v ?? categories.first;
-                              // Example wiring if your controller exposes a setter:
-                              // controller.setReportCategory?.call(v);
-                              // or if controller.selectedReportType exists:
-                              // controller.selectedReportType.value = v ?? '';
-                            },
-                            decoration: InputDecoration(
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 12,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(
-                                  color: Colors.grey,
-                                  width: 0.2,
                                 ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(
-                                  color: Color(0xFFD4D4D4),
-                                  width: 0.4, // 👉 thinner
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: Color(0xFFD4D4D4),
+                                    width: 0.4, // 👉 thinner
+                                  ),
                                 ),
-                              ),
 
-                              // 🔹 Focused border (also missing)
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(
-                                  color: Color(0xFF1E9B47), // green
-                                  width: 0.8, // slightly thicker for visibility
+                                // 🔹 Focused border (also missing)
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: Color(0xFF1E9B47), // green
+                                    width:
+                                        0.8, // slightly thicker for visibility
+                                  ),
                                 ),
+                                filled: true,
+                                fillColor: Colors.white,
+                                hintText: categories.first,
                               ),
-                              filled: true,
-                              fillColor: Colors.white,
-                              hintText: categories.first,
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-
-              
 
               const SizedBox(height: 18),
 
               if (reportType == ReportTypeEnum.sound.name)
-              Card(
-                color: const Color(0xFFFFFFFF),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 6,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Area',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
+                Card(
+                  color: const Color(0xFFFFFFFF),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  // elevation: 6,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Area',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 12),
-                      ValueListenableBuilder<String?>(
-                        valueListenable: areasNotifier,
-                        builder: (context, value, _) {
-                          return DropdownButtonFormField<String>(
-                            initialValue: value == areas.first ? null : value,
-                            items: areas
-                                .map(
-                                  (c) => DropdownMenuItem(
-                                    value: c == areas.first ? null : c,
-                                    child: Text(
-                                      c,
-                                      style: TextStyle(
-                                        color: c == areas.first
-                                            ? Colors.grey.shade500
-                                            : Colors.black87,
+                        const SizedBox(height: 12),
+                        ValueListenableBuilder<String?>(
+                          valueListenable: areasNotifier,
+                          builder: (context, value, _) {
+                            return DropdownButtonFormField<String>(
+                              initialValue: value == areas.first ? null : value,
+                              items: areas
+                                  .map(
+                                    (c) => DropdownMenuItem(
+                                      value: c == areas.first ? null : c,
+                                      child: Text(
+                                        c,
+                                        style: TextStyle(
+                                          color: c == areas.first
+                                              ? Colors.grey.shade500
+                                              : Colors.black87,
+                                        ),
                                       ),
                                     ),
+                                  )
+                                  .toList(),
+                              onChanged: (v) {
+                                // persist locally — replace with controller logic if desired:
+                                areasNotifier.value = v ?? areas.first;
+                                // Example wiring if your controller exposes a setter:
+                                // controller.setReportCategory?.call(v);
+                                // or if controller.selectedReportType exists:
+                                // controller.selectedReportType.value = v ?? '';
+                              },
+                              decoration: InputDecoration(
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 12,
+                                ),
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: Colors.grey,
+                                    width: 0.2,
                                   ),
-                                )
-                                .toList(),
-                            onChanged: (v) {
-                              // persist locally — replace with controller logic if desired:
-                              areasNotifier.value = v ?? areas.first;
-                              // Example wiring if your controller exposes a setter:
-                              // controller.setReportCategory?.call(v);
-                              // or if controller.selectedReportType exists:
-                              // controller.selectedReportType.value = v ?? '';
-                            },
-                            decoration: InputDecoration(
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 12,
-                              ),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(
-                                  color: Colors.grey,
-                                  width: 0.2,
                                 ),
-                              ),
-                              enabledBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(
-                                  color: Color(0xFFD4D4D4),
-                                  width: 0.4, // 👉 thinner
+                                enabledBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: Color(0xFFD4D4D4),
+                                    width: 0.4, // 👉 thinner
+                                  ),
                                 ),
-                              ),
 
-                              // 🔹 Focused border (also missing)
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(
-                                  color: Color(0xFF1E9B47), // green
-                                  width: 0.8, // slightly thicker for visibility
+                                // 🔹 Focused border (also missing)
+                                focusedBorder: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                  borderSide: BorderSide(
+                                    color: Color(0xFF1E9B47), // green
+                                    width:
+                                        0.8, // slightly thicker for visibility
+                                  ),
                                 ),
+                                filled: true,
+                                fillColor: Colors.white,
+                                hintText: areas.first,
                               ),
-                              filled: true,
-                              fillColor: Colors.white,
-                              hintText: areas.first,
-                            ),
-                          );
-                        },
-                      ),
-                    ],
+                            );
+                          },
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
 
               const SizedBox(height: 18),
 
@@ -249,7 +250,7 @@ class ReportView extends GetView<ReportController> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                elevation: 6,
+                // elevation: 6,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -275,7 +276,7 @@ class ReportView extends GetView<ReportController> {
                           Text(
                             '*',
                             style: TextStyle(
-                              color: Color(0xFF6B46FF),
+                              color: Colors.red,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
@@ -297,17 +298,17 @@ class ReportView extends GetView<ReportController> {
                             Icons.camera_alt_outlined,
                             'Photo',
                           ),
-                          reportType != ReportTypeEnum.sound.name ?
-                          _evidenceTile(
-                            context,
-                            Icons.videocam_outlined,
-                            'Take Video',
-                          ) :
-                          _evidenceTile(
-                            context,
-                            Icons.keyboard_voice_outlined,
-                            'Voice Note',
-                          )
+                          reportType != ReportTypeEnum.sound.name
+                              ? _evidenceTile(
+                                  context,
+                                  Icons.videocam_outlined,
+                                  'Take Video',
+                                )
+                              : _evidenceTile(
+                                  context,
+                                  Icons.keyboard_voice_outlined,
+                                  'Voice Note',
+                                ),
                         ],
                       ),
                       const SizedBox(height: 12),
@@ -316,6 +317,7 @@ class ReportView extends GetView<ReportController> {
                         final count = imgs.length;
                         if (count == 0) {
                           return Container(
+                            width: double.infinity,
                             padding: const EdgeInsets.symmetric(
                               horizontal: 12,
                               vertical: 10,
@@ -324,7 +326,10 @@ class ReportView extends GetView<ReportController> {
                               color: const Color(0xFFEFF7F0),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Text('No files uploaded', style: TextStyle(color: Colors.black87)),
+                            child: const Text(
+                              'No files uploaded',
+                              style: TextStyle(color: Colors.black87),
+                            ),
                           );
                         }
 
@@ -336,7 +341,8 @@ class ReportView extends GetView<ReportController> {
                               child: ListView.separated(
                                 scrollDirection: Axis.horizontal,
                                 itemCount: count,
-                                separatorBuilder: (_, __) => const SizedBox(width: 8),
+                                separatorBuilder: (_, __) =>
+                                    const SizedBox(width: 8),
                                 itemBuilder: (ctx, i) {
                                   final file = imgs[i];
                                   return Stack(
@@ -347,22 +353,36 @@ class ReportView extends GetView<ReportController> {
                                           width: 120,
                                           height: 84,
                                           child: kIsWeb
-                                              ? Image.network(file.path, fit: BoxFit.cover, errorBuilder: (_, __, ___) => const Icon(Icons.image))
-                                              : Image.file(file, fit: BoxFit.cover),
+                                              ? Image.network(
+                                                  file.path,
+                                                  fit: BoxFit.cover,
+                                                  errorBuilder: (_, __, ___) =>
+                                                      const Icon(Icons.image),
+                                                )
+                                              : Image.file(
+                                                  file,
+                                                  fit: BoxFit.cover,
+                                                ),
                                         ),
                                       ),
                                       Positioned(
                                         top: 4,
                                         right: 4,
                                         child: GestureDetector(
-                                          onTap: () => controller.pickedImages.removeAt(i),
+                                          onTap: () => controller.pickedImages
+                                              .removeAt(i),
                                           child: Container(
                                             decoration: BoxDecoration(
                                               color: Colors.black54,
-                                              borderRadius: BorderRadius.circular(16),
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
                                             ),
                                             padding: const EdgeInsets.all(4),
-                                            child: const Icon(Icons.close, size: 14, color: Colors.white),
+                                            child: const Icon(
+                                              Icons.close,
+                                              size: 14,
+                                              color: Colors.white,
+                                            ),
                                           ),
                                         ),
                                       ),
@@ -372,7 +392,10 @@ class ReportView extends GetView<ReportController> {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            Text('$count File(s) Uploaded', style: const TextStyle(color: Colors.black87)),
+                            Text(
+                              '$count File(s) Uploaded',
+                              style: const TextStyle(color: Colors.black87),
+                            ),
                           ],
                         );
                       }),
@@ -389,7 +412,7 @@ class ReportView extends GetView<ReportController> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                elevation: 4,
+                // elevation: 4,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -411,6 +434,13 @@ class ReportView extends GetView<ReportController> {
                             ),
                           ),
                           SizedBox(width: 6),
+                          Text(
+                            '*',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(height: 12),
@@ -453,7 +483,7 @@ class ReportView extends GetView<ReportController> {
                       // reactive: hide dropdowns when auto-detect is ON
                       Obx(() {
                         final autoOn = controller.autoDetectLocation.value;
-                        if (autoOn) return const SizedBox.shrink();
+                        // if (autoOn) return const SizedBox.shrink();
                         return Column(
                           children: [
                             _buildDropdown(
@@ -500,7 +530,7 @@ class ReportView extends GetView<ReportController> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                elevation: 6,
+                // elevation: 6,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(13, 12, 13, 12),
                   child: Column(
@@ -557,7 +587,7 @@ class ReportView extends GetView<ReportController> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                elevation: 6,
+                // elevation: 6,
                 child: Padding(
                   padding: const EdgeInsets.all(12.0),
                   child: Column(
@@ -620,7 +650,12 @@ class ReportView extends GetView<ReportController> {
                             children: [
                               // Bind the phone toggle to a separate observable so it
                               // doesn't trigger location auto-detect when toggled.
-                              _onOffToggle(bound: controller.phoneOptIn, onChanged: (v) => controller.togglePhoneOptIn(v)),
+                              _onOffToggle(
+                                bound: controller.phoneOptIn,
+                                isPhoneNumber: true,
+                                onChanged: (v) =>
+                                    controller.togglePhoneOptIn(v),
+                              ),
                             ],
                           ),
                         ],
@@ -638,52 +673,83 @@ class ReportView extends GetView<ReportController> {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
-                elevation: 6,
+                // elevation: 6,
                 child: Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Time and Date',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                      Row(
+                        children: const [
+                          const Text(
+                            'Time and Date',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            '*',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
                       ),
+
                       const SizedBox(height: 12),
                       Row(
                         children: [
                           Expanded(
-                            child: OutlinedButton(
-                              onPressed: () {},
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
+                            child: Obx(() {
+                              final d = controller.selectedDate.value;
+                              final label = d == null
+                                  ? 'Select Date'
+                                  : '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+                              return OutlinedButton(
+                                onPressed: () => controller.pickDate(context),
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  side: BorderSide(color: Colors.grey.shade300),
                                 ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                side: BorderSide(color: Colors.grey.shade300),
-                              ),
-                              child: const Text('Select Date'),
-                            ),
+                                child: Text(label),
+                              );
+                            }),
                           ),
                           const SizedBox(width: 12),
                           Expanded(
-                            child: OutlinedButton(
-                              onPressed: () {},
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
+                            child: Obx(() {
+                              final t = controller.selectedTime.value;
+                              String label;
+                              if (t == null) {
+                                label = 'Select Time';
+                              } else {
+                                final hour = t.hourOfPeriod == 0 ? 12 : t.hourOfPeriod;
+                                final minute = t.minute.toString().padLeft(2, '0');
+                                final period = t.period == DayPeriod.am ? 'AM' : 'PM';
+                                label = '$hour:$minute $period';
+                              }
+                              return OutlinedButton(
+                                onPressed: () => controller.pickTime(context),
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  side: BorderSide(color: Colors.grey.shade300),
                                 ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                side: BorderSide(color: Colors.grey.shade300),
-                              ),
-                              child: const Text('Select Time'),
-                            ),
+                                child: Text(label),
+                              );
+                            }),
                           ),
                         ],
                       ),
@@ -701,7 +767,9 @@ class ReportView extends GetView<ReportController> {
                   const Expanded(
                     child: Text(
                       'I Agree To The Terms And Conditions',
-                      style: TextStyle(color: Colors.blue),
+                      style: TextStyle(
+                        color: AppColors.primary
+                      ),
                     ),
                   ),
                 ],
@@ -783,9 +851,17 @@ class ReportView extends GetView<ReportController> {
               await controller.pickFromGallery();
             }
             // optional: brief success feedback
-            Get.snackbar('Upload', 'File added', snackPosition: SnackPosition.BOTTOM);
+            Get.snackbar(
+              'Upload',
+              'File added',
+              snackPosition: SnackPosition.BOTTOM,
+            );
           } catch (e) {
-            Get.snackbar('Upload failed', e.toString(), snackPosition: SnackPosition.BOTTOM);
+            Get.snackbar(
+              'Upload failed',
+              e.toString(),
+              snackPosition: SnackPosition.BOTTOM,
+            );
           } finally {
             // close the progress dialog
             try {
@@ -860,7 +936,11 @@ class ReportView extends GetView<ReportController> {
   /// Custom rounded toggle with internal ON/OFF label to match the design.
   // Generic toggle widget. If [bound] is provided it will control that
   // observable; otherwise it defaults to controlling the location auto-detect.
-  Widget _onOffToggle({RxBool? bound, void Function(bool)? onChanged}) {
+  Widget _onOffToggle({
+    RxBool? bound,
+    bool isPhoneNumber = false,
+    void Function(bool)? onChanged,
+  }) {
     return Obx(() {
       final rx = bound ?? controller.autoDetectLocation;
       final isOn = rx.value;
@@ -894,14 +974,23 @@ class ReportView extends GetView<ReportController> {
                   padding: isOn
                       ? const EdgeInsets.only(left: 8.0)
                       : const EdgeInsets.only(right: 8.0),
-                  child: Text(
-                    isOn ? 'ON' : 'OFF',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
+                  child: isPhoneNumber
+                      ? Text(
+                          isOn ? 'SHOW' : 'HIDE',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        )
+                      : Text(
+                          isOn ? 'ON' : 'OFF',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
                 ),
               ),
               // thumb

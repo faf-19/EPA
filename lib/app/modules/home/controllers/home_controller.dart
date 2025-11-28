@@ -25,10 +25,24 @@ class HomeController extends GetxController {
   ];
 
   final Map<String, String> imageCaptions = {
-    'assets/image1.png': 'Foreign employment system in development',
+    'assets/image1.png': 'It was pointed out foreign employment is developing a system',
     'assets/image2.png': 'New benefits outlined for employment',
     'assets/image3.png': 'Training programs launched',
     'assets/image4.png': 'Progress in employment system',
+  };
+
+  final Map<String, String> imageDates = {
+    'assets/image1.png': 'Nov 19',
+    'assets/image2.png': 'Nov 18',
+    'assets/image3.png': 'Nov 17',
+    'assets/image4.png': 'Nov 16',
+  };
+
+  final Map<String, String> imageCities = {
+    'assets/image1.png': 'Addis Ababa',
+    'assets/image2.png': 'Addis Ababa',
+    'assets/image3.png': 'Addis Ababa',
+    'assets/image4.png': 'Addis Ababa',
   };
 
   // === Posts ===

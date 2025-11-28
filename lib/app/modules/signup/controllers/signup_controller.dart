@@ -8,7 +8,7 @@ class SignUpController extends GetxController {
   final phoneNumber = ''.obs;
   final password = ''.obs;
 
-  final _client = GetConnect();
+  // HTTP client removed (unused). Add back when implementing network calls.
   
   String? validateInputs(){
     if(fullName.value.trim().isEmpty){
