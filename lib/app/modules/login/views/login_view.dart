@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../controllers/login_controller.dart';
 import 'package:eprs/core/theme/app_colors.dart';
+import 'package:eprs/domain/usecases/login_usecase.dart';
 
 class LoginOverlay extends StatefulWidget {
   const LoginOverlay({super.key});
@@ -15,7 +16,6 @@ class LoginOverlay extends StatefulWidget {
 class _LoginOverlayState extends State<LoginOverlay> {
   final _phoneCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
-  bool _obscure = true;
   bool _remember = false;
 
   @override
@@ -27,7 +27,10 @@ class _LoginOverlayState extends State<LoginOverlay> {
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(LoginController());
+    // Get controller from GetX (it should be registered via binding)
+    final controller = Get.isRegistered<LoginController>()
+        ? Get.find<LoginController>()
+        : Get.put(LoginController(loginUseCase: Get.find<LoginUseCase>()));
     // MediaQuery size was previously used for logo sizing; layout is now
     // responsive via LayoutBuilder so `size` is unused.
 
@@ -172,9 +175,9 @@ class _LoginOverlayState extends State<LoginOverlay> {
                                   width: 1.2,
                                 ),
                               ),
-                              child: TextField(
+                              child: Obx(() => TextField(
                                 controller: _passCtrl,
-                                obscureText: _obscure,
+                                obscureText: controller.obscurePassword.value,
                                 style: GoogleFonts.poppins(
                                   fontSize: isSmall ? 14 : 15,
                                 ),
@@ -195,16 +198,16 @@ class _LoginOverlayState extends State<LoginOverlay> {
                                   ),
                                   suffixIcon: IconButton(
                                     icon: Icon(
-                                      _obscure
+                                      controller.obscurePassword.value
                                           ? Icons.visibility_off_outlined
                                           : Icons.visibility_outlined,
                                       color: hintText,
                                     ),
-                                    onPressed: () =>
-                                        setState(() => _obscure = !_obscure),
+                                    onPressed: controller.togglePasswordVisibility,
                                   ),
                                 ),
-                              ),
+                                onChanged: (v) => controller.password.value = v,
+                              )),
                             ),
 
                             SizedBox(height: betweenFields),
@@ -276,28 +279,43 @@ class _LoginOverlayState extends State<LoginOverlay> {
                             SizedBox(height: isSmall ? 36 : 56),
 
                             // Buttons
-                            SizedBox(
+                            Obx(() => SizedBox(
                               width: double.infinity,
                               height: isSmall ? 56 : 64,
                               child: ElevatedButton(
-                                onPressed: () => {},
+                                onPressed: controller.isLoading.value
+                                    ? null
+                                    : controller.submitLogin,
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.primary,
                                   foregroundColor: Colors.white,
+                                  disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
+                                  disabledForegroundColor: Colors.white,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   elevation: 0,
                                 ),
-                                child: Text(
-                                  'Sign In',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: isSmall ? 16 : 18,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
+                                child: controller.isLoading.value
+                                    ? SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation<Color>(
+                                            Colors.white,
+                                          ),
+                                        ),
+                                      )
+                                    : Text(
+                                        'Sign In',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: isSmall ? 16 : 18,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
                               ),
-                            ),
+                            )),
 
                             SizedBox(height: isSmall ? 14 : 20),
 

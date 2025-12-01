@@ -1,4 +1,5 @@
 import 'package:eprs/app/modules/bottom_nav/controllers/bottom_nav_controller.dart';
+import 'package:eprs/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/awareness_controller.dart';
@@ -21,14 +22,14 @@ class AwarenessView extends GetView<AwarenessController> {
             children: [
               // Banner (no overlap)
               SizedBox(
-                height: 450,
+                height: 420,
                 width: double.infinity,
                 child: Stack(
                   children: [
                     Positioned.fill(
                       child: Image.asset(
                         'assets/awareness.png',
-                        fit: BoxFit.cover,
+                        fit: BoxFit.fill,
                         alignment: Alignment.topCenter,
                         errorBuilder: (c, e, s) =>
                             Container(color: Colors.grey[300]),
@@ -62,7 +63,7 @@ class AwarenessView extends GetView<AwarenessController> {
                               },
                             child: const Icon(
                               Icons.arrow_back,
-                              color: Colors.black,
+                              color: AppColors.onPrimary,
                               size: 26,
                             ),
                           ),
@@ -73,7 +74,7 @@ class AwarenessView extends GetView<AwarenessController> {
                               Text(
                                 'Awareness',
                                 style: TextStyle(
-                                  color: Colors.black,
+                                  color: AppColors.onPrimary,
                                   fontSize: 18,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -82,7 +83,7 @@ class AwarenessView extends GetView<AwarenessController> {
                               Text(
                                 'Help improve your community',
                                 style: TextStyle(
-                                  color: Colors.black54,
+                                  color: AppColors.onPrimary,
                                   fontSize: 13,
                                 ),
                               ),
@@ -97,11 +98,11 @@ class AwarenessView extends GetView<AwarenessController> {
 
               Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 14.0,
+                  // horizontal: 14.0,
                   vertical: 12.0,
                 ),
                 child: Material(
-                  elevation: 4,
+                  // elevation: 4,
                   borderRadius: BorderRadius.circular(14),
                   color: Colors.white,
                   child: Padding(

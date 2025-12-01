@@ -681,14 +681,14 @@ class ReportView extends GetView<ReportController> {
                     children: [
                       Row(
                         children: const [
-                          const Text(
+                          Text(
                             'Time and Date',
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
                             ),
                           ),
-                          const SizedBox(width: 6),
+                          SizedBox(width: 6),
                           Text(
                             '*',
                             style: TextStyle(

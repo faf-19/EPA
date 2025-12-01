@@ -18,20 +18,19 @@ class CarouselBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Obx(() {
-          return CarouselSlider(
-            carouselController: carouselController,
-            options: CarouselOptions(
-              height: 220,
-              autoPlay: true,
-              autoPlayInterval: const Duration(seconds: 2),
-              enlargeCenterPage: false,
-              viewportFraction: 1.0,
-              enableInfiniteScroll: true,
-              onPageChanged: (index, _) =>
-                  controller.currentCarouselIndex.value = index,
-            ),
-            items: controller.imageUrls.map((url) {
+        CarouselSlider(
+          carouselController: carouselController,
+          options: CarouselOptions(
+            height: 220,
+            autoPlay: true,
+            autoPlayInterval: const Duration(seconds: 2),
+            enlargeCenterPage: false,
+            viewportFraction: 1.0,
+            enableInfiniteScroll: true,
+            onPageChanged: (index, _) =>
+                controller.currentCarouselIndex.value = index,
+          ),
+          items: controller.imageUrls.map((url) {
               final caption = controller.imageCaptions[url] ?? '';
               final date = controller.imageDates[url] ?? '';
               final city = controller.imageCities[url] ?? '';
@@ -128,8 +127,7 @@ class CarouselBanner extends StatelessWidget {
                 ),
               );
             }).toList(),
-          );
-        }),
+        ),
         const SizedBox(height: 16),
         Obx(() {
           final current = controller.currentCarouselIndex.value;

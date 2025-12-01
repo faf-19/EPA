@@ -29,6 +29,7 @@ import '../modules/setting/views/setting_view.dart';
 import '../modules/splash/bindings/splash_binding.dart';
 import '../modules/splash/views/splash_view.dart';
 import '../modules/login/views/login_view.dart';
+import '../modules/login/bindings/login_binding.dart';
 import '../modules/status/bindings/status_binding.dart';
 import '../modules/status/views/status_view.dart';
 import '../modules/term_and_conditions/views/term_and_conditions_view.dart';
@@ -112,12 +113,11 @@ class AppPages {
       page: () => const AwarenessView(),
       binding: AwarenessBinding(),
     ),
-    GetPage(name: _Paths.LOGIN, page: () => const LoginOverlay()),
-    // GetPage(
-    //   name: _Paths.LOGIN,
-    //   page: () => const LoginView(),
-    //   binding: LoginBinding(),
-    // ),
+    GetPage(
+      name: _Paths.LOGIN,
+      page: () => const LoginOverlay(),
+      binding: LoginBinding(),
+    ),
     GetPage(
       name: _Paths.SIGNUP,
       page: () => SignUpOverlay(),
