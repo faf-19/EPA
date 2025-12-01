@@ -66,12 +66,11 @@ class ReportController extends GetxController {
               surface: Colors.white,
               onSurface: Colors.black87,
             ),
-            dialogBackgroundColor: const Color(0xFFF6F6FA),
             textButtonTheme: TextButtonThemeData(
               style: TextButton.styleFrom(
                 foregroundColor: AppColors.primary,
               ),
-            ),
+            ), dialogTheme: DialogThemeData(backgroundColor: const Color(0xFFF6F6FA)),
           ),
           child: child!,
         );
@@ -209,7 +208,7 @@ class ReportController extends GetxController {
               p.locality,
               p.administrativeArea,
               p.country
-            ].where((e) => e != null && e!.isNotEmpty).toList();
+            ].where((e) => e != null && e.isNotEmpty).toList();
 
             detectedAddress.value = parts.join(', ');
           }
