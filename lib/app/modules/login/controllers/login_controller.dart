@@ -10,7 +10,7 @@ class LoginController extends GetxController {
 
   LoginController({required this.loginUseCase});
 
-  var phoneNumber = ''.obs;
+  var email = ''.obs;
   var password = ''.obs;
   var isLoading = false.obs;
   var obscurePassword = true.obs;
@@ -23,10 +23,10 @@ class LoginController extends GetxController {
   /// Handle login submission
   Future<void> submitLogin() async {
     // Validate inputs
-    if (phoneNumber.value.trim().isEmpty) {
+    if (email.value.trim().isEmpty) {
       _showErrorDialog(
-        'Missing Phone Number',
-        'Please enter your phone number to continue',
+        'Missing Email',
+        'Please enter your email to continue',
       );
       return;
     }
@@ -45,7 +45,7 @@ class LoginController extends GetxController {
     try {
       // Call use case
       final response = await loginUseCase.execute(
-        phoneNumber: phoneNumber.value,
+        email : email.value,
         password: password.value,
       );
 
@@ -67,8 +67,9 @@ class LoginController extends GetxController {
         Get.offNamed(
           Routes.HOME,
           arguments: {
-            'username': response.username ?? phoneNumber.value,
-            'phone': response.phoneNumber ?? phoneNumber.value,
+            'username': response.username ?? 'Guest',
+            'phone': response.phoneNumber ?? '',
+            'email': email.value,
           },
         );
 
