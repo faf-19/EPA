@@ -6,6 +6,9 @@ import '../../data/datasources/local/auth_local_datasource.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/usecases/login_usecase.dart';
+import '../../domain/usecases/signup_usecase.dart';
+import '../../domain/usecases/verify_otp_usecase.dart';
+import '../../domain/usecases/resend_otp_usecase.dart';
 import '../network/dio_client.dart';
 
 /// Dependency Injection Container
@@ -48,6 +51,27 @@ class InjectionContainer {
     // Register Use Cases
     Get.put<LoginUseCase>(
       LoginUseCase(
+        Get.find<AuthRepository>(),
+      ),
+      permanent: true,
+    );
+
+    Get.put<SignupUseCase>(
+      SignupUseCase(
+        Get.find<AuthRepository>(),
+      ),
+      permanent: true,
+    );
+
+    Get.put<VerifyOtpUseCase>(
+      VerifyOtpUseCase(
+        Get.find<AuthRepository>(),
+      ),
+      permanent: true,
+    );
+
+    Get.put<ResendOtpUseCase>(
+      ResendOtpUseCase(
         Get.find<AuthRepository>(),
       ),
       permanent: true,

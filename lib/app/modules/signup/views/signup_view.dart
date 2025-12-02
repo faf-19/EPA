@@ -4,6 +4,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../controllers/signup_controller.dart';
 import 'package:eprs/core/theme/app_colors.dart';
+import 'package:eprs/domain/usecases/signup_usecase.dart';
 class SignUpOverlay extends StatefulWidget {
   const SignUpOverlay({super.key});
 
@@ -12,23 +13,28 @@ class SignUpOverlay extends StatefulWidget {
 }
 
 class _SignUpOverlayState extends State<SignUpOverlay> {
-  final _phoneCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   final _nameCtrl = TextEditingController();
   final _confirmPassCtrl = TextEditingController();
-  bool _obscure = true;
-  final bool _remember = false;
+  final _emailCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
 
   @override
   void dispose() {
-    _phoneCtrl.dispose();
     _passCtrl.dispose();
+    _nameCtrl.dispose();
+    _confirmPassCtrl.dispose();
+    _emailCtrl.dispose();
+    _phoneCtrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    final controller = Get.put(SignUpController());
+    // Get controller from GetX (it should be registered via binding)
+    final controller = Get.isRegistered<SignUpController>()
+        ? Get.find<SignUpController>()
+        : Get.put(SignUpController(signupUseCase: Get.find<SignupUseCase>()));
     final size = MediaQuery.of(context).size;
 
     const greenColor = AppColors.primary;
@@ -119,7 +125,36 @@ class _SignUpOverlayState extends State<SignUpOverlay> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Phone Input
+                  // Email Input
+                  TextField(
+                    controller: _emailCtrl,
+                    keyboardType: TextInputType.emailAddress,
+                    style: GoogleFonts.poppins(fontSize: 15),
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: Colors.white,
+                      prefixIcon: const Icon(Icons.email_outlined, color: darkText),
+                      hintText: 'Email',
+                      hintStyle: GoogleFonts.poppins(color: hintText, fontSize: 15),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: borderColor, width: 1.2),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: borderColor, width: 1.2),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(color: greenColor, width: 1.4),
+                      ),
+                    ),
+                    onChanged: (v) => controller.email.value = v,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Phone Number Input
                   TextField(
                     controller: _phoneCtrl,
                     keyboardType: TextInputType.phone,
@@ -149,9 +184,9 @@ class _SignUpOverlayState extends State<SignUpOverlay> {
                   const SizedBox(height: 16),
 
                   // Password Input
-                  TextField(
+                  Obx(() => TextField(
                     controller: _passCtrl,
-                    obscureText: _obscure,
+                    obscureText: controller.obscurePassword.value,
                     style: GoogleFonts.poppins(fontSize: 15),
                     decoration: InputDecoration(
                       filled: true,
@@ -162,10 +197,10 @@ class _SignUpOverlayState extends State<SignUpOverlay> {
                       contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                          controller.obscurePassword.value ? Icons.visibility_off_outlined : Icons.visibility_outlined,
                           color: hintText,
                         ),
-                        onPressed: () => setState(() => _obscure = !_obscure),
+                        onPressed: controller.togglePasswordVisibility,
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
@@ -180,12 +215,13 @@ class _SignUpOverlayState extends State<SignUpOverlay> {
                         borderSide: const BorderSide(color: greenColor, width: 1.4),
                       ),
                     ),
-                  ),
+                    onChanged: (v) => controller.password.value = v,
+                  )),
                   const SizedBox(height: 16),
 
-                  TextField(
+                  Obx(() => TextField(
                     controller: _confirmPassCtrl,
-                    obscureText: _obscure,
+                    obscureText: controller.obscureConfirmPassword.value,
                     style: GoogleFonts.poppins(fontSize: 15),
                     decoration: InputDecoration(
                       filled: true,
@@ -196,10 +232,10 @@ class _SignUpOverlayState extends State<SignUpOverlay> {
                       contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
                       suffixIcon: IconButton(
                         icon: Icon(
-                          _obscure ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                          controller.obscureConfirmPassword.value ? Icons.visibility_off_outlined : Icons.visibility_outlined,
                           color: hintText,
                         ),
-                        onPressed: () => setState(() => _obscure = !_obscure),
+                        onPressed: controller.toggleConfirmPasswordVisibility,
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
@@ -214,35 +250,49 @@ class _SignUpOverlayState extends State<SignUpOverlay> {
                         borderSide: const BorderSide(color: greenColor, width: 1.4),
                       ),
                     ),
-                  ),
+                    onChanged: (v) => controller.confirmPassword.value = v,
+                  )),
                   
                   const SizedBox(height: 80),
 
                   // Buttons
-                  SizedBox(
+                  Obx(() => SizedBox(
                     width: double.infinity,
                     height: 54,
                     child: ElevatedButton(
-                      onPressed: () => {
-                        Get.offAllNamed(Routes.HOME)
-                      },
+                      onPressed: controller.isLoading.value
+                          ? null
+                          : controller.signUp,
                       style: ElevatedButton.styleFrom(
                         backgroundColor: greenColor,
                         foregroundColor: Colors.white,
+                        disabledBackgroundColor: greenColor.withOpacity(0.6),
+                        disabledForegroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                         elevation: 0,
                       ),
-                      child: Text(
-                        'Continue',
-                        style: GoogleFonts.poppins(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
+                      child: controller.isLoading.value
+                          ? const SizedBox(
+                              height: 20,
+                              width: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(
+                                  Colors.white,
+                                ),
+                              ),
+                            )
+                          : Text(
+                              'Continue',
+                              style: GoogleFonts.poppins(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                     ),
-                  ),
+                  )),
                   
                   const SizedBox(height: 40),
                 ],
