@@ -22,6 +22,7 @@ abstract class Routes {
   static const Report_Success = _Paths.Report_Success;
   static const Report_Otp = _Paths.Report_Otp;
   static const SIGNUP = _Paths.SIGNUP;
+  static const SIGNUP_OTP = _Paths.SIGNUP_OTP;
 }
 
 abstract class _Paths {
@@ -45,4 +46,5 @@ abstract class _Paths {
   static const Report_Success = '/report-success';
   static const Report_Otp = '/report-otp';
   static const SIGNUP = '/signup';
+  static const SIGNUP_OTP = '/signup-otp';
 }
