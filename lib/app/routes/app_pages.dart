@@ -35,6 +35,10 @@ import '../modules/status/views/status_view.dart';
 import '../modules/term_and_conditions/views/term_and_conditions_view.dart';
 import '../modules/signup/bindings/signup_binding.dart';
 import '../modules/signup/views/signup_view.dart';
+import '../modules/signup/views/signup_otp_view.dart';
+import '../modules/signup/controllers/signup_otp_controller.dart';
+import '../../domain/usecases/verify_otp_usecase.dart';
+import '../../domain/usecases/resend_otp_usecase.dart';
 
 part 'app_routes.dart';
 
@@ -122,6 +126,29 @@ class AppPages {
       name: _Paths.SIGNUP,
       page: () => SignUpOverlay(),
       binding: SignupBinding(),
+    ),
+    GetPage(
+      name: _Paths.SIGNUP_OTP,
+      page: () {
+        final arg = Get.arguments;
+        final email = (arg is Map && arg['email'] is String) 
+            ? arg['email'] as String 
+            : '';
+        return SignupOtpView();
+      },
+      binding: BindingsBuilder(() {
+        final arg = Get.arguments;
+        final email = (arg is Map && arg['email'] is String) 
+            ? arg['email'] as String 
+            : '';
+        Get.lazyPut<SignupOtpController>(
+          () => SignupOtpController(
+            verifyOtpUseCase: Get.find<VerifyOtpUseCase>(),
+            resendOtpUseCase: Get.find<ResendOtpUseCase>(),
+            email: email,
+          ),
+        );
+      }),
     ),
     GetPage(
       name: _Paths.REPORT,
