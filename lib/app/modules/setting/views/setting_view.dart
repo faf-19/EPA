@@ -1,6 +1,8 @@
 import '../../../widgets/custom_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
+import '../../bottom_nav/controllers/bottom_nav_controller.dart';
 import '../controllers/setting_controller.dart';
 import 'package:eprs/app/routes/app_pages.dart';
 
@@ -111,7 +113,34 @@ class SettingView extends GetView<SettingController> {
                       _buildDivider(),
                       _buildOptionTile(Icons.star_rate_outlined, 'Rate Us', () {}),
                       _buildDivider(),
-                      _buildOptionTile(Icons.logout, "Logout", () {})
+                      _buildOptionTile(Icons.logout, "Logout", () {
+                        // Confirm logout
+                        Get.defaultDialog(
+                          title: 'Logout',
+                          middleText: 'Are you sure you want to logout?',
+                          textConfirm: 'Yes',
+                          textCancel: 'Cancel',
+                          onConfirm: () async {
+                            // Reset bottom nav to home tab if controller exists
+                            if (Get.isRegistered<BottomNavController>()) {
+                              try {
+                                final navCtrl = Get.find<BottomNavController>();
+                                navCtrl.resetToHome();
+                              } catch (_) {}
+                            }
+
+                            // Clear stored data and navigate to splash/login
+                            final box = Get.find<GetStorage>();
+                            await box.erase();
+
+                            // After clearing storage, navigate to splash screen
+                            Get.offAllNamed(Routes.SPLASH);
+                          },
+                          onCancel: () {
+                            Get.back();
+                          },
+                        );
+                      })
                     ],
                   ),
                 ),

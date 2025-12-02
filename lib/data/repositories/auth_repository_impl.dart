@@ -20,7 +20,7 @@ class AuthRepositoryImpl implements AuthRepository {
     try {
       // Convert entity to model
       final loginModel = LoginModel(
-        phoneNumber: loginEntity.phoneNumber,
+        email: loginEntity.email,
         password: loginEntity.password,
         username: loginEntity.username,
       );

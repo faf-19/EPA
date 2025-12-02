@@ -40,7 +40,7 @@ class HomeView extends GetView<HomeController> {
         child: CustomScrollView(
           slivers: [
             // Header (green banner like the design)
-            _buildHeader(), 
+            _buildHeader(controller), 
 
             SliverPadding(
               padding: const EdgeInsets.all(20),
@@ -136,7 +136,7 @@ class _ReportTile extends StatelessWidget {
   }
 }
 
- Widget _buildHeader() {
+ Widget _buildHeader(HomeController controller) {
     return SliverToBoxAdapter(
       child: Container(
         width: double.infinity,
@@ -144,22 +144,25 @@ class _ReportTile extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10), // Add horizontal padding
         child: Stack(
           children: [
-          // Welcome Yeshak Mesfin text positioned at top left
+          // Welcome text (reads userName from HomeController)
           Positioned(
             top: 20,
             left: 15, // Position from container start
             right: 120, // Leave space for icons on the right
             child: SizedBox(
               height: 20,
-              child: Text(
-                'Welcome, Yeshak Mesfin',
-                style: TextStyle(
-                  color: AppColors.accentBlue,
-                  fontWeight: FontWeight.w500,
-                ),
-                overflow: TextOverflow.ellipsis, // Handle text overflow
-                maxLines: 1,
-              ),
+              child: Obx(() {
+                final name = controller.userName.value;
+                return Text(
+                  'Welcome, ${name.isNotEmpty ? name : 'Guest'}',
+                  style: TextStyle(
+                    color: AppColors.accentBlue,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis, // Handle text overflow
+                  maxLines: 1,
+                );
+              }),
             ),
           ),
 

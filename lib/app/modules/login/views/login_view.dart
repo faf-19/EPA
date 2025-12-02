@@ -14,13 +14,13 @@ class LoginOverlay extends StatefulWidget {
 }
 
 class _LoginOverlayState extends State<LoginOverlay> {
-  final _phoneCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   bool _remember = false;
 
   @override
   void dispose() {
-    _phoneCtrl.dispose();
+    _emailCtrl.dispose();
     _passCtrl.dispose();
     super.dispose();
   }
@@ -137,18 +137,18 @@ class _LoginOverlayState extends State<LoginOverlay> {
                                 ),
                               ),
                               child: TextField(
-                                controller: _phoneCtrl,
-                                keyboardType: TextInputType.phone,
+                                controller: _emailCtrl,
+                                keyboardType: TextInputType.emailAddress,
                                 style: GoogleFonts.poppins(
                                   fontSize: isSmall ? 14 : 15,
                                 ),
                                 decoration: InputDecoration(
                                   border: InputBorder.none,
                                   prefixIcon: const Icon(
-                                    Icons.phone_outlined,
+                                    Icons.email_outlined,
                                     color: darkText,
                                   ),
-                                  hintText: 'Phone number',
+                                  hintText: 'Email',
                                   hintStyle: GoogleFonts.poppins(
                                     color: hintText,
                                     fontSize: isSmall ? 13 : 15,
@@ -159,7 +159,7 @@ class _LoginOverlayState extends State<LoginOverlay> {
                                   ),
                                 ),
                                 onChanged: (v) =>
-                                    controller.phoneNumber.value = v,
+                                    controller.email.value = v,
                               ),
                             ),
 

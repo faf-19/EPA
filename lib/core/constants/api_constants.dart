@@ -1,12 +1,12 @@
 /// API constants for the application
 class ApiConstants {
   // Base URL - Update this with your actual backend URL
-  static const String baseUrl = 'https://your-api-domain.com/api/v1';
+  static const String baseUrl = 'http://196.188.240.103:4032/api/';
   
   // Authentication endpoints
-  static const String loginEndpoint = '/auth/login';
+  static const String loginEndpoint = '/customer-accounts/login';
   static const String logoutEndpoint = '/auth/logout';
-  static const String registerEndpoint = '/auth/register';
+  static const String registerEndpoint = '/customer-accounts';
   
   // Timeout durations
   static const Duration connectTimeout = Duration(seconds: 30);

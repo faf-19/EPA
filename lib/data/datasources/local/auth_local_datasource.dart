@@ -7,6 +7,8 @@ abstract class AuthLocalDataSource {
   Future<void> saveUserId(String userId);
   Future<void> saveUsername(String username);
   Future<void> savePhoneNumber(String phoneNumber);
+  Future<void> saveEmail(String email);
+  Future<String?> getEmail();
   Future<String?> getToken();
   Future<String?> getUserId();
   Future<String?> getUsername();
@@ -24,6 +26,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   static const String _userIdKey = 'user_id';
   static const String _usernameKey = 'username';
   static const String _phoneNumberKey = 'phone_number';
+  static const String _emailKey = 'email';
 
   @override
   Future<void> saveToken(String token) async {
@@ -43,6 +46,10 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   @override
   Future<void> savePhoneNumber(String phoneNumber) async {
     await storage.write(_phoneNumberKey, phoneNumber);
+  }
+
+  Future<void> saveEmail(String email) async {
+    await storage.write(_emailKey, email);
   }
 
   @override
@@ -66,11 +73,17 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   }
 
   @override
+  Future<String?> getEmail() async {
+    return storage.read(_emailKey);
+  }
+
+  @override
   Future<void> clearAll() async {
     await storage.remove(_tokenKey);
     await storage.remove(_userIdKey);
     await storage.remove(_usernameKey);
     await storage.remove(_phoneNumberKey);
+    await storage.remove(_emailKey);  
   }
 
   @override
