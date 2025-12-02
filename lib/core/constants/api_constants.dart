@@ -7,6 +7,8 @@ class ApiConstants {
   static const String loginEndpoint = '/customer-accounts/login';
   static const String logoutEndpoint = '/auth/logout';
   static const String registerEndpoint = '/customer-accounts';
+  static const String verifyOtpEndpoint = '/customer-accounts/verify-otp';
+  static const String resendOtpEndpoint = '/customer-accounts/resend-otp';
   
   // Timeout durations
   static const Duration connectTimeout = Duration(seconds: 30);
