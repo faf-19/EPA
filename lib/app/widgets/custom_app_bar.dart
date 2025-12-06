@@ -42,28 +42,35 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
                   IconButton(
                     icon: const Icon(Icons.arrow_back, color: AppColors.onPrimary),
                     onPressed: () {
-                      final navigator = Navigator.of(context);
-
                       if (forceHomeOnBack && Get.isRegistered<BottomNavController>()) {
                         Get.find<BottomNavController>().resetToHome();
+                        final navigator = Navigator.of(context);
                         navigator.popUntil((route) => route.settings.name == null || route.settings.name == Routes.HOME || route.isFirst);
                         return;
                       }
 
+                      // Try Flutter Navigator first (for nested navigators in bottom nav)
+                      final navigator = Navigator.of(context);
                       if (navigator.canPop()) {
                         navigator.pop();
                         return;
                       }
 
+                      // Try GetX navigation (for routes navigated via GetX)
+                      // Get.back() will handle errors gracefully, so we can call it directly
                       if (Get.key.currentState?.canPop() ?? false) {
                         Get.back();
                         return;
                       }
 
-                      if (Get.isRegistered<BottomNavController>()) {
-                        Get.find<BottomNavController>().resetToHome();
-                      } else {
+                      // Last resort: try Get.back() anyway (it might work)
+                      try {
                         Get.back();
+                      } catch (_) {
+                        // If Get.back() fails, try to go to home
+                        if (Get.isRegistered<BottomNavController>()) {
+                          Get.find<BottomNavController>().resetToHome();
+                        }
                       }
                     },
                   ),
