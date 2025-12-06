@@ -1,4 +1,4 @@
-// BottomNavBar is provided by the app shell; don't import it here to avoid recursion.
+import 'package:eprs/app/modules/bottom_nav/widgets/bottom_nav_footer.dart';
 import 'package:eprs/app/widgets/custom_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
@@ -51,7 +51,6 @@ class _OfficeViewState extends State<OfficeView> {
       appBar: const CustomAppBar(
         title: 'Offices',
         subtitle: 'Help improve your community',
-        forceHomeOnBack: true,
       ),
       body: SizedBox.expand(
         child: Stack(
@@ -203,7 +202,7 @@ class _OfficeViewState extends State<OfficeView> {
               return Align(
                 alignment: Alignment.bottomCenter,
                 child: Padding(
-                  padding: const EdgeInsets.only(left: 16, right: 16, bottom: 32),
+                  padding: const EdgeInsets.only(left: 16, right: 16, bottom: 100),
                   child: _OfficeInfoCard(
                     office: office,
                     onClose: controller.clearSelection,
@@ -214,6 +213,7 @@ class _OfficeViewState extends State<OfficeView> {
           ],
         ),
       ),
+      bottomNavigationBar: const BottomNavBarFooter(),
     );
   }
 }

@@ -20,6 +20,7 @@ class LanguageView extends GetView<LanguageController> {
     ];
 
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: const CustomAppBar(title: 'Language', subtitle: 'Help improve your community'),
       body: SafeArea(
         child: Padding(

@@ -109,7 +109,7 @@ class _ReportTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: AppColors.onPrimary,
-      elevation: 1,
+      elevation: 4,
       borderRadius: BorderRadius.circular(8),
       child: InkWell(
         onTap: () {
@@ -178,21 +178,23 @@ class _ReportTile extends StatelessWidget {
               child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
+                    Text(
+                      'En',
+                      style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: const Color(0xFF073C59),
+                        ),
+                    ),
+                      const SizedBox(width: 4),
                     Icon(
                       Icons.language,
                       color: AppColors.accentBlue,
                       size: 20,
                     ),
                     
-                    // Text(
-                    //   'En',
-                    //   style: TextStyle(
-                    //     fontFamily: 'Montserrat',
-                    //     fontSize: 12,
-                    //     fontWeight: FontWeight.w500,
-                    //     color: const Color(0xFF073C59),
-                    //     ),
-                    // ),
+                    
                   ],
                 ),
             

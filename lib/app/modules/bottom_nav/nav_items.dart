@@ -20,7 +20,7 @@ const Color bottomNavInactiveColor = Color(0xFFA0E4FF);
 
 const List<BottomNavItemData> bottomNavItems = [
   BottomNavItemData(icon: 'home.png', label: 'Home'),
-  BottomNavItemData(icon: 'office.png', label: 'Office'),
+  // BottomNavItemData(icon: 'office.png', label: 'Office'),
   BottomNavItemData(icon: 'awareness.png', label: 'Awareness'),
   BottomNavItemData(icon: 'status.png', label: 'Status'),
   BottomNavItemData(icon: 'profile.png', label: 'Settings'),

@@ -40,7 +40,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
     // Ensure a BottomNavController exists and register page bindings.
     final c = _controller;
     HomeBinding().dependencies();
-    OfficeBinding().dependencies();
+    // OfficeBinding().dependencies();
     AwarenessBinding().dependencies();
     StatusBinding().dependencies();
     // Ensure the StatusController is instantiated now so seeded data and
@@ -67,7 +67,7 @@ class _BottomNavBarState extends State<BottomNavBar> {
     // Create tab builders locally to avoid referencing stale fields after hot-reload.
     final tabBuilders = [
       () => HomeView(),
-      () => OfficeView(),
+      // () => OfficeView(),
       () => AwarenessView(),
       () => StatusView(),
       () => SettingView(),
