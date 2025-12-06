@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:eprs/app/widgets/custom_app_bar.dart';
 import 'package:eprs/core/enums/report_type_enum.dart';
 import 'package:eprs/core/theme/app_colors.dart';
@@ -6,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
 import 'package:eprs/app/routes/app_pages.dart';
-import 'package:eprs/app/modules/report/views/report_otp_view.dart';
 
 import '../controllers/report_controller.dart';
 
@@ -17,6 +18,8 @@ class ReportView extends GetView<ReportController> {
 
   @override
   Widget build(BuildContext context) {
+    // Set report type in controller
+    controller.reportType = reportType;
     // Area data used by the dropdown in the form. Declared here so
     // they're regular statements (not placed inside the widget list).
     final areas = [
@@ -264,6 +267,7 @@ class ReportView extends GetView<ReportController> {
                                     context,
                                     Icons.videocam_outlined,
                                     'Take Video',
+                                    isVideo: true,
                                   )
                                 : _evidenceTile(
                                     context,
@@ -307,11 +311,16 @@ class ReportView extends GetView<ReportController> {
                                 separatorBuilder: (_, __) =>
                                     const SizedBox(width: 8),
                                 itemBuilder: (ctx, i) {
-                                  final file = imgs[i];
-                                  final isAudio = file.path.toLowerCase().endsWith('.m4a') ||
-                                      file.path.toLowerCase().endsWith('.mp3') ||
-                                      file.path.toLowerCase().endsWith('.wav') ||
-                                      file.path.toLowerCase().endsWith('.aac');
+                                  final xFile = imgs[i];
+                                  final fileName = xFile.name.toLowerCase();
+                                  final isAudio = fileName.endsWith('.m4a') ||
+                                      fileName.endsWith('.mp3') ||
+                                      fileName.endsWith('.wav') ||
+                                      fileName.endsWith('.aac');
+                                  final isVideo = fileName.endsWith('.mp4') ||
+                                      fileName.endsWith('.mov') ||
+                                      fileName.endsWith('.avi') ||
+                                      fileName.endsWith('.mkv');
                                   return Stack(
                                     children: [
                                       ClipRRect(
@@ -333,18 +342,30 @@ class ReportView extends GetView<ReportController> {
                                                     color: Color(0xFF63557F),
                                                   ),
                                                 )
-                                              : kIsWeb
-                                                  ? Image.network(
-                                                      file.path,
-                                                      fit: BoxFit.cover,
-                                                      errorBuilder: (_, __, ___) =>
-                                                          const Icon(Icons.image),
+                                              : isVideo
+                                                  ? const Center(
+                                                      child: Icon(
+                                                        Icons.videocam,
+                                                        size: 40,
+                                                        color: Color(0xFF63557F),
+                                                      ),
                                                     )
-                                                  : Image.file(
-                                                      file,
-                                                      fit: BoxFit.cover,
-                                                      errorBuilder: (_, __, ___) =>
-                                                          const Icon(Icons.image),
+                                                  : FutureBuilder<Uint8List>(
+                                                      future: xFile.readAsBytes(),
+                                                      builder: (context, snapshot) {
+                                                        if (snapshot.hasData) {
+                                                          return Image.memory(
+                                                            snapshot.data!,
+                                                            fit: BoxFit.cover,
+                                                          );
+                                                        } else if (snapshot.hasError) {
+                                                          return const Icon(Icons.image);
+                                                        } else {
+                                                          return const Center(
+                                                            child: CircularProgressIndicator(strokeWidth: 2),
+                                                          );
+                                                        }
+                                                      },
                                                     ),
                                         ),
                                       ),
@@ -352,8 +373,7 @@ class ReportView extends GetView<ReportController> {
                                         top: 4,
                                         right: 4,
                                         child: GestureDetector(
-                                          onTap: () => controller.pickedImages
-                                              .removeAt(i),
+                                          onTap: () => controller.removePickedImageAt(i),
                                           child: Container(
                                             decoration: BoxDecoration(
                                               color: Colors.black54,
@@ -567,6 +587,7 @@ class ReportView extends GetView<ReportController> {
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
+                        controller: controller.descriptionController,
                         maxLines: 3,
                         decoration: InputDecoration(
                           hintText:
@@ -628,6 +649,7 @@ class ReportView extends GetView<ReportController> {
                         children: [
                           Expanded(
                             child: TextFormField(
+                              controller: controller.phoneController,
                               keyboardType: TextInputType.phone,
                               decoration: InputDecoration(
                                 hintText: 'Enter Your Phone Number',
@@ -783,9 +805,12 @@ class ReportView extends GetView<ReportController> {
               const SizedBox(height: 18),
 
               // Terms checkbox
-              Row(
+              Obx(() => Row(
                 children: [
-                  Checkbox(value: false, onChanged: (v) {}),
+                  Checkbox(
+                    value: controller.termsAccepted.value,
+                    onChanged: (v) => controller.termsAccepted.value = v ?? false,
+                  ),
                   const Expanded(
                     child: Text(
                       'I Agree To The Terms And Conditions',
@@ -795,36 +820,41 @@ class ReportView extends GetView<ReportController> {
                     ),
                   ),
                 ],
-              ),
+              )),
 
               const SizedBox(height: 12),
 
               // Send button
-              SizedBox(
+              Obx(() => SizedBox(
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (_) => const ReportOtpView()),
-                    );
-                  },
+                  onPressed: controller.isSubmitting.value ? null : () => controller.submitReport(),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text(
-                    'SEND',
-                    style: TextStyle(
-                      fontFamily: 'Montserrat',
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.onPrimary,
-                    ),
-                  ),
+                  child: controller.isSubmitting.value
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(AppColors.onPrimary),
+                          ),
+                        )
+                      : const Text(
+                          'SEND',
+                          style: TextStyle(
+                            fontFamily: 'Montserrat',
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.onPrimary,
+                          ),
+                        ),
                 ),
-              ),
+              )),
             ],
           ),
         ),
@@ -832,7 +862,7 @@ class ReportView extends GetView<ReportController> {
     );
   }
 
-  Widget _evidenceTile(BuildContext ctx, IconData icon, String label, {bool isVoiceNote = false}) {
+  Widget _evidenceTile(BuildContext ctx, IconData icon, String label, {bool isVoiceNote = false, bool isVideo = false}) {
     return InkWell(
       onTap: () async {
         if (isVoiceNote) {
@@ -841,6 +871,65 @@ class ReportView extends GetView<ReportController> {
           return;
         }
 
+        if (isVideo) {
+          // Show video picker options
+          final choice = await showModalBottomSheet<int>(
+            context: ctx,
+            builder: (sheetCtx) {
+              return SafeArea(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.videocam_outlined),
+                      title: const Text('Take Video'),
+                      onTap: () => Navigator.of(sheetCtx).pop(1),
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.video_library_outlined),
+                      title: const Text('Upload from Gallery'),
+                      onTap: () => Navigator.of(sheetCtx).pop(2),
+                    ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
+              );
+            },
+          );
+
+          if (choice == 1 || choice == 2) {
+            showDialog(
+              context: ctx,
+              barrierDismissible: false,
+              builder: (_) => const Center(child: CircularProgressIndicator()),
+            );
+            try {
+              if (choice == 1) {
+                await controller.pickVideoFromCamera();
+              } else {
+                await controller.pickVideoFromGallery();
+              }
+              Get.snackbar(
+                'Upload',
+                'Video added',
+                snackPosition: SnackPosition.BOTTOM,
+              );
+            } catch (e) {
+              Get.snackbar(
+                'Upload failed',
+                e.toString(),
+                snackPosition: SnackPosition.BOTTOM,
+              );
+            } finally {
+              try {
+                Navigator.of(ctx, rootNavigator: true).pop();
+              } catch (_) {}
+            }
+          }
+          return;
+        }
+
+        // Photo picker
         final choice = await showModalBottomSheet<int>(
           context: ctx,
           builder: (sheetCtx) {

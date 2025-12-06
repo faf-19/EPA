@@ -113,13 +113,16 @@ class _ReportTile extends StatelessWidget {
       borderRadius: BorderRadius.circular(8),
       child: InkWell(
         onTap: () {
+          // Get pollution category ID from controller
+          final homeController = Get.find<HomeController>();
+          final categoryId = homeController.getPollutionCategoryId(reportType);
+          print('Navigating to report with type: $reportType, categoryId: $categoryId');
+          
           // Push onto the nearest Navigator (the nested navigator created by the shell)
-          Get.toNamed("/report", arguments: {'reportType': reportType}  );
-          // Navigator.of(context).push(
-          //   MaterialPageRoute(
-          //     builder: (_) => ReportView(reportType: reportType),
-          //   ),
-          // );
+          Get.toNamed("/report", arguments: {
+            'reportType': reportType,
+            if (categoryId != null) 'pollutionCategoryId': categoryId,
+          });
         },
         borderRadius: BorderRadius.circular(8),
         child: ClipRRect(

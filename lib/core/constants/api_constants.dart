@@ -12,10 +12,16 @@ class ApiConstants {
   
   // Location endpoints (full URLs using baseUrl)
   static const String regionsEndpoint = '${baseUrl}regions';
-  // zones endpoint can be queried as '${zonesByRegionEndpoint}/{regionId}'
-  static const String zonesByRegionEndpoint = '${baseUrl}zones';
-  // woredas endpoint can be queried as '${woredasByLocationEndpoint}/{zoneId}'
-  static const String woredasByLocationEndpoint = '${baseUrl}woredas';
+  // zones endpoint can be queried as '${zonesByRegionEndpoint}/region/{regionId}'
+  static const String zonesByRegionEndpoint = '${baseUrl}zones/region';
+  // woredas endpoint can be queried as '${woredasByLocationEndpoint}/location/{zoneId}'
+  static const String woredasByLocationEndpoint = '${baseUrl}woredas/location';
+  
+  // Pollution categories endpoint
+  static const String pollutionCategoriesEndpoint = '${baseUrl}pollution-categories';
+  
+  // Complaints endpoint
+  static const String complaintsEndpoint = '${baseUrl}complaints';
   
   // Timeout durations
   static const Duration connectTimeout = Duration(seconds: 30);
