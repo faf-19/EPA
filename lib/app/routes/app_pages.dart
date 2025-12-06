@@ -172,9 +172,21 @@ class AppPages {
       name: _Paths.Report_Success,
       page: () {
         final arg = Get.arguments;
-        final reportId = (arg is String) ? arg : '';
-        final date = DateTime.now();
-        return ReportSuccessView(reportId: reportId, dateTime: date);
+        String reportId = '';
+        DateTime? dateTime;
+        
+        if (arg is String) {
+          // Backward compatibility: if argument is just a string, use it as reportId
+          reportId = arg;
+          dateTime = DateTime.now();
+        } else if (arg is Map) {
+          reportId = arg['reportId']?.toString() ?? '';
+          dateTime = arg['dateTime'] as DateTime? ?? DateTime.now();
+        } else {
+          dateTime = DateTime.now();
+        }
+        
+        return ReportSuccessView(reportId: reportId, dateTime: dateTime);
       },
     ),
 

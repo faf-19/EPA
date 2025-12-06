@@ -1,5 +1,6 @@
+import 'package:eprs/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
-//import 'package:intl/intl.dart';
+import 'package:intl/intl.dart';
 
 class ReportSuccessView extends StatelessWidget {
   final String reportId;
@@ -10,7 +11,7 @@ class ReportSuccessView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dt = dateTime ?? DateTime.now();
- //   final formatted = DateFormat('dd MMM yyyy hh:mm a').format(dt);
+    final formatted = DateFormat('dd MMM yyyy, hh:mm a').format(dt);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -34,7 +35,7 @@ class ReportSuccessView extends StatelessWidget {
                     width: 84,
                     height: 84,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF12A84A),
+                      color: AppColors.primary,
                       shape: BoxShape.circle,
                       boxShadow: [
                         BoxShadow(
@@ -112,13 +113,13 @@ class ReportSuccessView extends StatelessWidget {
                             ),
                           ),
                           const SizedBox(height: 12),
-                          // Text(
-                          // //  formatted,
-                          //   style: const TextStyle(
-                          //     color: Color(0xFF0B2035),
-                          //     fontWeight: FontWeight.w600,
-                          //   ),
-                          // ),
+                          Text(
+                            formatted,
+                            style: const TextStyle(
+                              color: Color(0xFF0B2035),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                         ],
                       ),
                     ],

@@ -2,8 +2,10 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-
 import 'package:get_storage/get_storage.dart';
+import 'package:eprs/core/network/dio_client.dart';
+import 'package:eprs/core/constants/api_constants.dart';
+import 'package:dio/dio.dart' as dio;
 
 class HomeController extends GetxController {
   // === USER INFO (from GetStorage) ===
@@ -100,12 +102,69 @@ class HomeController extends GetxController {
   // === Comments ===
   final RxList<Comment> comments = <Comment>[].obs;
   final box = GetStorage();
+  
+  // === Pollution Categories ===
+  final RxMap<String, String> pollutionCategories = <String, String>{}.obs; // Map of category name to ID
 
   @override
   void onInit() {
     super.onInit();
     _loadUserFromStorage();   // ← FIXED: No more LoginController
     _initMockComments();
+    fetchPollutionCategories();
+  }
+  
+  // Fetch pollution categories from API
+  Future<void> fetchPollutionCategories() async {
+    try {
+      final httpClient = Get.find<DioClient>().dio;
+      final token = box.read('auth_token');
+      final res = await httpClient.get(
+        ApiConstants.pollutionCategoriesEndpoint,
+        options: dio.Options(headers: {
+          if (token != null) 'Authorization': 'Bearer $token',
+        }),
+      );
+      
+      final data = res.data;
+      List items = [];
+      if (data is List) {
+        items = data;
+      } else if (data is Map) {
+        if (data['data'] is List) {
+          items = data['data'];
+        } else if (data['categories'] is List) {
+          items = data['categories'];
+        }
+      }
+      
+      pollutionCategories.clear();
+      for (var item in items) {
+        if (item is Map) {
+          final id = item['pollution_category_id']?.toString() ?? item['id']?.toString() ?? '';
+          final name = item['pollution_category']?.toString() ?? item['name']?.toString() ?? '';
+          if (id.isNotEmpty && name.isNotEmpty) {
+            // Store both original case and lowercase for lookup
+            pollutionCategories[name.toLowerCase().trim()] = id;
+            pollutionCategories[name.trim()] = id; // Also store original case
+            print('Loaded category: "$name" (ID: $id)');
+          }
+        }
+      }
+      
+      print('Loaded pollution categories: ${pollutionCategories.keys.toList()}');
+    } catch (e) {
+      print('Error fetching pollution categories: $e');
+    }
+  }
+  
+  // Get pollution category ID by name
+  String? getPollutionCategoryId(String categoryName) {
+    final lowerName = categoryName.toLowerCase().trim();
+    final id = pollutionCategories[lowerName];
+    print('Looking up category: "$categoryName" (normalized: "$lowerName") -> ID: $id');
+    print('Available categories: ${pollutionCategories.keys.toList()}');
+    return id;
   }
 
   // FIXED: Load user from GetStorage (safe & fast)
