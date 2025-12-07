@@ -1,5 +1,5 @@
 import 'package:eprs/core/theme/app_colors.dart';
-
+import 'package:eprs/core/theme/app_fonts.dart';
 import '../../../widgets/custom_app_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -40,13 +40,141 @@ class SettingView extends GetView<SettingController> {
     return const Divider(height: 1, thickness: 1, indent: 16, endIndent: 16);
   }
 
+  // Build user profile section (when logged in)
+  Widget _buildUserProfileSection() {
+    return Column(
+      children: [
+        // Profile picture
+        Container(
+          width: 60,
+          height: 60,
+          decoration: BoxDecoration(
+            color: AppColors.primary,
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Text(
+              controller.userName.value.isNotEmpty
+                  ? controller.userName.value[0].toUpperCase()
+                  : 'U',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 12),
+        
+        // User name
+        Obx(() => Text(
+          controller.userName.value,
+          style: TextStyle(
+            fontFamily: AppFonts.primaryFont,
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: Colors.black,
+          ),
+        )),
+        const SizedBox(height: 6),
+        
+        // Phone number
+        Obx(() => Text(
+          controller.phoneNumber.value.isNotEmpty 
+              ? controller.phoneNumber.value 
+              : 'No phone number',
+          style: TextStyle(
+            fontFamily: AppFonts.primaryFont,
+            fontSize: 13,
+            color: Colors.grey[600],
+          ),
+        )),
+        const SizedBox(height: 16),
+        
+        // Edit profile button
+        OutlinedButton(
+          onPressed: () {
+            // TODO: Navigate to edit profile page
+            // Get.snackbar(
+            //   'Edit Profile',
+            //   'Edit profile feature coming soon',
+            //   snackPosition: SnackPosition.BOTTOM,
+            // );
+          },
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(color: AppColors.primary, width: 1.5),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.edit_outlined,
+                color: AppColors.primary,
+                size: 16,
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'edit_profile',
+                style: TextStyle(
+                  fontFamily: AppFonts.primaryFont,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Build guest card (when not logged in)
+  Widget _buildGuestCard() {
+    return Material(
+      color: Colors.white,
+      elevation: 2,
+      borderRadius: BorderRadius.circular(12),
+      child: ListTile(
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: AppColors.onPrimary,
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: const Icon(Icons.person_outline, color: Colors.black),
+        ),
+        title: const Text('Guest',
+            style: TextStyle(fontWeight: FontWeight.w600)),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () {
+          // Navigate to login
+          Get.toNamed(Routes.LOGIN);
+        },
+      ),
+    );
+  }
+
   // ── Build UI ───────────────────────────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
+    // Refresh user data when view is built
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.refreshUserData();
+    });
+
     return Scaffold(
         backgroundColor: Colors.white,
         appBar: const CustomAppBar(
-          title: 'Setting',
+          title: 'Settings',
         ),
 
       body: SafeArea(
@@ -56,34 +184,17 @@ class SettingView extends GetView<SettingController> {
         //   child: 
           Column(
             children: [
-              const SizedBox(height: 12),
-              // User header card
-              Material(
-                color: Colors.white,
-                elevation: 2,
-                borderRadius: BorderRadius.circular(12),
-                child: ListTile(
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  leading: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: AppColors.onPrimary,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child:
-                        const Icon(Icons.person_outline, color: Colors.black),
-                  ),
-                  title: const Text('Guest',
-                      style: TextStyle(fontWeight: FontWeight.w600)),
-                  trailing: const Icon(Icons.chevron_right),
-                  onTap: () {
-                  },
-                ),
-              ),
-
               const SizedBox(height: 16),
+              // User profile section (only if logged in)
+              Obx(() {
+                if (controller.isLoggedIn.value) {
+                  return _buildUserProfileSection();
+                } else {
+                  return _buildGuestCard();
+                }
+              }),
+
+              const SizedBox(height: 20),
 
               // Options list
               Flexible(

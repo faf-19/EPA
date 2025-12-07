@@ -22,6 +22,7 @@ class ApiConstants {
   
   // Complaints endpoint
   static const String complaintsEndpoint = '${baseUrl}complaints';
+  static String complaintByIdEndpoint(String complaintId) => '${baseUrl}complaints/$complaintId';
   
   // Timeout durations
   static const Duration connectTimeout = Duration(seconds: 30);

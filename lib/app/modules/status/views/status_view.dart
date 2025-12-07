@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/status_controller.dart';
 import 'package:eprs/app/widgets/custom_app_bar.dart';
+import 'status_detail_view.dart';
 // Bottom nav is provided by the app shell; don't import it in this page.
 
 class StatusView extends GetView<StatusController> {
@@ -14,7 +15,6 @@ class StatusView extends GetView<StatusController> {
         backgroundColor: const Color(0xFFF5F5F5),
         appBar: const CustomAppBar(
           title: 'Report Status',
-          subtitle: 'Help improve your community',
           showBack: true,
           forceHomeOnBack: true,
         ),
@@ -60,47 +60,99 @@ class StatusView extends GetView<StatusController> {
             // List of Complaints (reactive: shows filteredReports from controller)
             Expanded(
               child: Obx(() {
+                // Show loading indicator
+                if (controller.isLoading.value) {
+                  return const Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+
+                // Show error message
+                if (controller.errorMessage.value != null) {
+                  return Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            size: 64,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            controller.errorMessage.value!,
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 14,
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          ElevatedButton(
+                            onPressed: () => controller.refreshComplaints(),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppColors.primary,
+                              foregroundColor: Colors.white,
+                            ),
+                            child: const Text('Retry'),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }
+
                 final reports = controller.filteredReports;
                 if (reports.isEmpty) {
                   return Center(
                     child: Padding(
                       padding: const EdgeInsets.all(24.0),
-                      child: Text('No reports found', style: TextStyle(color: Colors.grey[600])),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.inbox_outlined,
+                            size: 64,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            'No reports found',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Pull down to refresh',
+                            style: TextStyle(
+                              color: Colors.grey[500],
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 }
-                return ListView.separated(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  itemCount: reports.length + 1, // extra spacer at end
-                  separatorBuilder: (_, __) => const SizedBox(height: 0),
-                  itemBuilder: (context, index) {
-                    if (index == reports.length) return const SizedBox(height: 80);
-                    final r = reports[index];
-                    // convert status to a color for badge
-                    Color statusColor;
-                    switch (r.status) {
-                      case 'Pending':
-                        statusColor = Colors.grey;
-                        break;
-                      case 'In Progress':
-                        statusColor = Colors.orange;
-                        break;
-                      case 'Completed':
-                        statusColor = const Color(0xFF16A34A);
-                        break;
-                      case 'Rejected':
-                        statusColor = Colors.red;
-                        break;
-                      default:
-                        statusColor = Colors.grey;
-                    }
-                    return _complaintCard(
-                      title: r.title,
-                      status: r.status,
-                      description: r.description,
-                      date: r.date,
-                    );
-                  },
+                return RefreshIndicator(
+                  onRefresh: () => controller.refreshComplaints(),
+                  child: ListView.separated(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    itemCount: reports.length + 1, // extra spacer at end
+                    separatorBuilder: (_, __) => const SizedBox(height: 0),
+                    itemBuilder: (context, index) {
+                      if (index == reports.length) return const SizedBox(height: 80);
+                      final r = reports[index];
+                      return _complaintCard(
+                        report: r,
+                      );
+                    },
+                  ),
                 );
               }),
             ),
@@ -137,11 +189,12 @@ class StatusView extends GetView<StatusController> {
 
   // Complaint Card — updated to match the design in the provided image
   Widget _complaintCard({
-  required String title,
-  required String status,
-  required String description,
-  required String date,
+  required ReportItem report,
 }) {
+  final title = report.title;
+  final status = report.status;
+  final description = report.description;
+  final date = report.date;
   // STATUS COLORS
   Color pillBg;
   Color pillText;
@@ -166,22 +219,26 @@ class StatusView extends GetView<StatusController> {
 
   const outerGlow = Color(0xFFE8F1FF);
 
-  return Container(
-    margin: const EdgeInsets.only(bottom: 16),
-    padding: const EdgeInsets.only(top: 16, bottom: 16, left: 13, right: 13),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(8),
-      boxShadow: [
-        BoxShadow(
-          color: outerGlow.withOpacity(0.8),
-          blurRadius: 18,
-          spreadRadius: 1,
-          offset: const Offset(0, 4),
-        ),
-      ],
-    ),
-    child: Column(
+  return InkWell(
+    onTap: () {
+      Get.to(() => StatusDetailView(report: report));
+    },
+    child: Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(top: 16, bottom: 16, left: 13, right: 13),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        boxShadow: [
+          BoxShadow(
+            color: outerGlow.withOpacity(0.8),
+            blurRadius: 18,
+            spreadRadius: 1,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // TITLE + STATUS BADGE
@@ -194,7 +251,7 @@ class StatusView extends GetView<StatusController> {
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF0B1220),
+                  color: Colors.black,
                 ),
               ),
             ),
@@ -235,31 +292,7 @@ class StatusView extends GetView<StatusController> {
 
             // DATE TEXT
             Text(
-              "Sep 12, 2022", // use your parsed date
-              style: const TextStyle(
-                color: Color(0xFF5A5F66),
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-
-            const SizedBox(width: 20),
-
-            // TIME BOX
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEFF8EF),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.av_timer_sharp,
-                  color: Color(0xFF1E9B47), size: 16),
-            ),
-            const SizedBox(width: 10),
-
-            // TIME TEXT
-            Text(
-              "09:10:22 PM",
+              date,
               style: const TextStyle(
                 color: Color(0xFF5A5F66),
                 fontSize: 13,
@@ -283,6 +316,7 @@ class StatusView extends GetView<StatusController> {
           ),
         ),
       ],
+    ),
     ),
   );
 }

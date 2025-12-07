@@ -29,7 +29,6 @@ class ContactUsView extends GetView<ContactUsController> {
       backgroundColor: const Color(0xFFF3F1F8),
       appBar: const CustomAppBar(
         title: 'Contact Us',
-        subtitle: 'Help improve your community',
         showBack: true,
       ),
       body: SafeArea(

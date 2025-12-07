@@ -49,7 +49,7 @@ class _OfficeDetailMapViewState extends State<OfficeDetailMapView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: const CustomAppBar(title: 'Offices', subtitle: 'Help improve your community', showBack: true),
+      appBar: const CustomAppBar(title: 'Offices', showBack: true),
       body: Stack(
         children: [
           GoogleMap(

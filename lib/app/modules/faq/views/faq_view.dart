@@ -30,7 +30,7 @@ class FaqView extends GetView<FaqController> {
     ];
 
     return Scaffold(
-      appBar: const CustomAppBar(title: 'FAQ', subtitle: 'Help improve your community'),
+      appBar: const CustomAppBar(title: 'FAQ'),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),

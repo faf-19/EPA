@@ -50,7 +50,6 @@ class _OfficeViewState extends State<OfficeView> {
     return Scaffold(
       appBar: const CustomAppBar(
         title: 'Offices',
-        subtitle: 'Help improve your community',
       ),
       body: SizedBox.expand(
         child: Stack(

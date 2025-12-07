@@ -19,7 +19,7 @@ class ReportIssueView extends StatelessWidget {
     ];
 
     return Scaffold(
-      appBar: CustomAppBar(title: "Report Issue Category", subtitle: "Help improve your community"),
+      appBar: CustomAppBar(title: "Report Issue Category"),
         
       backgroundColor: const Color(0xFFF6F6FA),
       body: SingleChildScrollView(

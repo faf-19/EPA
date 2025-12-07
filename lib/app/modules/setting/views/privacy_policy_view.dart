@@ -11,7 +11,7 @@ class PrivacyPolicyView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF7F1F8), // subtle purple background
-      appBar: const CustomAppBar(title: 'Privacy Policy', subtitle: 'Help improve your community'),
+      appBar: const CustomAppBar(title: 'Privacy Policy'),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
