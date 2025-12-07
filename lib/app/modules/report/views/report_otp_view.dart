@@ -19,7 +19,6 @@ class ReportOtpView extends GetView<ReportOtpController> {
       backgroundColor: const Color(0xFFF6F6FA),
       appBar: const CustomAppBar(
         title: 'OTP',
-        subtitle: 'Help improve your community',
         showBack: true,
       ),
       body: GestureDetector(

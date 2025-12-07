@@ -36,7 +36,6 @@ class ReportView extends GetView<ReportController> {
     return Scaffold(
       appBar: CustomAppBar(
         title: 'Report Issue',
-        subtitle: 'Help improve your community',
         showBack: true,
         showHelp: true,
         helpRoute: Routes.FAQ,
@@ -829,10 +828,12 @@ class ReportView extends GetView<ReportController> {
                 height: 52,
                 child: ElevatedButton(
                   onPressed: controller.isSubmitting.value ? null : () => controller.submitReport(),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
+                  style: ButtonStyle(
+                    // Keep the button green for all states (including disabled)
+                    backgroundColor: MaterialStateProperty.all<Color>(AppColors.primary),
+                    foregroundColor: MaterialStateProperty.all<Color>(AppColors.onPrimary),
+                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                      RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                   ),
                   child: controller.isSubmitting.value

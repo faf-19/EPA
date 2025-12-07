@@ -1,9 +1,9 @@
 import 'package:eprs/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../controllers/signup_controller.dart';
 import 'package:eprs/core/theme/app_colors.dart';
+import 'package:eprs/core/theme/app_fonts.dart';
 import 'package:eprs/domain/usecases/signup_usecase.dart';
 class SignUpOverlay extends StatefulWidget {
   const SignUpOverlay({super.key});
@@ -38,7 +38,6 @@ class _SignUpOverlayState extends State<SignUpOverlay> {
     final size = MediaQuery.of(context).size;
 
     const greenColor = AppColors.primary;
-    const blueColor = Color(0xFF0047BA);
     const darkText = Color(0xFF0F3B52);
     const hintText = Color(0xFF9BA5B1);
     const borderColor = Color(0xFFE0E6ED);
@@ -71,7 +70,8 @@ class _SignUpOverlayState extends State<SignUpOverlay> {
                     alignment: Alignment.topRight,
                     child: Text(
                       'Eng',
-                      style: GoogleFonts.poppins(
+                      style: TextStyle(
+                        fontFamily: AppFonts.primaryFont,
                         fontSize: 13,
                         color: Colors.grey.shade700,
                         fontWeight: FontWeight.w500,
@@ -87,7 +87,8 @@ class _SignUpOverlayState extends State<SignUpOverlay> {
                   const SizedBox(height: 33),
                   Text(
                     'Create EPA PASS Account',
-                    style: GoogleFonts.poppins(
+                    style: TextStyle(
+                      fontFamily: AppFonts.primaryFont,
                       fontSize: 24,
                       fontWeight: FontWeight.w600,
                       color: AppColors.secondary,
@@ -100,13 +101,13 @@ class _SignUpOverlayState extends State<SignUpOverlay> {
                   TextField(
                     controller: _nameCtrl,
                     keyboardType: TextInputType.name,
-                    style: GoogleFonts.poppins(fontSize: 15),
+                    style: TextStyle(fontFamily: AppFonts.primaryFont, fontSize: 15),
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: Colors.white,
                       prefixIcon: const Icon(Icons.person_outline, color: darkText),
                       hintText: 'Full Name',
-                      hintStyle: GoogleFonts.poppins(color: hintText, fontSize: 15),
+                      hintStyle: TextStyle(fontFamily: AppFonts.primaryFont, color: hintText, fontSize: 15),
                       contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
@@ -129,13 +130,13 @@ class _SignUpOverlayState extends State<SignUpOverlay> {
                   TextField(
                     controller: _emailCtrl,
                     keyboardType: TextInputType.emailAddress,
-                    style: GoogleFonts.poppins(fontSize: 15),
+                    style: TextStyle(fontFamily: AppFonts.primaryFont, fontSize: 15),
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: Colors.white,
                       prefixIcon: const Icon(Icons.email_outlined, color: darkText),
                       hintText: 'Email',
-                      hintStyle: GoogleFonts.poppins(color: hintText, fontSize: 15),
+                      hintStyle: TextStyle(fontFamily: AppFonts.primaryFont, color: hintText, fontSize: 15),
                       contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
@@ -158,13 +159,13 @@ class _SignUpOverlayState extends State<SignUpOverlay> {
                   TextField(
                     controller: _phoneCtrl,
                     keyboardType: TextInputType.phone,
-                    style: GoogleFonts.poppins(fontSize: 15),
+                    style: TextStyle(fontFamily: AppFonts.primaryFont, fontSize: 15),
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: Colors.white,
                       prefixIcon: const Icon(Icons.phone_outlined, color: darkText),
                       hintText: 'Phone number',
-                      hintStyle: GoogleFonts.poppins(color: hintText, fontSize: 15),
+                      hintStyle: TextStyle(fontFamily: AppFonts.primaryFont, color: hintText, fontSize: 15),
                       contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(14),
@@ -187,13 +188,13 @@ class _SignUpOverlayState extends State<SignUpOverlay> {
                   Obx(() => TextField(
                     controller: _passCtrl,
                     obscureText: controller.obscurePassword.value,
-                    style: GoogleFonts.poppins(fontSize: 15),
+                    style: TextStyle(fontFamily: AppFonts.primaryFont, fontSize: 15),
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: Colors.white,
                       prefixIcon: const Icon(Icons.lock_outline, color: darkText),
                       hintText: 'Password',
-                      hintStyle: GoogleFonts.poppins(color: hintText, fontSize: 15),
+                      hintStyle: TextStyle(fontFamily: AppFonts.primaryFont, color: hintText, fontSize: 15),
                       contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
                       suffixIcon: IconButton(
                         icon: Icon(
@@ -222,13 +223,13 @@ class _SignUpOverlayState extends State<SignUpOverlay> {
                   Obx(() => TextField(
                     controller: _confirmPassCtrl,
                     obscureText: controller.obscureConfirmPassword.value,
-                    style: GoogleFonts.poppins(fontSize: 15),
+                    style: TextStyle(fontFamily: AppFonts.primaryFont, fontSize: 15),
                     decoration: InputDecoration(
                       filled: true,
                       fillColor: Colors.white,
                       prefixIcon: const Icon(Icons.lock_outline, color: darkText),
                       hintText: 'Password Confirmation',
-                      hintStyle: GoogleFonts.poppins(color: hintText, fontSize: 15),
+                      hintStyle: TextStyle(fontFamily: AppFonts.primaryFont, color: hintText, fontSize: 15),
                       contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
                       suffixIcon: IconButton(
                         icon: Icon(
@@ -286,13 +287,44 @@ class _SignUpOverlayState extends State<SignUpOverlay> {
                             )
                           : Text(
                               'Continue',
-                              style: GoogleFonts.poppins(
+                              style: TextStyle(
+                                fontFamily: AppFonts.primaryFont,
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
                     ),
                   )),
+                  
+                  const SizedBox(height: 20),
+                  
+                  // Sign In link
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Already have an account? ',
+                        style: TextStyle(
+                          fontFamily: AppFonts.primaryFont,
+                          fontSize: 14,
+                          color: hintText,
+                          fontWeight: FontWeight.w400,
+                        ),
+                      ),
+                      GestureDetector(
+                        onTap: () => Get.toNamed(Routes.LOGIN),
+                        child: Text(
+                          'Sign In',
+                          style: TextStyle(
+                            fontFamily: AppFonts.primaryFont,
+                            fontSize: 14,
+                            color: greenColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                   
                   const SizedBox(height: 40),
                 ],

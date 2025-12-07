@@ -17,7 +17,6 @@ class TermAndConditionsView extends GetView<TermAndConditionsController> {
       backgroundColor: const Color(0xFFF3F1F8),
       appBar: const CustomAppBar(
         title: 'Term and Conditions',
-        subtitle: 'Help improve your community',
         showBack: true,
       ),
       body: SafeArea(
