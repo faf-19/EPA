@@ -1,4 +1,5 @@
 import 'dart:typed_data';
+import 'dart:math' as math;
 
 import 'package:eprs/app/widgets/custom_app_bar.dart';
 import 'package:eprs/core/enums/report_type_enum.dart';
@@ -30,13 +31,14 @@ class ReportView extends GetView<ReportController> {
       'Chemical & Hazardous Waste',
     ];
 
-    // Separate notifier for the area dropdown
-    final areasNotifier = ValueNotifier<String?>(areas.first);
+    // Separate notifier for the area dropdown (null means placeholder)
+    final areasNotifier = ValueNotifier<String?>(null);
 
     return Scaffold(
       appBar: CustomAppBar(
         title: 'Report Issue',
         showBack: true,
+        forceHomeOnBack: true, // ensure back reliably returns to Home shell
         showHelp: true,
         helpRoute: Routes.FAQ,
       ),
@@ -109,7 +111,7 @@ class ReportView extends GetView<ReportController> {
                   ),
                 ),
 
-              // const SizedBox(height: 12),
+              const SizedBox(height: 12),
 
               if (reportType == ReportTypeEnum.sound.name)
                 Card(
@@ -131,69 +133,75 @@ class ReportView extends GetView<ReportController> {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        ValueListenableBuilder<String?>(
-                          valueListenable: areasNotifier,
-                          builder: (context, value, _) {
-                            return DropdownButtonFormField<String>(
-                              initialValue: value == areas.first ? null : value,
-                              items: areas
-                                  .map(
-                                    (c) => DropdownMenuItem(
-                                      value: c == areas.first ? null : c,
-                                      child: Text(
-                                        c,
-                                        style: TextStyle(
-                                          color: c == areas.first
-                                              ? Colors.grey.shade500
-                                              : Colors.black87,
+                        ButtonTheme(
+                          alignedDropdown: true,
+                          child: ValueListenableBuilder<String?>(
+                            valueListenable: areasNotifier,
+                            builder: (context, value, _) {
+                              return DropdownButtonFormField<String>(
+                                value: value,
+                                isExpanded: true,
+                                dropdownColor: Colors.white,
+                                alignment: AlignmentDirectional.centerStart,
+                                itemHeight: 48,
+                                menuMaxHeight: 260,
+                                borderRadius: BorderRadius.circular(8),
+                                items: areas
+                                    .skip(1) // skip placeholder; use hint instead
+                                    .map(
+                                      (c) => DropdownMenuItem(
+                                        value: c,
+                                        child: Text(
+                                          c,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            color: Colors.black87,
+                                          ),
                                         ),
                                       ),
+                                    )
+                                    .toList(),
+                                onChanged: (v) {
+                                  areasNotifier.value = v;
+                                },
+                                decoration: InputDecoration(
+                                  isDense: true,
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 14,
+                                    vertical: 14,
+                                  ),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(
+                                      color: Color.fromRGBO(212, 212, 212, 1),
+                                      width: 1,
                                     ),
-                                  )
-                                  .toList(),
-                              onChanged: (v) {
-                                // persist locally — replace with controller logic if desired:
-                                areasNotifier.value = v ?? areas.first;
-                                // Example wiring if your controller exposes a setter:
-                                // controller.setReportCategory?.call(v);
-                                // or if controller.selectedReportType exists:
-                                // controller.selectedReportType.value = v ?? '';
-                              },
-                              decoration: InputDecoration(
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 12,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(
-                                    color: Colors.grey,
-                                    width: 0.2,
+                                  ),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(
+                                      color: Color.fromRGBO(212, 212, 212, 1),
+                                      width: 1,
+                                    ),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                    borderSide: BorderSide(
+                                      color: Color.fromRGBO(212, 212, 212, 1),
+                                      width: 1.1,
+                                    ),
+                                  ),
+                                  filled: true,
+                                  fillColor: Colors.white,
+                                  hintText: areas.first,
+                                  hintStyle: TextStyle(
+                                    color: Colors.grey.shade600,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(
-                                    color: Color(0xFFD4D4D4),
-                                    width: 0.4, // 👉 thinner
-                                  ),
-                                ),
-
-                                // 🔹 Focused border (also missing)
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(
-                                    color: Color(0xFF1E9B47), // green
-                                    width:
-                                        0.8, // slightly thicker for visibility
-                                  ),
-                                ),
-                                filled: true,
-                                fillColor: Colors.white,
-                                hintText: areas.first,
-                              ),
-                            );
-                          },
+                              );
+                            },
+                          ),
                         ),
                       ],
                     ),
@@ -241,19 +249,16 @@ class ReportView extends GetView<ReportController> {
                         ],
                       ),
                       const SizedBox(height: 12),
-                      // Show recording UI if recording, otherwise show tiles
-                      Obx(() {
-                        if (controller.isRecording.value || controller.isPaused.value) {
-                          return _buildRecordingUI(context);
-                        }
-                        return GridView.count(
+                      // Evidence input: voice recorder for sound, tiles for others
+                      if (reportType == ReportTypeEnum.sound.name) ...[
+                        _buildRecordingUI(context),
+                      ] else ...[
+                        GridView.count(
                           crossAxisCount: 2,
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           mainAxisSpacing: 12,
                           crossAxisSpacing: 12,
-                          // narrower aspect so tile height grows slightly to fit icon + label
-                          // lower ratio => taller tiles
                           childAspectRatio: 1.9,
                           children: [
                             _evidenceTile(
@@ -261,22 +266,15 @@ class ReportView extends GetView<ReportController> {
                               Icons.camera_alt_outlined,
                               'Photo',
                             ),
-                            reportType != ReportTypeEnum.sound.name
-                                ? _evidenceTile(
-                                    context,
-                                    Icons.videocam_outlined,
-                                    'Take Video',
-                                    isVideo: true,
-                                  )
-                                : _evidenceTile(
-                                    context,
-                                    Icons.keyboard_voice_outlined,
-                                    'Voice Note',
-                                    isVoiceNote: true,
-                                  ),
+                            _evidenceTile(
+                              context,
+                              Icons.videocam_outlined,
+                              'Take Video',
+                              isVideo: true,
+                            ),
                           ],
-                        );
-                      }),
+                        ),
+                      ],
                       const SizedBox(height: 12),
                       Obx(() {
                         final imgs = controller.pickedImages;
@@ -311,15 +309,24 @@ class ReportView extends GetView<ReportController> {
                                     const SizedBox(width: 8),
                                 itemBuilder: (ctx, i) {
                                   final xFile = imgs[i];
-                                  final fileName = xFile.name.toLowerCase();
+                                  final fileName = (xFile.name.isNotEmpty
+                                          ? xFile.name
+                                          : xFile.path.split('/').last)
+                                      .toLowerCase();
                                   final isAudio = fileName.endsWith('.m4a') ||
                                       fileName.endsWith('.mp3') ||
                                       fileName.endsWith('.wav') ||
-                                      fileName.endsWith('.aac');
+                                      fileName.endsWith('.aac') ||
+                                      fileName.contains('voice_note');
                                   final isVideo = fileName.endsWith('.mp4') ||
                                       fileName.endsWith('.mov') ||
                                       fileName.endsWith('.avi') ||
                                       fileName.endsWith('.mkv');
+                                  final isImage = fileName.endsWith('.png') ||
+                                      fileName.endsWith('.jpg') ||
+                                      fileName.endsWith('.jpeg') ||
+                                      fileName.endsWith('.gif') ||
+                                      fileName.endsWith('.webp');
                                   return Stack(
                                     children: [
                                       ClipRRect(
@@ -349,23 +356,31 @@ class ReportView extends GetView<ReportController> {
                                                         color: Color(0xFF63557F),
                                                       ),
                                                     )
-                                                  : FutureBuilder<Uint8List>(
-                                                      future: xFile.readAsBytes(),
-                                                      builder: (context, snapshot) {
-                                                        if (snapshot.hasData) {
-                                                          return Image.memory(
-                                                            snapshot.data!,
-                                                            fit: BoxFit.cover,
-                                                          );
-                                                        } else if (snapshot.hasError) {
-                                                          return const Icon(Icons.image);
-                                                        } else {
-                                                          return const Center(
-                                                            child: CircularProgressIndicator(strokeWidth: 2),
-                                                          );
-                                                        }
-                                                      },
-                                                    ),
+                                                  : isImage
+                                                      ? FutureBuilder<Uint8List>(
+                                                          future: xFile.readAsBytes(),
+                                                          builder: (context, snapshot) {
+                                                            if (snapshot.hasData) {
+                                                              return Image.memory(
+                                                                snapshot.data!,
+                                                                fit: BoxFit.cover,
+                                                              );
+                                                            } else if (snapshot.hasError) {
+                                                              return const Icon(Icons.image);
+                                                            } else {
+                                                              return const Center(
+                                                                child: CircularProgressIndicator(strokeWidth: 2),
+                                                              );
+                                                            }
+                                                          },
+                                                        )
+                                                      : const Center(
+                                                          child: Icon(
+                                                            Icons.insert_drive_file,
+                                                            size: 32,
+                                                            color: Color(0xFF63557F),
+                                                          ),
+                                                        ),
                                         ),
                                       ),
                                       Positioned(
@@ -596,12 +611,12 @@ class ReportView extends GetView<ReportController> {
                           filled: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Color(0xFFD4D4D4)),
+                            borderSide: BorderSide(color: Color.fromRGBO(212, 212, 212, 1)),
                           ),
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide: BorderSide(
-                              color: Color(0xFFD4D4D4),
+                              color: Color.fromRGBO(212, 212, 212, 1),
                               width: 0.4, // 👉 thinner
                             ),
                           ),
@@ -610,7 +625,7 @@ class ReportView extends GetView<ReportController> {
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide: BorderSide(
-                              color: Color(0xFF1E9B47), // green
+                              color: Color.fromRGBO(212, 212, 212, 1), // green
                               width: 0.8, // slightly thicker for visibility
                             ),
                           ),
@@ -623,93 +638,7 @@ class ReportView extends GetView<ReportController> {
 
               const SizedBox(height: 12),
 
-              // Phone Number Card
-              Card(
-                color: AppColors.onPrimary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                // elevation: 6,
-                child: Padding(
-                  padding: const EdgeInsets.all(12.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Phone Number',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      // Place the phone field and the ON/OFF toggle side-by-side
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: controller.phoneController,
-                              keyboardType: TextInputType.phone,
-                              decoration: InputDecoration(
-                                hintText: 'Enter Your Phone Number',
-                                hintStyle: TextStyle(fontSize: 13),
-                                filled: true,
-                                fillColor: Colors.white,
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 14,
-                                ),
-                                border: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: const BorderSide(
-                                    color: Color(0xFFD4D4D4),
-                                    width: 0.5,
-                                  ),
-                                ),
-
-                                enabledBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(
-                                    color: Color(0xFFD4D4D4),
-                                    width: 0.4,
-                                  ),
-                                ),
-
-                                // Focused border
-                                focusedBorder: OutlineInputBorder(
-                                  borderRadius: BorderRadius.circular(8),
-                                  borderSide: BorderSide(
-                                    color: Color(0xFF1E9B47), // green
-                                    width: 0.8,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          // Keep the toggle compact and vertically centered
-                          Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // Bind the phone toggle to a separate observable so it
-                              // doesn't trigger location auto-detect when toggled.
-                              _onOffToggle(
-                                bound: controller.phoneOptIn,
-                                isPhoneNumber: true,
-                                onChanged: (v) =>
-                                    controller.togglePhoneOptIn(v),
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 18),
-
+              
               // Time & Date Card
               Card(
                 color: AppColors.onPrimary,
@@ -760,7 +689,7 @@ class ReportView extends GetView<ReportController> {
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  side: BorderSide(color: Colors.grey.shade300),
+                                  side: BorderSide(color: Color.fromRGBO(212, 212, 212, 1)),
                                 ),
                                 child: Text(label),
                               );
@@ -788,7 +717,7 @@ class ReportView extends GetView<ReportController> {
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
-                                  side: BorderSide(color: Colors.grey.shade300),
+                                  side: BorderSide(color: Color.fromRGBO(212, 212, 212, 1)),
                                 ),
                                 child: Text(label),
                               );
@@ -800,6 +729,97 @@ class ReportView extends GetView<ReportController> {
                   ),
                 ),
               ),
+
+              const SizedBox(height: 12),
+              // Phone Number Card
+
+              
+              Obx(() => controller.isLoggedIn.value
+                  ? const SizedBox.shrink()
+                  : Card(
+                      color: AppColors.onPrimary,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      // elevation: 6,
+                      child: Padding(
+                        padding: const EdgeInsets.all(12.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Phone Number',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            // Place the phone field and the ON/OFF toggle side-by-side
+                            Row(
+                              children: [
+                                Expanded(
+                                  child: TextFormField(
+                                    controller: controller.phoneController,
+                                    keyboardType: TextInputType.phone,
+                                    decoration: InputDecoration(
+                                      hintText: 'Enter Your Phone Number',
+                                      hintStyle: TextStyle(fontSize: 13),
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                      contentPadding: const EdgeInsets.symmetric(
+                                        horizontal: 12,
+                                        vertical: 14,
+                                      ),
+                                      border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: const BorderSide(
+                                          color: Color.fromRGBO(212, 212, 212, 1),
+                                          width: 0.5,
+                                        ),
+                                      ),
+
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(
+                                          color: Color.fromRGBO(212, 212, 212, 1),
+                                          width: 0.4,
+                                        ),
+                                      ),
+
+                                      // Focused border
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide(
+                                          color: Color.fromRGBO(212, 212, 212, 1),
+                                          width: 0.8,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                // Keep the toggle compact and vertically centered
+                                Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // Bind the phone toggle to a separate observable so it
+                                    // doesn't trigger location auto-detect when toggled.
+                                    _onOffToggle(
+                                      bound: controller.phoneOptIn,
+                                      isPhoneNumber: true,
+                                      onChanged: (v) =>
+                                          controller.togglePhoneOptIn(v),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      ),
+                    )),
+
 
               const SizedBox(height: 18),
 
@@ -863,6 +883,7 @@ class ReportView extends GetView<ReportController> {
     );
   }
 
+  // ignore: unused_element
   Widget _evidenceTile(BuildContext ctx, IconData icon, String label, {bool isVoiceNote = false, bool isVideo = false}) {
     return InkWell(
       onTap: () async {
@@ -1020,13 +1041,14 @@ class ReportView extends GetView<ReportController> {
     return Obx(() {
       final duration = controller.recordingDuration.value;
       final isPaused = controller.isPaused.value;
-      
+
+      // Idle state: show start prompt instead of auto-starting
       return Container(
         padding: const EdgeInsets.all(16.0),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFD4D4D4), width: 0.4),
+          border: Border.all(color: const Color.fromRGBO(212, 212, 212, 1), width: 0.4),
         ),
         child: Column(
           children: [
@@ -1072,7 +1094,7 @@ class ReportView extends GetView<ReportController> {
               ],
             ),
             const SizedBox(height: 20),
-            // Three buttons: Stop, Cancel, Pause/Resume
+            // Three buttons: Stop, Cancel, Start/Pause/Resume
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -1080,23 +1102,33 @@ class ReportView extends GetView<ReportController> {
                 _buildRecordingButton(
                   icon: Icons.stop,
                   label: 'Stop',
-                  color: Colors.red,
+                  color: controller.isRecording.value ? AppColors.primary : Colors.grey.shade400,
+                  enabled: controller.isRecording.value,
                   onPressed: () => controller.stopRecording(),
                 ),
                 // Cancel button
                 _buildRecordingButton(
                   icon: Icons.cancel_outlined,
                   label: 'Cancel',
-                  color: Colors.grey,
+                  color: (controller.isRecording.value || controller.isPaused.value)
+                      ? AppColors.primary
+                      : Colors.grey.shade400,
+                  enabled: controller.isRecording.value || controller.isPaused.value,
                   onPressed: () => controller.cancelRecording(),
                 ),
                 // Pause/Resume button
                 _buildRecordingButton(
-                  icon: isPaused ? Icons.play_arrow : Icons.pause,
-                  label: isPaused ? 'Resume' : 'Pause',
+                  icon: controller.isRecording.value
+                      ? (isPaused ? Icons.play_arrow : Icons.pause)
+                      : Icons.mic,
+                  label: controller.isRecording.value
+                      ? (isPaused ? 'Resume' : 'Pause')
+                      : 'Start',
                   color: AppColors.primary,
                   onPressed: () {
-                    if (isPaused) {
+                    if (!controller.isRecording.value) {
+                      controller.startRecording();
+                    } else if (isPaused) {
                       controller.resumeRecording();
                     } else {
                       controller.pauseRecording();
@@ -1114,11 +1146,11 @@ class ReportView extends GetView<ReportController> {
   Widget _buildWaveform() {
     return Obx(() {
       final isPaused = controller.isPaused.value;
-      final duration = controller.recordingDuration.value;
+      final seed = controller.waveformTick.value;
       return CustomPaint(
         painter: WaveformPainter(
           isPaused: isPaused,
-          seed: duration.inSeconds,
+          seed: seed,
         ),
         child: Container(),
       );
@@ -1130,26 +1162,27 @@ class ReportView extends GetView<ReportController> {
     required String label,
     required Color color,
     required VoidCallback onPressed,
+    bool enabled = true,
   }) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
         Material(
-          color: color,
+          color: enabled ? color : Colors.grey.shade300,
           borderRadius: BorderRadius.circular(30),
           child: InkWell(
-            onTap: onPressed,
+            onTap: enabled ? onPressed : null,
             borderRadius: BorderRadius.circular(30),
             child: Container(
               width: 56,
               height: 56,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: color,
+                color: enabled ? color : Colors.grey.shade300,
               ),
               child: Icon(
                 icon,
-                color: Colors.white,
+                color: enabled ? Colors.white : Colors.white70,
                 size: 28,
               ),
             ),
@@ -1194,25 +1227,52 @@ class ReportView extends GetView<ReportController> {
               : items
                   .map((e) => DropdownMenuItem(
                         value: e,
-                        child: Text(e),
+                        child: Text(
+                          e,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(color: Colors.black87),
+                        ),
                       ))
                   .toList(),
           onChanged: enabled ? onChanged : null,
           decoration: InputDecoration(
+            isDense: true,
             contentPadding: const EdgeInsets.symmetric(
-              horizontal: 12,
-              vertical: 12,
+              horizontal: 14,
+              vertical: 14,
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
-              borderSide: BorderSide.none,
+              borderSide: BorderSide(
+                color: Color.fromRGBO(212, 212, 212, 1),
+                width: 1,
+              ),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: Color.fromRGBO(212, 212, 212, 1),
+                width: 1,
+              ),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: BorderSide(
+                color: Color.fromRGBO(212, 212, 212, 1),
+                width: 1,
+              ),
             ),
             filled: true,
             fillColor: enabled ? Colors.white : Colors.grey.shade100,
             hintText: items.isNotEmpty ? items.first : label,
+            hintStyle: TextStyle(
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
+            ),
           ),
-          // Add this to ensure dropdown shows items even when disabled
           isExpanded: true,
+          menuMaxHeight: 260,
+          borderRadius: BorderRadius.circular(8),
         ),
       ],
     );
@@ -1387,34 +1447,35 @@ class WaveformPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = isPaused ? Colors.grey.shade400 : const Color(0xFF63557F)
-      ..style = PaintingStyle.fill
-      ..strokeWidth = 2;
-
+    // Samsung-like: tight capsules, smooth motion, primary color
+    final baseColor = isPaused ? Colors.grey.shade400 : AppColors.primary;
+    final barWidth = 4.0;
+    final barSpacing = 3.0;
+    final maxBarHeight = size.height * 0.9;
     final centerY = size.height / 2;
-    final barWidth = 3.0;
-    final barSpacing = 4.0;
-    final maxBarHeight = size.height * 0.8;
-    
-    // Generate waveform bars with animation
+
     final barCount = ((size.width - barWidth) / (barWidth + barSpacing)).floor();
-    
     for (int i = 0; i < barCount; i++) {
-      // Create a pseudo-random pattern that looks like a waveform
-      // Use seed to make it change over time
-      final barSeed = (seed + i * 7) % 100;
-      final height = (maxBarHeight * (0.3 + (barSeed / 100) * 0.7));
-      
-      final x = i * (barWidth + barSpacing) + barWidth / 2;
+      // Smooth sine-based height variation; subtle per-bar phase offset
+      final phase = (seed * 0.18) + i * 0.32;
+      final amplitude = 0.3 + 0.35 * (0.5 + 0.5 * math.sin(phase)); // 0.3..0.65
+      final height = (maxBarHeight * amplitude).clamp(maxBarHeight * 0.18, maxBarHeight);
+
+      final x = i * (barWidth + barSpacing);
       final topY = centerY - height / 2;
-      final bottomY = centerY + height / 2;
-      
-      canvas.drawLine(
-        Offset(x, topY),
-        Offset(x, bottomY),
-        paint,
+      final rrect = RRect.fromLTRBR(
+        x,
+        topY,
+        x + barWidth,
+        topY + height,
+        const Radius.circular(4),
       );
+
+      final paint = Paint()
+        ..color = baseColor
+        ..style = PaintingStyle.fill;
+
+      canvas.drawRRect(rrect, paint);
     }
   }
 

@@ -61,6 +61,8 @@ class ReportController extends GetxController {
   final detectedPosition = Rxn<Position>();
 
   final phoneOptIn = false.obs;
+  final isLoggedIn = false.obs;
+  final box = GetStorage();
 
   final selectedDate = Rxn<DateTime>();
   final selectedTime = Rxn<TimeOfDay>();
@@ -84,6 +86,7 @@ class ReportController extends GetxController {
   final isRecording = false.obs;
   final isPaused = false.obs;
   final recordingDuration = Duration.zero.obs;
+  final waveformTick = 0.obs; // drives the live waveform animation
   final audioFilePath = RxnString();
   Timer? _recordingTimer;
   DateTime? _recordingStartTime;
@@ -95,6 +98,7 @@ class ReportController extends GetxController {
     super.onInit();
     // Reset form to ensure clean state when entering the page
     _resetForm();
+    _loadAuthState();
     
     // Get report type and pollution category ID from arguments
     final args = Get.arguments;
@@ -117,6 +121,17 @@ class ReportController extends GetxController {
     }
     // Fetch regions from API
     fetchRegions();
+  }
+
+  void _loadAuthState() {
+    final token = box.read('auth_token');
+    isLoggedIn.value = token != null && token.toString().isNotEmpty;
+
+    // Pre-fill phone if available
+    final storedPhone = box.read('phone')?.toString();
+    if (isLoggedIn.value && storedPhone != null && storedPhone.isNotEmpty) {
+      phoneController.text = storedPhone;
+    }
   }
 
   // Reset form to initial state
@@ -165,6 +180,17 @@ class ReportController extends GetxController {
   
   @override
   void onClose() {
+    // Ensure recording is stopped before disposing
+    try {
+      if (isRecording.value || isPaused.value) {
+        _audioRecorder.stop();
+      }
+    } catch (_) {}
+    isRecording.value = false;
+    isPaused.value = false;
+    recordingDuration.value = Duration.zero;
+    waveformTick.value = 0;
+    audioFilePath.value = null;
     _recordingTimer?.cancel();
     _audioRecorder.dispose();
     descriptionController.dispose();
@@ -708,14 +734,16 @@ class ReportController extends GetxController {
         isPaused.value = false;
         _pausedDuration = Duration.zero;
         _recordingStartTime = DateTime.now();
+        waveformTick.value = 0;
 
         // Start timer to update duration
         _recordingTimer?.cancel();
-        _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-          if (isRecording.value && !isPaused.value) {
+        _recordingTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+          if (isRecording.value && !isPaused.value && _recordingStartTime != null) {
             final now = DateTime.now();
             final elapsed = now.difference(_recordingStartTime!);
             recordingDuration.value = elapsed + _pausedDuration;
+            waveformTick.value++;
           }
         });
       }
@@ -771,14 +799,24 @@ class ReportController extends GetxController {
         _recordingTimer?.cancel();
         isRecording.value = false;
         isPaused.value = false;
+        waveformTick.value = 0;
         
-        if (path != null && audioFilePath.value != null) {
-          // Create XFile from path (works on both web and mobile)
-          final xFile = XFile(audioFilePath.value!);
+        // Prefer the path returned from stop(); fallback to the stored path
+        final savePath = path ?? audioFilePath.value;
+        if (savePath != null && savePath.isNotEmpty) {
+          // Create XFile from the saved audio path
+          final xFile = XFile(savePath);
           addPickedImage(xFile);
+          pickedImagesX.refresh();
           Get.snackbar(
             'Recording Saved',
             'Voice note has been saved',
+            snackPosition: SnackPosition.BOTTOM,
+          );
+        } else {
+          Get.snackbar(
+            'Recording Error',
+            'No audio file was created. Please try again.',
             snackPosition: SnackPosition.BOTTOM,
           );
         }
@@ -819,6 +857,7 @@ class ReportController extends GetxController {
         // Reset state
         isRecording.value = false;
         isPaused.value = false;
+        waveformTick.value = 0;
         recordingDuration.value = Duration.zero;
         audioFilePath.value = null;
         _pausedDuration = Duration.zero;
