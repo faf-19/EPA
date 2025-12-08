@@ -6,6 +6,7 @@ import '../../../../core/constants/api_constants.dart';
 
 class ReportItem {
   final String? id;
+  final String? reportId; // Store report_id separately
   final String title;
   final String? reportType;
   final String status;
@@ -14,6 +15,7 @@ class ReportItem {
 
   ReportItem({
     this.id,
+    this.reportId,
     required this.title,
     this.reportType,
     required this.status,
@@ -55,23 +57,43 @@ class ReportItem {
       }
     }
 
+    // Extract pollution category - handle both string and object formats
+    String pollutionCategory = 'Pollution';
+    if (json['pollution_category'] != null) {
+      if (json['pollution_category'] is Map) {
+        pollutionCategory = json['pollution_category']['pollution_category']?.toString() ?? 
+                           json['pollution_category']['name']?.toString() ?? 
+                           'Pollution';
+      } else {
+        pollutionCategory = json['pollution_category'].toString();
+      }
+    } else if (json['category'] != null) {
+      pollutionCategory = json['category'].toString();
+    } else if (json['report_type'] != null) {
+      pollutionCategory = json['report_type'].toString();
+    }
+
+    // Extract description - ensure it's a clean string
+    String descriptionText = 'No description available';
+    if (json['detail'] != null) {
+      descriptionText = json['detail'].toString();
+    } else if (json['description'] != null) {
+      descriptionText = json['description'].toString();
+    } else if (json['details'] != null) {
+      descriptionText = json['details'].toString();
+    }
+
     return ReportItem(
       id: json['complaint_id']?.toString() ?? 
           json['id']?.toString() ?? 
           json['complaintId']?.toString(),
+      reportId: json['report_id']?.toString(), // Store report_id separately
       title: json['title']?.toString() ?? 
-             json['pollution_category']?.toString() ?? 
-             json['category']?.toString() ?? 
-             'Report',
-      reportType: json['pollution_category']?.toString() ?? 
-                  json['category']?.toString() ?? 
-                  json['report_type']?.toString() ?? 
-                  'Environmental',
+             json['report_id']?.toString() ??
+             pollutionCategory,
+      reportType: pollutionCategory,
       status: status,
-      description: json['detail']?.toString() ?? 
-                   json['description']?.toString() ?? 
-                   json['details']?.toString() ?? 
-                   'No description available',
+      description: descriptionText,
       date: dateStr,
     );
   }
@@ -110,7 +132,7 @@ class StatusController extends GetxController {
     fetchComplaints();
   }
 
-  /// Fetch complaints from API using user ID
+  /// Fetch complaints from API and filter by current user ID
   Future<void> fetchComplaints() async {
     isLoading.value = true;
     errorMessage.value = null;
@@ -128,16 +150,17 @@ class StatusController extends GetxController {
       final httpClient = Get.find<DioClient>().dio;
       final token = storage.read('auth_token');
 
-      // Fetch complaint using user ID as complaint ID
+      // Fetch all complaints from API
       final response = await httpClient.get(
-        ApiConstants.complaintByIdEndpoint(userId),
+        ApiConstants.complaintsEndpoint,
         options: Options(
           headers: {
             if (token != null) 'Authorization': 'Bearer $token',
+            'accept': '*/*',
           },
         ),
       );
-
+      print('Complaints API Response: ${response.data}');
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = response.data;
         
@@ -147,7 +170,7 @@ class StatusController extends GetxController {
         if (data is List) {
           complaintsList = data;
         } else if (data is Map) {
-          // Check for nested data first
+          // Check for nested data first (API returns {success: true, count: 36, data: [...]})
           if (data['data'] is List) {
             complaintsList = data['data'];
           } else if (data['complaints'] is List) {
@@ -158,9 +181,17 @@ class StatusController extends GetxController {
           }
         }
 
+        // Filter complaints to only show those belonging to the current user
+        // Match customer_id with the current user's ID
+        final userComplaints = complaintsList.where((complaint) {
+          if (complaint is! Map) return false;
+          final complaintCustomerId = complaint['customer_id']?.toString();
+          return complaintCustomerId == userId.toString();
+        }).toList();
+
         // Convert to ReportItem list
         allReports.assignAll(
-          complaintsList.map((json) => ReportItem.fromJson(
+          userComplaints.map((json) => ReportItem.fromJson(
             json is Map<String, dynamic> ? json : Map<String, dynamic>.from(json)
           )).toList(),
         );

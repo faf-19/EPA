@@ -41,30 +41,33 @@ class StatusDetailView extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Report Type
-                    Text(
-                      report.reportType ?? 'Report',
-                      style: TextStyle(
-                        fontFamily: AppFonts.primaryFont,
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.black,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    
-                    // Report ID and Status Row
+                    // Title and badges row
                     Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Report ID
+                        // Title (left side)
+                        Expanded(
+                          child: Text(
+                            report.title,
+                            style: TextStyle(
+                              fontFamily: AppFonts.primaryFont,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        
+                        // ID Badge (Blue) - Use report_id
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
                             color: const Color(0xFF0047BA),
-                            borderRadius: BorderRadius.circular(12),
+                            // borderRadius: BorderRadius.circular(12),
                           ),
                           child: Text(
-                            'ID: ${report.id ?? 'N/A'}',
+                            'ID: ${report.reportId ?? report.id ?? 'N/A'}',
                             style: TextStyle(
                               fontFamily: AppFonts.primaryFont,
                               fontSize: 12,
@@ -80,7 +83,7 @@ class StatusDetailView extends StatelessWidget {
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
                             color: _getStatusColor(report.status),
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
                             report.status,
@@ -95,7 +98,7 @@ class StatusDetailView extends StatelessWidget {
                       ],
                     ),
                     
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 12),
                     
                     // Description
                     Text(
@@ -110,10 +113,10 @@ class StatusDetailView extends StatelessWidget {
                     
                     const SizedBox(height: 16),
                     
-                    // Divider
+                    // Green divider line
                     Container(
                       height: 1,
-                      color: AppColors.primary.withOpacity(0.2),
+                      color: AppColors.primary,
                     ),
                     
                     const SizedBox(height: 16),
@@ -157,32 +160,39 @@ class StatusDetailView extends StatelessWidget {
 
     // Determine which stages are completed based on status
     int completedStages = 0;
-    bool isActive = false;
+    int activeStageIndex = -1;
     
     switch (status) {
       case 'pending':
         completedStages = 0;
-        isActive = true;
+        activeStageIndex = 0; // Pending is active
         break;
       case 'in progress':
-        completedStages = 1;
-        isActive = true;
+        completedStages = 1; // Pending completed
+        activeStageIndex = 1; // Verified is active
+        break;
+      case 'verified':
+        completedStages = 2; // Pending and Verified completed
+        activeStageIndex = 2; // Under Investigation is active
         break;
       case 'completed':
-        completedStages = 4;
-        isActive = false;
+        completedStages = 4; // All stages completed
+        activeStageIndex = -1;
         break;
       case 'rejected':
         completedStages = 4; // All stages completed, but last one is rejected (red)
-        isActive = false;
+        activeStageIndex = -1;
         break;
+      default:
+        completedStages = 0;
+        activeStageIndex = -1;
     }
 
     return Column(
       children: List.generate(stages.length, (index) {
         final stage = stages[index];
         final isCompleted = index < completedStages;
-        final isCurrent = index == completedStages && isActive;
+        final isCurrent = index == activeStageIndex;
         final isLast = index == stages.length - 1;
         final showRejectionMessage = isRejected && isLast && isCompleted;
 
@@ -211,13 +221,13 @@ class StatusDetailView extends StatelessWidget {
                             valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                           ),
                         )
-                      : Icon(
-                          isCompleted
-                              ? (isRejected && isLast ? Icons.close : Icons.check)
-                              : null,
-                          color: Colors.white,
-                          size: 18,
-                        ),
+                      : isCompleted
+                          ? Icon(
+                              isRejected && isLast ? Icons.close : Icons.check,
+                              color: Colors.white,
+                              size: 18,
+                            )
+                          : null,
                 ),
                 // Vertical line
                 if (!isLast)
@@ -249,9 +259,9 @@ class StatusDetailView extends StatelessWidget {
                           : const Color(0xFFAAAAAA),
                     ),
                   ),
-                  if (isCurrent && !isCompleted)
+                  if (isCurrent && !isCompleted) // Show message for active stage
                     Padding(
-                      padding: const EdgeInsets.only(top: 4),
+                      padding: const EdgeInsets.only(top: 4, bottom: 4),
                       child: Text(
                         'We are preparing your Doc with care',
                         style: TextStyle(
