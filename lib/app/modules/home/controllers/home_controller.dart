@@ -6,6 +6,8 @@ import 'package:get_storage/get_storage.dart';
 import 'package:eprs/core/network/dio_client.dart';
 import 'package:eprs/core/constants/api_constants.dart';
 import 'package:dio/dio.dart' as dio;
+import '../../status/controllers/status_controller.dart';
+import '../../status/views/status_detail_view.dart';
 
 class HomeController extends GetxController {
   // === USER INFO (from GetStorage) ===
@@ -105,6 +107,10 @@ class HomeController extends GetxController {
   
   // === Pollution Categories ===
   final RxMap<String, String> pollutionCategories = <String, String>{}.obs; // Map of category name to ID
+  
+  // === Report ID Search ===
+  final reportIdController = TextEditingController();
+  var isSearchingReport = false.obs;
 
   @override
   void onInit() {
@@ -309,6 +315,143 @@ class HomeController extends GetxController {
     userName.value = 'Guest';
     phoneNumber.value = '';
     Get.offAllNamed('/splash');
+  }
+
+  // === SEARCH REPORT BY ID ===
+  Future<void> searchReportById(String reportId) async {
+    if (reportId.trim().isEmpty) {
+      Get.snackbar(
+        'Error',
+        'Please enter a report ID',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+      return;
+    }
+
+    isSearchingReport.value = true;
+
+    try {
+      final storage = Get.find<GetStorage>();
+      final userId = storage.read('userId') ?? storage.read('user_id');
+      final token = storage.read('auth_token');
+
+      if (userId == null || token == null) {
+        Get.snackbar(
+          'Error',
+          'Please login to search for reports',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+        isSearchingReport.value = false;
+        return;
+      }
+
+      final httpClient = Get.find<DioClient>().dio;
+
+      // Fetch all complaints and find the one with matching report_id
+      final response = await httpClient.get(
+        ApiConstants.complaintsEndpoint,
+        options: dio.Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+            'accept': '*/*',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = response.data;
+        
+        // Handle different response formats
+        List<dynamic> complaintsList = [];
+        
+        if (data is List) {
+          complaintsList = data;
+        } else if (data is Map) {
+          if (data['data'] is List) {
+            complaintsList = data['data'];
+          } else if (data['complaints'] is List) {
+            complaintsList = data['complaints'];
+          }
+        }
+
+        // Find complaint with matching report_id that belongs to current user
+        dynamic foundComplaint;
+        try {
+          foundComplaint = complaintsList.firstWhere(
+            (complaint) {
+              if (complaint is! Map) return false;
+              final complaintReportId = complaint['report_id']?.toString() ?? '';
+              final complaintCustomerId = complaint['customer_id']?.toString();
+              
+              // Match report_id and verify it belongs to current user
+              return complaintReportId.toLowerCase().trim() == reportId.toLowerCase().trim() &&
+                     complaintCustomerId == userId.toString();
+            },
+          );
+        } catch (e) {
+          foundComplaint = null;
+        }
+
+        if (foundComplaint != null) {
+          // Convert to ReportItem and navigate to detail view
+          final reportItem = ReportItem.fromJson(
+            foundComplaint is Map<String, dynamic> 
+                ? foundComplaint 
+                : Map<String, dynamic>.from(foundComplaint)
+          );
+          
+          // Navigate to status detail view
+          reportIdController.clear();
+          Get.to(() => StatusDetailView(report: reportItem));
+        } else {
+          Get.snackbar(
+            'Not Found',
+            'Report ID not found or you do not have access to this report',
+            snackPosition: SnackPosition.BOTTOM,
+            backgroundColor: Colors.orange,
+            colorText: Colors.white,
+            duration: const Duration(seconds: 3),
+          );
+        }
+      } else {
+        Get.snackbar(
+          'Error',
+          'Failed to search for report. Please try again.',
+          snackPosition: SnackPosition.BOTTOM,
+          backgroundColor: Colors.red,
+          colorText: Colors.white,
+        );
+      }
+    } on dio.DioException catch (e) {
+      Get.snackbar(
+        'Error',
+        e.response?.data?['message']?.toString() ?? 
+        'Failed to search for report. Please check your connection.',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } catch (e) {
+      Get.snackbar(
+        'Error',
+        'An error occurred: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+        backgroundColor: Colors.red,
+        colorText: Colors.white,
+      );
+    } finally {
+      isSearchingReport.value = false;
+    }
+  }
+
+  @override
+  void onClose() {
+    reportIdController.dispose();
+    super.onClose();
   }
 }
 

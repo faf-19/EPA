@@ -52,7 +52,7 @@ class HomeView extends GetView<HomeController> {
                   ),
                   const SizedBox(height: 18),
 
-                  _buildCheckStatusSection(),
+                  _buildCheckStatusSection(controller),
                   const SizedBox(height: 18),
 
                   // Report grid
@@ -209,7 +209,7 @@ class _ReportTile extends StatelessWidget {
     );
   }
 
-   Widget _buildCheckStatusSection() {
+   Widget _buildCheckStatusSection(HomeController controller) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -249,7 +249,7 @@ class _ReportTile extends StatelessWidget {
               const SizedBox(height: 12),
               
               // Text field with trailing icon
-              Container(
+              Obx(() => Container(
                 width: double.infinity,
                 height: 48,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -261,25 +261,44 @@ class _ReportTile extends StatelessWidget {
                   children: [
                     Expanded(
                       child: TextField(
+                        controller: controller.reportIdController,
                         decoration: InputDecoration(
                           border: InputBorder.none,
-                          hintText: 'MB XXXXXXXX ET',
+                          hintText: 'Enter Report ID',
                           hintStyle: TextStyle(
                               color: AppColors.accentBlue,
                             fontSize: 12,
                           ),
                           contentPadding: const EdgeInsets.symmetric(vertical: 12),
                         ),
+                        onSubmitted: (value) {
+                          controller.searchReportById(value);
+                        },
+                        enabled: !controller.isSearchingReport.value,
                       ),
                     ),
-                    Icon(
-                      Icons.search,
-                      color: AppColors.tertiary,
-                      size: 24,
-                    ),
+                    if (controller.isSearchingReport.value)
+                      const SizedBox(
+                        width: 24,
+                        height: 24,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                        ),
+                      )
+                    else
+                      InkWell(
+                        onTap: () {
+                          controller.searchReportById(controller.reportIdController.text);
+                        },
+                        child: Icon(
+                          Icons.search,
+                          color: AppColors.tertiary,
+                          size: 24,
+                        ),
+                      ),
                   ],
                 ),
-              ),
+              )),
             ],
           ),
         ),
