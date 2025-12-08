@@ -215,47 +215,52 @@ class _LoginOverlayState extends State<LoginOverlay> {
                             // Remember + Forgot
                             Row(
                               children: [
-                                GestureDetector(
-                                  onTap: () =>
-                                      setState(() => _remember = !_remember),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: isSmall ? 18 : 20,
-                                        height: isSmall ? 18 : 20,
-                                        decoration: BoxDecoration(
-                                          border: Border.all(
-                                            color: hintText,
-                                            width: 1.2,
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () =>
+                                        setState(() => _remember = !_remember),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Container(
+                                          width: isSmall ? 18 : 20,
+                                          height: isSmall ? 18 : 20,
+                                          decoration: BoxDecoration(
+                                            border: Border.all(
+                                              color: hintText,
+                                              width: 1.2,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
+                                            color: _remember
+                                                ? greenColor
+                                                : Colors.transparent,
                                           ),
-                                          borderRadius: BorderRadius.circular(
-                                            4,
+                                          child: _remember
+                                              ? const Icon(
+                                                  Icons.check,
+                                                  size: 14,
+                                                  color: Colors.white,
+                                                )
+                                              : null,
+                                        ),
+                                        SizedBox(width: isSmall ? 8 : 10),
+                                        Flexible(
+                                          child: Text(
+                                            'Remember Me',
+                                            overflow: TextOverflow.ellipsis,
+                                            style: GoogleFonts.poppins(
+                                              fontSize: isSmall ? 13 : 14,
+                                              color: darkText,
+                                              fontWeight: FontWeight.w500,
+                                            ),
                                           ),
-                                          color: _remember
-                                              ? greenColor
-                                              : Colors.transparent,
                                         ),
-                                        child: _remember
-                                            ? const Icon(
-                                                Icons.check,
-                                                size: 14,
-                                                color: Colors.white,
-                                              )
-                                            : null,
-                                      ),
-                                      SizedBox(width: isSmall ? 8 : 10),
-                                      Text(
-                                        'Remember Me',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: isSmall ? 13 : 14,
-                                          color: darkText,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
-                                const Spacer(),
                                 TextButton(
                                   onPressed: () {},
                                   style: TextButton.styleFrom(
@@ -266,6 +271,7 @@ class _LoginOverlayState extends State<LoginOverlay> {
                                   ),
                                   child: Text(
                                     'Forget Password?',
+                                    overflow: TextOverflow.ellipsis,
                                     style: GoogleFonts.poppins(
                                       fontSize: isSmall ? 13 : 14,
                                       color: blueColor,
