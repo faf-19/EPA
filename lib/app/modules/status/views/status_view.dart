@@ -42,9 +42,13 @@ class StatusView extends GetView<StatusController> {
                         const SizedBox(width: 10),
                         _filterChip('Pending', sel == 'Pending'),
                         const SizedBox(width: 10),
-                        _filterChip('In Progress', sel == 'In Progress'),
+                        _filterChip('Under Review', sel == 'Under Review'),
                         const SizedBox(width: 10),
-                        _filterChip('Completed', sel == 'Completed'),
+                        _filterChip('Verified', sel == 'Verified'),
+                        const SizedBox(width: 10),
+                        _filterChip('Under Investigation', sel == 'Under Investigation'),
+                        const SizedBox(width: 10),
+                        _filterChip('Closed', sel == 'Closed'),
                         const SizedBox(width: 10),
                         _filterChip('Rejected', sel == 'Rejected'),
                         const SizedBox(width: 6),
@@ -195,26 +199,46 @@ class StatusView extends GetView<StatusController> {
   final status = report.status;
   final description = report.description;
   final date = report.date;
+  final time = report.time ?? '';
   // STATUS COLORS
   Color pillBg;
   Color pillText;
 
   switch (status.toLowerCase()) {
-    case "in progress":
-      pillBg = const Color(0xFFF7941D);
+    case "under review":
+      pillBg = const Color(0xFF3F8ECF);
       pillText = AppColors.onPrimary;
       break;
+    case "verified":
+      pillBg = const Color(0xFF1E88E5);
+      pillText = AppColors.onPrimary;
+      break;
+    case "under investigation":
+    case "under_investigation":
+      pillBg = const Color.fromRGBO(59, 161, 245, 1);
+      pillText = AppColors.onPrimary;
+      break;
+    case "complete":
     case "completed":
-      pillBg = const Color(0xFF00A650);
+    case "closed":
+      pillBg = const Color.fromRGBO(55, 165, 55, 1);
+      pillText = AppColors.onPrimary;
+      break;
+    case "closed by penality":
+      pillBg = const Color(0xFFE04343);
+      pillText = AppColors.onPrimary;
+      break;
+    case "closed by pollutant not found":
+      pillBg = const Color(0xFFAAAAAA);
       pillText = AppColors.onPrimary;
       break;
     case "rejected":
-      pillBg = const Color(0xFFFF383C);
+      pillBg = const Color.fromRGBO(245, 46, 50, 1);
       pillText = AppColors.onPrimary;
       break;
     default: // Pending
-      pillBg = const Color(0xFFAAAAAA);
-      pillText = AppColors.onPrimary; {}
+      pillBg = const Color.fromRGBO(255, 174, 65, 1) ;
+      pillText = AppColors.onPrimary;
   }
 
   const outerGlow = Color(0xFFE8F1FF);
@@ -256,7 +280,8 @@ class StatusView extends GetView<StatusController> {
               ),
             ),
             Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              // height: 20,
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
               decoration: BoxDecoration(
                 color: pillBg,
                 borderRadius: BorderRadius.circular(4),
@@ -265,7 +290,7 @@ class StatusView extends GetView<StatusController> {
                 status,
                 style: TextStyle(
                   color: pillText,
-                  fontSize: 12,
+                  fontSize: 10,
                   fontWeight: FontWeight.w600,
                 ),
               ),
@@ -299,6 +324,27 @@ class StatusView extends GetView<StatusController> {
                 fontWeight: FontWeight.w600,
               ),
             ),
+            const SizedBox(width: 14),
+            // TIME BOX
+            Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: const Color(0xFFEFF8EF),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(Icons.access_time,
+                  color: Color(0xFF1E9B47), size: 16),
+            ),
+            const SizedBox(width: 10),
+            // TIME TEXT
+            Text(
+              time.isNotEmpty ? time : '--',
+              style: const TextStyle(
+                color: Color(0xFF5A5F66),
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
 
@@ -311,7 +357,7 @@ class StatusView extends GetView<StatusController> {
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             color: Color(0xFF8A8F95),
-            fontSize: 14,
+            fontSize: 12,
             height: 1.4,
           ),
         ),

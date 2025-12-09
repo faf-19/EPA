@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-import 'dart:math' as math;
 
 import 'package:eprs/app/widgets/custom_app_bar.dart';
 import 'package:eprs/core/enums/report_type_enum.dart';
@@ -9,18 +8,42 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
 import 'package:eprs/app/routes/app_pages.dart';
+import 'package:audio_waveforms/audio_waveforms.dart';
 
 import '../controllers/report_controller.dart';
 
-class ReportView extends GetView<ReportController> {
+class ReportView extends StatefulWidget {
   final String reportType;
 
   const ReportView({super.key, required this.reportType});
 
   @override
+  State<ReportView> createState() => _ReportViewState();
+}
+
+class _ReportViewState extends State<ReportView> {
+  // Get controller instance
+  ReportController get controller => Get.find<ReportController>();
+  
+  @override
+  void initState() {
+    super.initState();
+    // Reset form when view is initialized (when navigating to this page)
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      controller.resetForm();
+      // Reload necessary data after reset
+      controller.loadAuthState(); // Restore phone number if user is logged in
+      controller.fetchRegions();
+      if (controller.autoDetectLocation.value) {
+        controller.detectLocation();
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     // Set report type in controller
-    controller.reportType = reportType;
+    controller.reportType = widget.reportType;
     // Area data used by the dropdown in the form. Declared here so
     // they're regular statements (not placed inside the widget list).
     final areas = [
@@ -67,7 +90,7 @@ class ReportView extends GetView<ReportController> {
                         Builder(builder: (_) {
                           String title;
                           String desc;
-                          switch (reportType) {
+                          switch (widget.reportType) {
                             case 'pollution':
                               title = 'Pollution Description';
                               desc = 'Describe the pollution observed (air, water, or soil), its source, and any visible impact on the environment or public health.';
@@ -113,7 +136,7 @@ class ReportView extends GetView<ReportController> {
 
               const SizedBox(height: 12),
 
-              if (reportType == ReportTypeEnum.sound.name)
+              if (widget.reportType == ReportTypeEnum.sound.name)
                 Card(
                   color: const Color(0xFFFFFFFF),
                   shape: RoundedRectangleBorder(
@@ -139,7 +162,7 @@ class ReportView extends GetView<ReportController> {
                             valueListenable: areasNotifier,
                             builder: (context, value, _) {
                               return DropdownButtonFormField<String>(
-                                value: value,
+                                initialValue: value,
                                 isExpanded: true,
                                 dropdownColor: Colors.white,
                                 alignment: AlignmentDirectional.centerStart,
@@ -208,8 +231,196 @@ class ReportView extends GetView<ReportController> {
                   ),
                 ),
 
-              const SizedBox(height: 18),
+              const SizedBox(height: 12),
 
+              //time of the day card for sound report
+              if (widget.reportType == ReportTypeEnum.sound.name)
+                Card(
+                  color: const Color(0xFFFFFFFF),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Time of Day',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16,
+                            color: Colors.black87
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Obx(() {
+                          final current = controller.soundPeriod.value;
+                          return Row(
+                            children: [
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: () => controller.soundPeriod.value = 'Day',
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: 14,
+                                    ),
+                                    side: BorderSide(
+                                      color: current == 'Day' ? AppColors.primary : Color.fromRGBO(212, 212, 212, 1),
+                                      width: current == 'Day' ? 1.1 : 1,
+                                    ),
+                                    backgroundColor: current == 'Day' ? AppColors.primary.withOpacity(0.08) : Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Day',
+                                    style: TextStyle(
+                                      color: current == 'Day' ? AppColors.primary : Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: OutlinedButton(
+                                  onPressed: () => controller.soundPeriod.value = 'Night',
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 14,
+                                      vertical: 14,
+                                    ),
+                                    side: BorderSide(
+                                      color: current == 'Night' ? AppColors.primary : Color.fromRGBO(212, 212, 212, 1),
+                                      width: current == 'Night' ? 1.1 : 1,
+                                    ),
+                                    backgroundColor: current == 'Night' ? AppColors.primary.withOpacity(0.08) : Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                  ),
+                                  child: Text(
+                                    'Night',
+                                    style: TextStyle(
+                                      color: current == 'Night' ? AppColors.primary : Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          );
+                        }),
+                      ],
+                    ),
+                  ),
+                ),
+
+              const SizedBox(height: 12),
+              
+              // Time & Date Card
+              Card(
+                color: AppColors.onPrimary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                // elevation: 6,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: const [
+                          Text(
+                            'Time and Date',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            '*',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Obx(() {
+                              final d = controller.selectedDate.value;
+                              final label = d == null
+                                  ? 'Select Date'
+                                  : '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+                              return OutlinedButton(
+                                onPressed: () => controller.pickDate(context),
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  side: const BorderSide(color: Color(0xFFD4D4D4)),
+                                ),
+                                child: Text(
+                                  label,
+                                  style: TextStyle(
+                                    color: d == null ? Colors.grey.shade600 : Colors.black87,
+                                  ),
+                                ),
+                              );
+                            }),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: Obx(() {
+                              final t = controller.selectedTime.value;
+                              String label;
+                              if (t == null) {
+                                label = 'Select Time';
+                              } else {
+                                final hour = t.hourOfPeriod == 0 ? 12 : t.hourOfPeriod;
+                                final minute = t.minute.toString().padLeft(2, '0');
+                                final period = t.period == DayPeriod.am ? 'AM' : 'PM';
+                                label = '$hour:$minute $period';
+                              }
+                              return OutlinedButton(
+                                onPressed: () => controller.pickTime(context),
+                                style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  side: const BorderSide(color: Color(0xFFD4D4D4)),
+                                ),
+                                child: Text(
+                                  label,
+                                  style: TextStyle(
+                                    color: t == null ? Colors.grey.shade600 : Colors.black87,
+                                  ),
+                                ),
+                              );
+                            }),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 12),
               // Evidence Card
               Card(
                 color: const Color(0xFFFFFFFF),
@@ -250,7 +461,7 @@ class ReportView extends GetView<ReportController> {
                       ),
                       const SizedBox(height: 12),
                       // Evidence input: voice recorder for sound, tiles for others
-                      if (reportType == ReportTypeEnum.sound.name) ...[
+                      if (widget.reportType == ReportTypeEnum.sound.name) ...[
                         _buildRecordingUI(context),
                       ] else ...[
                         GridView.count(
@@ -421,7 +632,7 @@ class ReportView extends GetView<ReportController> {
                 ),
               ),
 
-              const SizedBox(height: 18),
+              const SizedBox(height: 12),
 
               // Location Card
               Card(
@@ -578,7 +789,7 @@ class ReportView extends GetView<ReportController> {
                 ),
               ),
 
-              const SizedBox(height: 18),
+              const SizedBox(height: 12),
 
               // Description Card
               Card(
@@ -636,100 +847,7 @@ class ReportView extends GetView<ReportController> {
                 ),
               ),
 
-              const SizedBox(height: 12),
-
-              
-              // Time & Date Card
-              Card(
-                color: AppColors.onPrimary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                // elevation: 6,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: const [
-                          Text(
-                            'Time and Date',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          SizedBox(width: 6),
-                          Text(
-                            '*',
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Obx(() {
-                              final d = controller.selectedDate.value;
-                              final label = d == null
-                                  ? 'Select Date'
-                                  : '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
-                              return OutlinedButton(
-                                onPressed: () => controller.pickDate(context),
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  side: BorderSide(color: Color.fromRGBO(212, 212, 212, 1)),
-                                ),
-                                child: Text(label),
-                              );
-                            }),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Obx(() {
-                              final t = controller.selectedTime.value;
-                              String label;
-                              if (t == null) {
-                                label = 'Select Time';
-                              } else {
-                                final hour = t.hourOfPeriod == 0 ? 12 : t.hourOfPeriod;
-                                final minute = t.minute.toString().padLeft(2, '0');
-                                final period = t.period == DayPeriod.am ? 'AM' : 'PM';
-                                label = '$hour:$minute $period';
-                              }
-                              return OutlinedButton(
-                                onPressed: () => controller.pickTime(context),
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  side: BorderSide(color: Color.fromRGBO(212, 212, 212, 1)),
-                                ),
-                                child: Text(label),
-                              );
-                            }),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
+ 
               const SizedBox(height: 12),
               // Phone Number Card
 
@@ -850,9 +968,9 @@ class ReportView extends GetView<ReportController> {
                   onPressed: controller.isSubmitting.value ? null : () => controller.submitReport(),
                   style: ButtonStyle(
                     // Keep the button green for all states (including disabled)
-                    backgroundColor: MaterialStateProperty.all<Color>(AppColors.primary),
-                    foregroundColor: MaterialStateProperty.all<Color>(AppColors.onPrimary),
-                    shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+                    backgroundColor: WidgetStateProperty.all<Color>(AppColors.primary),
+                    foregroundColor: WidgetStateProperty.all<Color>(AppColors.onPrimary),
+                    shape: WidgetStateProperty.all<RoundedRectangleBorder>(
                       RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                     ),
                   ),
@@ -1041,6 +1159,8 @@ class ReportView extends GetView<ReportController> {
     return Obx(() {
       final duration = controller.recordingDuration.value;
       final isPaused = controller.isPaused.value;
+      final isRecording = controller.isRecording.value;
+      final isWeb = kIsWeb;
 
       // Idle state: show start prompt instead of auto-starting
       return Container(
@@ -1052,6 +1172,28 @@ class ReportView extends GetView<ReportController> {
         ),
         child: Column(
           children: [
+            if (isWeb)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.orange.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.orange.shade200),
+                ),
+                child: Row(
+                  children: const [
+                    Icon(Icons.info_outline, color: Colors.orange, size: 18),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Recording not supported in web. Please use Android/iOS.',
+                        style: TextStyle(color: Colors.orange, fontSize: 12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            if (isWeb) const SizedBox(height: 12),
             // Waveform visualization
             SizedBox(
               height: 80,
@@ -1062,20 +1204,25 @@ class ReportView extends GetView<ReportController> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF3F7F4),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    'Frequency 2db',
-                    style: TextStyle(
-                      color: Colors.grey.shade600,
-                      fontSize: 12,
+                Obx(() {
+                  final decibel = controller.isRecording.value 
+                      ? controller.currentDecibel.value 
+                      : 0.0;
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF3F7F4),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                  ),
-                ),
+                    child: Text(
+                      'Frequency ${decibel.toStringAsFixed(1)}db',
+                      style: TextStyle(
+                        color: Colors.grey.shade600,
+                        fontSize: 12,
+                      ),
+                    ),
+                  );
+                }),
                 const SizedBox(width: 12),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -1102,31 +1249,35 @@ class ReportView extends GetView<ReportController> {
                 _buildRecordingButton(
                   icon: Icons.stop,
                   label: 'Stop',
-                  color: controller.isRecording.value ? AppColors.primary : Colors.grey.shade400,
-                  enabled: controller.isRecording.value,
+                  color: (isRecording || isPaused) && !isWeb
+                      ? AppColors.primary
+                      : Colors.grey.shade400,
+                  enabled: (isRecording || isPaused) && !isWeb,
                   onPressed: () => controller.stopRecording(),
                 ),
                 // Cancel button
                 _buildRecordingButton(
                   icon: Icons.cancel_outlined,
                   label: 'Cancel',
-                  color: (controller.isRecording.value || controller.isPaused.value)
+                  color: (isRecording || isPaused) && !isWeb
                       ? AppColors.primary
                       : Colors.grey.shade400,
-                  enabled: controller.isRecording.value || controller.isPaused.value,
+                  enabled: (isRecording || isPaused) && !isWeb,
                   onPressed: () => controller.cancelRecording(),
                 ),
                 // Pause/Resume button
                 _buildRecordingButton(
-                  icon: controller.isRecording.value
+                  icon: isRecording
                       ? (isPaused ? Icons.play_arrow : Icons.pause)
                       : Icons.mic,
-                  label: controller.isRecording.value
+                  label: isRecording
                       ? (isPaused ? 'Resume' : 'Pause')
                       : 'Start',
-                  color: AppColors.primary,
+                  color: isWeb ? Colors.grey.shade400 : AppColors.primary,
+                  enabled: !isWeb,
                   onPressed: () {
-                    if (!controller.isRecording.value) {
+                    if (isWeb) return;
+                    if (!isRecording) {
                       controller.startRecording();
                     } else if (isPaused) {
                       controller.resumeRecording();
@@ -1146,13 +1297,37 @@ class ReportView extends GetView<ReportController> {
   Widget _buildWaveform() {
     return Obx(() {
       final isPaused = controller.isPaused.value;
-      final seed = controller.waveformTick.value;
-      return CustomPaint(
-        painter: WaveformPainter(
-          isPaused: isPaused,
-          seed: seed,
+      final isRecording = controller.isRecording.value;
+      
+      if (!isRecording && !isPaused) {
+        // Show empty waveform when not recording
+        return Container(
+          height: 80,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+        );
+      }
+      
+      return SizedBox(
+        height: 80,
+        width: double.infinity,
+        child: AudioWaveforms(
+          recorderController: controller.recorderController,
+          size: const Size(double.infinity, 80),
+          waveStyle: WaveStyle(
+            waveColor: isPaused ? Colors.grey.shade400 : AppColors.primary,
+            extendWaveform: true,
+            showMiddleLine: false,
+            waveThickness: 3.5,
+            waveCap: StrokeCap.round,
+            spacing: 4,
+            showBottom: true,
+            showTop: true,
+          ),
         ),
-        child: Container(),
       );
     });
   }
@@ -1221,7 +1396,7 @@ class ReportView extends GetView<ReportController> {
         const SizedBox(height: 6),
         DropdownButtonFormField<String>(
           key: ValueKey('${label}_${items.length}'),
-          value: currentValue,
+          initialValue: currentValue,
           items: items.isEmpty
               ? null
               : items
@@ -1438,49 +1613,3 @@ class _DashedRectPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
-// Waveform painter for audio recording visualization
-class WaveformPainter extends CustomPainter {
-  final bool isPaused;
-  final int seed;
-
-  WaveformPainter({required this.isPaused, this.seed = 0});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    // Samsung-like: tight capsules, smooth motion, primary color
-    final baseColor = isPaused ? Colors.grey.shade400 : AppColors.primary;
-    final barWidth = 4.0;
-    final barSpacing = 3.0;
-    final maxBarHeight = size.height * 0.9;
-    final centerY = size.height / 2;
-
-    final barCount = ((size.width - barWidth) / (barWidth + barSpacing)).floor();
-    for (int i = 0; i < barCount; i++) {
-      // Smooth sine-based height variation; subtle per-bar phase offset
-      final phase = (seed * 0.18) + i * 0.32;
-      final amplitude = 0.3 + 0.35 * (0.5 + 0.5 * math.sin(phase)); // 0.3..0.65
-      final height = (maxBarHeight * amplitude).clamp(maxBarHeight * 0.18, maxBarHeight);
-
-      final x = i * (barWidth + barSpacing);
-      final topY = centerY - height / 2;
-      final rrect = RRect.fromLTRBR(
-        x,
-        topY,
-        x + barWidth,
-        topY + height,
-        const Radius.circular(4),
-      );
-
-      final paint = Paint()
-        ..color = baseColor
-        ..style = PaintingStyle.fill;
-
-      canvas.drawRRect(rrect, paint);
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant WaveformPainter oldDelegate) {
-    return oldDelegate.isPaused != isPaused || oldDelegate.seed != seed;
-  }
-}

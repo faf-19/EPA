@@ -48,6 +48,7 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
     await storage.write(_phoneNumberKey, phoneNumber);
   }
 
+  @override
   Future<void> saveEmail(String email) async {
     await storage.write(_emailKey, email);
   }

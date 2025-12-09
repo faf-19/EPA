@@ -1,6 +1,5 @@
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
-import 'package:dio/dio.dart';
 import '../../data/datasources/remote/auth_remote_datasource.dart';
 import '../../data/datasources/local/auth_local_datasource.dart';
 import '../../data/repositories/auth_repository_impl.dart';

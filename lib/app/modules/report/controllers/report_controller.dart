@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as path;
 
@@ -9,8 +10,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:record/record.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:noise_meter/noise_meter.dart' as noise_meter;
+import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:dio/dio.dart' as dio;
 import 'package:eprs/core/network/dio_client.dart';
 import 'package:eprs/core/constants/api_constants.dart';
@@ -66,6 +68,7 @@ class ReportController extends GetxController {
 
   final selectedDate = Rxn<DateTime>();
   final selectedTime = Rxn<TimeOfDay>();
+  final soundPeriod = 'Day'.obs; // 'Day' or 'Night' for sound reports
 
   final ImagePicker _picker = ImagePicker();
   
@@ -82,20 +85,39 @@ class ReportController extends GetxController {
   final isSubmitting = false.obs;
 
   // Audio recording state
-  final AudioRecorder _audioRecorder = AudioRecorder();
+  late final RecorderController recorderController;
+  // Use explicit encoder settings for more reliable recording across devices
+  final RecorderSettings recorderSettings = const RecorderSettings(
+    androidEncoderSettings: AndroidEncoderSettings(
+      androidEncoder: AndroidEncoder.aacLc,
+    ),
+    iosEncoderSettings: IosEncoderSetting(
+      iosEncoder: IosEncoder.kAudioFormatMPEG4AAC,
+    ),
+    sampleRate: 44100,
+    bitRate: 128000,
+  );
   final isRecording = false.obs;
   final isPaused = false.obs;
   final recordingDuration = Duration.zero.obs;
-  final waveformTick = 0.obs; // drives the live waveform animation
   final audioFilePath = RxnString();
   Timer? _recordingTimer;
   DateTime? _recordingStartTime;
   Duration _pausedDuration = Duration.zero;
   DateTime? _pauseStartTime;
+  
+  // Noise meter state
+  noise_meter.NoiseMeter? _noiseMeter;
+  StreamSubscription<noise_meter.NoiseReading>? _noiseSubscription;
+  final currentDecibel = 0.0.obs; // Current decibel reading
+  final maxDecibel = 0.0.obs; // Maximum decibel reading during recording
 
   @override
   void onInit() {
     super.onInit();
+    // Initialize recorder controller
+    recorderController = RecorderController();
+    
     // Reset form to ensure clean state when entering the page
     _resetForm();
     _loadAuthState();
@@ -123,7 +145,7 @@ class ReportController extends GetxController {
     fetchRegions();
   }
 
-  void _loadAuthState() {
+  void loadAuthState() {
     final token = box.read('auth_token');
     isLoggedIn.value = token != null && token.toString().isNotEmpty;
 
@@ -133,9 +155,12 @@ class ReportController extends GetxController {
       phoneController.text = storedPhone;
     }
   }
+  
+  // Private method for backward compatibility
+  void _loadAuthState() => loadAuthState();
 
-  // Reset form to initial state
-  void _resetForm() {
+  // Reset form to initial state (made public so it can be called from view)
+  void resetForm() {
     // Clear text fields
     descriptionController.clear();
     phoneController.clear();
@@ -156,6 +181,7 @@ class ReportController extends GetxController {
     // Clear date and time
     selectedDate.value = null;
     selectedTime.value = null;
+    soundPeriod.value = 'Day';
     
     // Clear location detection
     detectedPosition.value = null;
@@ -171,6 +197,17 @@ class ReportController extends GetxController {
     isRecording.value = false;
     isPaused.value = false;
     recordingDuration.value = Duration.zero;
+    try {
+      if (recorderController.isRecording) {
+        recorderController.stop();
+      }
+    } catch (_) {}
+    
+    // Clear noise meter readings
+    currentDecibel.value = 0.0;
+    maxDecibel.value = 0.0;
+    _noiseSubscription?.cancel();
+    _noiseSubscription = null;
     
     // Reset pollution category ID
     pollutionCategoryId = null;
@@ -178,21 +215,25 @@ class ReportController extends GetxController {
     print('Form reset completed');
   }
   
+  // Private method for internal use (calls public resetForm)
+  void _resetForm() => resetForm();
+  
   @override
   void onClose() {
     // Ensure recording is stopped before disposing
     try {
       if (isRecording.value || isPaused.value) {
-        _audioRecorder.stop();
+        recorderController.stop();
       }
     } catch (_) {}
     isRecording.value = false;
     isPaused.value = false;
     recordingDuration.value = Duration.zero;
-    waveformTick.value = 0;
     audioFilePath.value = null;
     _recordingTimer?.cancel();
-    _audioRecorder.dispose();
+    _noiseSubscription?.cancel();
+    _noiseSubscription = null;
+    recorderController.dispose();
     descriptionController.dispose();
     phoneController.dispose();
     super.onClose();
@@ -698,6 +739,15 @@ class ReportController extends GetxController {
 
   Future<void> startRecording() async {
     try {
+      if (kIsWeb) {
+        Get.snackbar(
+          'Not Supported',
+          'Recording is not available on web. Please use a mobile device.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
       final hasPermission = await _ensureMicrophonePermission();
       if (!hasPermission) {
         Get.snackbar(
@@ -719,34 +769,38 @@ class ReportController extends GetxController {
         filePath = path.join(directory.path, fileName);
       }
 
-      if (await _audioRecorder.hasPermission()) {
-        await _audioRecorder.start(
-          const RecordConfig(
-            encoder: AudioEncoder.aacLc,
-            bitRate: 128000,
-            sampleRate: 44100,
-          ),
-          path: filePath,
-        );
+      // Clear any previous waveform frames before a new recording
+      try {
+        recorderController.reset();
+      } catch (_) {}
 
-        audioFilePath.value = filePath;
-        isRecording.value = true;
-        isPaused.value = false;
-        _pausedDuration = Duration.zero;
-        _recordingStartTime = DateTime.now();
-        waveformTick.value = 0;
+      await recorderController.record(
+        path: filePath,
+        recorderSettings: recorderSettings,
+      );
+      
+      audioFilePath.value = filePath;
+      isRecording.value = true;
+      isPaused.value = false;
+      _pausedDuration = Duration.zero;
+      _recordingStartTime = DateTime.now();
+      
+      // Reset decibel readings
+      currentDecibel.value = 0.0;
+      maxDecibel.value = 0.0;
 
-        // Start timer to update duration
-        _recordingTimer?.cancel();
-        _recordingTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
-          if (isRecording.value && !isPaused.value && _recordingStartTime != null) {
-            final now = DateTime.now();
-            final elapsed = now.difference(_recordingStartTime!);
-            recordingDuration.value = elapsed + _pausedDuration;
-            waveformTick.value++;
-          }
-        });
-      }
+      // Start noise meter
+      _startNoiseMeter();
+
+      // Start timer to update duration
+      _recordingTimer?.cancel();
+      _recordingTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+        if (isRecording.value && !isPaused.value && _recordingStartTime != null) {
+          final now = DateTime.now();
+          final elapsed = now.difference(_recordingStartTime!);
+          recordingDuration.value = elapsed + _pausedDuration;
+        }
+      });
     } catch (e) {
       Get.snackbar(
         'Recording Error',
@@ -759,7 +813,8 @@ class ReportController extends GetxController {
   Future<void> pauseRecording() async {
     try {
       if (isRecording.value && !isPaused.value) {
-        await _audioRecorder.pause();
+        await recorderController.pause();
+        _stopNoiseMeter(); // Stop noise meter when paused
         isPaused.value = true;
         _pauseStartTime = DateTime.now();
       }
@@ -775,7 +830,14 @@ class ReportController extends GetxController {
   Future<void> resumeRecording() async {
     try {
       if (isRecording.value && isPaused.value) {
-        await _audioRecorder.resume();
+        // Resume recording by starting again with the same path
+        if (audioFilePath.value != null) {
+          await recorderController.record(
+            path: audioFilePath.value!,
+            recorderSettings: recorderSettings,
+          );
+        }
+        _startNoiseMeter(); // Restart noise meter when resumed
         if (_pauseStartTime != null) {
           final pauseDuration = DateTime.now().difference(_pauseStartTime!);
           _pausedDuration += pauseDuration;
@@ -794,40 +856,71 @@ class ReportController extends GetxController {
 
   Future<void> stopRecording() async {
     try {
-      if (isRecording.value) {
-        final path = await _audioRecorder.stop();
-        _recordingTimer?.cancel();
-        isRecording.value = false;
-        isPaused.value = false;
-        waveformTick.value = 0;
-        
-        // Prefer the path returned from stop(); fallback to the stored path
-        final savePath = path ?? audioFilePath.value;
-        if (savePath != null && savePath.isNotEmpty) {
-          // Create XFile from the saved audio path
-          final xFile = XFile(savePath);
-          addPickedImage(xFile);
-          pickedImagesX.refresh();
-          Get.snackbar(
-            'Recording Saved',
-            'Voice note has been saved',
-            snackPosition: SnackPosition.BOTTOM,
-          );
-        } else {
+      if (!isRecording.value && !isPaused.value) {
+        Get.snackbar('Info', 'No active recording to stop', snackPosition: SnackPosition.BOTTOM);
+        return;
+      }
+
+      // Stop without auto-reset so we can manage file + UI updates
+      final path = await recorderController.stop(false);
+      _recordingTimer?.cancel();
+      _stopNoiseMeter();
+      isRecording.value = false;
+      isPaused.value = false;
+      
+      // Prefer the path returned from stop(); fallback to the stored path
+      final savePath = path ?? audioFilePath.value;
+      if (savePath != null && savePath.isNotEmpty) {
+        try {
+          final file = File(savePath);
+          if (await file.exists()) {
+            // Create XFile from the saved audio path
+            final xFile = XFile(savePath);
+            // Remove previous audio recordings so only the latest is kept
+            _removeExistingAudioAttachments();
+            addPickedImage(xFile);
+            pickedImagesX.refresh();
+            Get.snackbar(
+              'Recording Saved',
+              'Voice note has been saved',
+              snackPosition: SnackPosition.BOTTOM,
+            );
+          } else {
+            Get.snackbar(
+              'Recording Error',
+              'Audio file not found. Please try again.',
+              snackPosition: SnackPosition.BOTTOM,
+            );
+          }
+        } catch (_) {
           Get.snackbar(
             'Recording Error',
-            'No audio file was created. Please try again.',
+            'Unable to read the audio file. Please try again.',
             snackPosition: SnackPosition.BOTTOM,
           );
         }
-
-        // Reset state
-        recordingDuration.value = Duration.zero;
-        audioFilePath.value = null;
-        _pausedDuration = Duration.zero;
-        _recordingStartTime = null;
-        _pauseStartTime = null;
+      } else {
+        Get.snackbar(
+          'Recording Error',
+          'No audio file was created. Please try again.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
       }
+
+      // Clear waveform data to reset UI
+      try {
+        recorderController.reset();
+      } catch (_) {}
+
+      // Reset state
+      recordingDuration.value = Duration.zero;
+      audioFilePath.value = null;
+      _pausedDuration = Duration.zero;
+      _recordingStartTime = null;
+      _pauseStartTime = null;
+      currentDecibel.value = 0.0;
+      maxDecibel.value = 0.0;
+      pickedImagesX.refresh();
     } catch (e) {
       Get.snackbar(
         'Recording Error',
@@ -839,31 +932,44 @@ class ReportController extends GetxController {
 
   Future<void> cancelRecording() async {
     try {
-      if (isRecording.value) {
-        await _audioRecorder.stop();
-        _recordingTimer?.cancel();
-        
-        // Delete the file if it exists (only on mobile)
-        if (audioFilePath.value != null && !kIsWeb) {
-          try {
-            // On mobile, we can delete the file
-            // Note: File operations are handled by the record package
-            // The file will be cleaned up automatically
-          } catch (_) {
-            // Ignore errors
-          }
-        }
-
-        // Reset state
-        isRecording.value = false;
-        isPaused.value = false;
-        waveformTick.value = 0;
-        recordingDuration.value = Duration.zero;
-        audioFilePath.value = null;
-        _pausedDuration = Duration.zero;
-        _recordingStartTime = null;
-        _pauseStartTime = null;
+      if (!isRecording.value && !isPaused.value) {
+        Get.snackbar('Info', 'No active recording to cancel', snackPosition: SnackPosition.BOTTOM);
+        return;
       }
+
+      await recorderController.stop(false);
+      _recordingTimer?.cancel();
+      _stopNoiseMeter();
+      
+      // Delete the file if it exists (only on mobile)
+      if (audioFilePath.value != null && !kIsWeb) {
+        try {
+          final file = File(audioFilePath.value!);
+          if (await file.exists()) {
+            await file.delete();
+          }
+        } catch (_) {
+          // Ignore errors
+        }
+      }
+      // Clear waveform data to reset UI
+      try {
+        recorderController.reset();
+      } catch (_) {}
+
+      // Reset state
+      isRecording.value = false;
+      isPaused.value = false;
+      recordingDuration.value = Duration.zero;
+      audioFilePath.value = null;
+      currentDecibel.value = 0.0;
+      maxDecibel.value = 0.0;
+      _pausedDuration = Duration.zero;
+      _recordingStartTime = null;
+      _pauseStartTime = null;
+      _removeExistingAudioAttachments();
+      pickedImagesX.refresh();
+      Get.snackbar('Cancelled', 'Recording discarded', snackPosition: SnackPosition.BOTTOM);
     } catch (e) {
       Get.snackbar(
         'Recording Error',
@@ -878,6 +984,65 @@ class ReportController extends GetxController {
     final minutes = twoDigits(duration.inMinutes.remainder(60));
     final seconds = twoDigits(duration.inSeconds.remainder(60));
     return '$minutes:$seconds';
+  }
+  
+  // Noise meter helper methods
+  Future<void> _startNoiseMeter() async {
+    try {
+      // Noise meter doesn't work on web, skip it
+      if (kIsWeb) {
+        print('Noise meter not supported on web platform');
+        return;
+      }
+      
+      // Check microphone permission
+      if (!(await Permission.microphone.isGranted)) {
+        await Permission.microphone.request();
+      }
+      
+      if (await Permission.microphone.isGranted) {
+        // Create noise meter if not already created
+        _noiseMeter ??= noise_meter.NoiseMeter();
+        
+        // Listen to noise readings
+        _noiseSubscription = _noiseMeter!.noise.listen(
+          (noise_meter.NoiseReading reading) {
+            // Update current decibel (using meanDecibel)
+            currentDecibel.value = reading.meanDecibel;
+            
+            // Update max decibel if current is higher
+            if (reading.meanDecibel > maxDecibel.value) {
+              maxDecibel.value = reading.meanDecibel;
+            }
+          },
+          onError: (error) {
+            print('Noise meter error: $error');
+            // Don't stop recording if noise meter fails
+          },
+        );
+      }
+    } catch (e) {
+      print('Failed to start noise meter: $e');
+      // Don't stop recording if noise meter fails
+    }
+  }
+  
+  void _stopNoiseMeter() {
+    _noiseSubscription?.cancel();
+    _noiseSubscription = null;
+  }
+  
+  // ----------------------------
+  // HELPERS
+  // ----------------------------
+  void _removeExistingAudioAttachments() {
+    pickedImagesX.removeWhere((f) {
+      final name = f.name.toLowerCase();
+      return name.endsWith('.m4a') ||
+          name.endsWith('.mp3') ||
+          name.endsWith('.aac') ||
+          name.contains('voice_note');
+    });
   }
   
   // ----------------------------
@@ -908,12 +1073,19 @@ class ReportController extends GetxController {
       }
       
       // Try to find matching category
-      final normalizedType = reportType.toLowerCase().trim();
+      String normalize(String v) => v.toLowerCase().trim();
+      // Route uses "pollution", backend now returns "Air Pollution"
+      final normalizedType = normalize(
+        reportType == 'pollution' ? 'air pollution' : reportType,
+      );
       for (var item in items) {
         if (item is Map) {
           final id = item['pollution_category_id']?.toString() ?? item['id']?.toString() ?? '';
-          final name = (item['pollution_category']?.toString() ?? item['name']?.toString() ?? '').toLowerCase().trim();
-          if (id.isNotEmpty && name == normalizedType) {
+          final name = normalize(
+            item['pollution_category']?.toString() ?? item['name']?.toString() ?? '',
+          );
+          final matches = name == normalizedType || name.contains(normalizedType) || normalizedType.contains(name);
+          if (id.isNotEmpty && matches) {
             print('Found pollution category ID for "$reportType": $id');
             return id;
           }

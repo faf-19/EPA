@@ -134,53 +134,70 @@ class StatusDetailView extends StatelessWidget {
   }
 
   Color _getStatusColor(String status) {
-    switch (status.toLowerCase()) {
-      case 'in progress':
-        return const Color(0xFFF7941D);
+    final normalized = status.toLowerCase().replaceAll('_', ' ');
+    switch (normalized) {
+      case 'under review':
+        return const Color(0xFFF7941D); // amber
+      case 'verified':
+        return const Color(0xFF1E88E5); // blue
+      case 'under investigation':
+        return const Color(0xFF7E57C2); // purple
+      case 'complete':
       case 'completed':
-        return const Color(0xFF00A650);
+      case 'closed':
+        return const Color(0xFF00A650); // green
+      case 'closed by penality':
+        return const Color(0xFFE04343); // red
+      case 'closed by pollutant not found':
+        return const Color(0xFFAAAAAA); // grey
       case 'rejected':
-        return const Color(0xFFFF383C);
+        return const Color(0xFFFF383C); // red
       default: // Pending
-        return const Color(0xFFAAAAAA);
+        return const Color.fromARGB(255, 247, 148, 29); // rgba(247,148,29,1)
     }
   }
 
   Widget _buildTimeline() {
     final status = report.status.toLowerCase();
+    final normalizedStatus = status.replaceAll('_', ' ');
     final isRejected = status == 'rejected';
     
     // Define timeline stages
     final stages = [
       {'name': 'Pending', 'date': report.date},
+      {'name': 'Under Review', 'date': report.date},
       {'name': 'Verified', 'date': report.date},
       {'name': 'Under Investigation', 'date': report.date},
-      {'name': isRejected ? 'Closed' : 'Closed by Penalty', 'date': report.date},
+      {'name': isRejected ? 'Rejected' : 'Complete', 'date': report.date},
     ];
 
     // Determine which stages are completed based on status
     int completedStages = 0;
     int activeStageIndex = -1;
     
-    switch (status) {
+    switch (normalizedStatus) {
       case 'pending':
         completedStages = 0;
         activeStageIndex = 0; // Pending is active
         break;
-      case 'in progress':
+      case 'under review':
         completedStages = 1; // Pending completed
-        activeStageIndex = 1; // Verified is active
+        activeStageIndex = 1; // Under Review is active
         break;
       case 'verified':
-        completedStages = 2; // Pending and Verified completed
-        activeStageIndex = 2; // Under Investigation is active
+        completedStages = 2; // Pending and Under Review completed
+        activeStageIndex = 2; // Verified is active
         break;
-      case 'completed':
-        completedStages = 4; // All stages completed
+      case 'under investigation':
+        completedStages = 3; // Pending, Under Review, Verified completed
+        activeStageIndex = 3; // Under Investigation is active
+        break;
+      case 'complete':
+        completedStages = 5; // All stages completed
         activeStageIndex = -1;
         break;
       case 'rejected':
-        completedStages = 4; // All stages completed, but last one is rejected (red)
+        completedStages = 5; // All stages completed, but last one is rejected
         activeStageIndex = -1;
         break;
       default:

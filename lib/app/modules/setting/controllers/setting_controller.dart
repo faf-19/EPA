@@ -20,7 +20,7 @@ class SettingController extends GetxController {
     final token = storage.read('auth_token');
     
     isLoggedIn.value = token != null && token.toString().isNotEmpty;
-    
+    print('Loaded token: $token');
     if (isLoggedIn.value) {
       userName.value = storage.read('username') ?? 
                        storage.read('full_name') ?? 

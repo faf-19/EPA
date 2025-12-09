@@ -96,87 +96,9 @@ class AwarenessView extends GetView<AwarenessController> {
                 ),
               ),
 
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  // horizontal: 14.0,
-                  vertical: 12.0,
-                ),
-                child: Material(
-                  // elevation: 4,
-                  borderRadius: BorderRadius.circular(14),
-                  color: Colors.white,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: const [
-                            CircleAvatar(
-                              radius: 22,
-                              backgroundColor: Color(0xFFF3E8FF),
-                              child: Text('👷', style: TextStyle(fontSize: 20)),
-                            ),
-                            SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Tensae Tefera',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 15,
-                                      color: Colors.black87,
-                                    ),
-                                  ),
-                                  SizedBox(height: 4),
-                                  Text(
-                                    'Admin',
-                                    style: TextStyle(
-                                      color: Colors.grey,
-                                      fontSize: 12,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
+              
 
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14.0,
-                  vertical: 12.0,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Awareness',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 16,
-                        color: Colors.black87,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    const Text(
-                      'Clean Ethiopia ("we," "our," "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard the information you provide when using our mobile application or web system. By using this app, you agree to the terms of this Privacy Policy.',
-                      style: TextStyle(
-                        color: Color(0xFF5D5A6B),
-                        height: 1.6,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              
 
               // List of awareness items recreated as a Column so it participates in
               // the outer SingleChildScrollView (avoids nested scrollables).

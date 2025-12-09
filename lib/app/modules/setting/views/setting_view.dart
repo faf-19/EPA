@@ -173,8 +173,10 @@ class SettingView extends GetView<SettingController> {
 
     return Scaffold(
         backgroundColor: Colors.white,
-        appBar: const CustomAppBar(
+        appBar: CustomAppBar(
           title: 'Settings',
+          showBack: true,
+          forceHomeOnBack: true, // ensure back always returns to home shell
         ),
 
       body: SafeArea(

@@ -5,12 +5,10 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/bottom_nav_controller.dart';
 import '../../home/views/home_view.dart';
-import '../../office/views/office_view.dart';
 import '../../status/views/status_view.dart';
 import '../../setting/views/setting_view.dart';
 // Import bindings so we can register controllers when the shell is created
 import '../../home/bindings/home_binding.dart';
-import '../../office/bindings/office_binding.dart';
 import '../../awareness/bindings/awareness_binding.dart';
 import '../../status/bindings/status_binding.dart';
 import '../../status/controllers/status_controller.dart';
