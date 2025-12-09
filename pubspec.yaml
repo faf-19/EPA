@@ -50,15 +50,17 @@ dependencies:
   google_fonts: ^6.2.1
   image_picker: ^1.1.0
   dio: ^5.4.0
-  record: ^5.1.2
+  record: ^6.1.2
   permission_handler: ^11.3.1
   path_provider: ^2.1.2
+  noise_meter: ^5.0.2
+  audio_waveforms: ^2.0.1
+  flutter_native_splash: ^2.3.1
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_launcher_icons: ^0.14.4 # Correctly placed dependency
-  flutter_native_splash: ^2.3.1 # Added for the loading/splash screen
 
 
   # The "flutter_lints" package below contains a set of recommended lints to

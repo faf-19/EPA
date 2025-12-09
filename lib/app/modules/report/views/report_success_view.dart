@@ -139,14 +139,15 @@ class ReportSuccessView extends StatelessWidget {
                       Navigator.of(context).pop();
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF12A84A),
+                      backgroundColor: AppColors.primary,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
                     child: const Text(
-                      'View',
+                      'Done',
                       style: TextStyle(
+                        color: AppColors.onPrimary,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),

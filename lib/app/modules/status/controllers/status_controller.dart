@@ -11,7 +11,8 @@ class ReportItem {
   final String? reportType;
   final String status;
   final String description;
-  final String date;
+  final String date; // date display (e.g., Sep 12, 2022)
+  final String? time; // time display (e.g., 09:10:22 PM)
 
   ReportItem({
     this.id,
@@ -21,39 +22,73 @@ class ReportItem {
     required this.status,
     required this.description,
     required this.date,
+    this.time = '',
   });
 
   // Factory constructor to create ReportItem from API response
   factory ReportItem.fromJson(Map<String, dynamic> json) {
     // Parse date - handle different date formats
     String dateStr = '';
+    String timeStr = '';
     if (json['created_at'] != null) {
       try {
         final date = DateTime.parse(json['created_at'].toString());
-        dateStr = '${_getMonthName(date.month)} ${date.day}, ${date.year} ${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+        dateStr = _formatDateDisplay(date);
+        final hh = date.hour % 12 == 0 ? 12 : date.hour % 12;
+        final mm = date.minute.toString().padLeft(2, '0');
+        final ss = date.second.toString().padLeft(2, '0');
+        final ampm = date.hour >= 12 ? 'PM' : 'AM';
+        timeStr = '$hh:$mm:$ss $ampm';
       } catch (e) {
-        dateStr = json['created_at'].toString();
+        dateStr = _formatDateString(json['created_at'].toString());
+        timeStr = '';
       }
     } else if (json['date'] != null) {
-      dateStr = json['date'].toString();
+      final rawDate = json['date'].toString();
+      try {
+        final date = DateTime.parse(rawDate);
+        dateStr = _formatDateDisplay(date);
+        if (json['time'] != null && json['time'].toString().isNotEmpty) {
+          timeStr = json['time'].toString();
+        } else {
+          final hh = date.hour % 12 == 0 ? 12 : date.hour % 12;
+          final mm = date.minute.toString().padLeft(2, '0');
+          final ss = date.second.toString().padLeft(2, '0');
+          final ampm = date.hour >= 12 ? 'PM' : 'AM';
+          timeStr = '$hh:$mm:$ss $ampm';
+        }
+      } catch (_) {
+        dateStr = _formatDateString(rawDate);
+        timeStr = json['time']?.toString() ?? '';
+      }
     } else {
       dateStr = 'N/A';
+      timeStr = json['time']?.toString() ?? '';
     }
 
     // Map status - handle different status formats
     String status = 'Pending';
     if (json['status'] != null) {
-      final statusStr = json['status'].toString().toLowerCase();
-      if (statusStr.contains('pending')) {
+      final statusStr = json['status'].toString();
+      final normalized = statusStr.toLowerCase().replaceAll('_', ' ');
+      if (normalized.contains('pending')) {
         status = 'Pending';
-      } else if (statusStr.contains('progress') || statusStr.contains('investigation')) {
-        status = 'In Progress';
-      } else if (statusStr.contains('completed') || statusStr.contains('closed')) {
-        status = 'Completed';
-      } else if (statusStr.contains('rejected')) {
+      } else if (normalized.contains('under review') || normalized.contains('progress')) {
+        status = 'Under Review';
+      } else if (normalized.contains('under investigation')) {
+        status = 'Under Investigation';
+      } else if (normalized.contains('verified')) {
+        status = 'Verified';
+      } else if (normalized.contains('closed by penality')) {
+        status = 'Closed by penality';
+      } else if (normalized.contains('closed by pollutant not found')) {
+        status = 'Closed by pollutant not found';
+      } else if (normalized.contains('completed') || normalized.contains('closed') || normalized.contains('complete')) {
+        status = 'Complete';
+      } else if (normalized.contains('rejected')) {
         status = 'Rejected';
       } else {
-        status = json['status'].toString();
+        status = statusStr;
       }
     }
 
@@ -95,15 +130,45 @@ class ReportItem {
       status: status,
       description: descriptionText,
       date: dateStr,
+      time: timeStr,
     );
   }
 
-  static String _getMonthName(int month) {
+  static String _getMonthAbbrev(int month) {
     const months = [
-      'January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'
+      'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
     ];
     return months[month - 1];
+  }
+
+  // Format DateTime to "Mon d, yyyy"
+  static String _formatDateDisplay(DateTime date) {
+    return '${_getMonthAbbrev(date.month)} ${date.day}, ${date.year}';
+  }
+
+  // Best-effort formatter for string dates; strips trailing time if present.
+  static String _formatDateString(String raw) {
+    if (raw.isEmpty) return 'N/A';
+    // Try parsing directly
+    final parsed = DateTime.tryParse(raw) ?? DateTime.tryParse(raw.replaceAll(' ', 'T'));
+    if (parsed != null) {
+      return _formatDateDisplay(parsed);
+    }
+    // Try to extract "Month day, year" from strings with time
+    final reg = RegExp(r'([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4})');
+    final m = reg.firstMatch(raw);
+    if (m != null) {
+      return '${m.group(1)} ${m.group(2)}, ${m.group(3)}';
+    }
+    // Fallback: strip anything after first time separator
+    if (raw.contains(':')) {
+      final parts = raw.split(' ');
+      // keep up to the token before the first token containing ':'
+      final trimmed = parts.takeWhile((p) => !p.contains(':')).join(' ');
+      if (trimmed.isNotEmpty) return trimmed;
+    }
+    return raw;
   }
 }
 
