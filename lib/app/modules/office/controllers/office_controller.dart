@@ -1,3 +1,5 @@
+import 'package:eprs/data/models/office_model.dart';
+import 'package:eprs/domain/usecases/get_offices_usecase.dart';
 import 'package:get/get.dart';
 import 'package:latlong2/latlong.dart';
 
@@ -15,67 +17,47 @@ class OfficeLocation {
     required this.email,
     required this.position,
   });
+
+  // Convert from OfficeModel
+  factory OfficeLocation.fromModel(OfficeModel model) {
+    return OfficeLocation(
+      name: model.name,
+      address: model.description.isNotEmpty ? model.description : 'No address provided',
+      phone: model.phoneNumber,
+      email: model.email,
+      position: model.position,
+    );
+  }
 }
 
 class OfficeController extends GetxController {
+  final GetOfficesUsecase getOfficesUsecase;
+  
   final RxString searchQuery = ''.obs;
   final Rxn<OfficeLocation> selectedOffice = Rxn<OfficeLocation>();
+  final RxList<OfficeLocation> _offices = <OfficeLocation>[].obs;
+  final RxBool isLoading = false.obs;
+  final RxnString errorMessage = RxnString();
 
-  static const List<OfficeLocation> _offices = [
-    OfficeLocation(
-      name: 'Addis Ketema',
-      address: 'Addis Ketema Subcity Woreda 01',
-      phone: '+251 11 123 4567',
-      email: 'addisketema@epa.gov.et',
-      position: LatLng(9.043846, 38.74831),
-    ),
-    OfficeLocation(
-      name: 'Kolfe Keranio',
-      address: 'Kolfe Keranio Woreda 05',
-      phone: '+251 11 765 4321',
-      email: 'kolfe@epa.gov.et',
-      position: LatLng(9.042328, 38.680172),
-    ),
-    OfficeLocation(
-      name: 'Bole',
-      address: 'Bole Subcity Office',
-      phone: '+251 11 555 1010',
-      email: 'bole@epa.gov.et',
-      position: LatLng(8.99884, 38.789996),
-    ),
-    OfficeLocation(
-      name: 'Lideta',
-      address: 'Ras Desta Damtew St.',
-      phone: '+251 11 778 3344',
-      email: 'lideta@epa.gov.et',
-      position: LatLng(9.024019, 38.738265),
-    ),
-    OfficeLocation(
-      name: 'Arada',
-      address: 'Churchill Ave.',
-      phone: '+251 11 987 6543',
-      email: 'arada@epa.gov.et',
-      position: LatLng(9.035494, 38.757194),
-    ),
-    OfficeLocation(
-      name: 'Yeka',
-      address: 'CMC Road',
-      phone: '+251 11 345 6789',
-      email: 'yeka@epa.gov.et',
-      position: LatLng(9.00988, 38.825188),
-    ),
-    OfficeLocation(
-      name: 'Lemi Kura',
-      address: 'Ayat Roundabout',
-      phone: '+251 11 222 8899',
-      email: 'lemikura@epa.gov.et',
-      position: LatLng(9.053911, 38.858372),
-    ),
-  ];
+  OfficeController({required this.getOfficesUsecase});
+
+  @override
+  void onInit() {
+    super.onInit();
+    loadOffices();
+  }
 
   List<OfficeLocation> get offices => _offices;
 
-  LatLng get initialCenter => const LatLng(9.025167, 38.758888);
+  LatLng get initialCenter {
+    if (_offices.isEmpty) {
+      return const LatLng(9.025167, 38.758888); // Default center (Addis Ababa)
+    }
+    // Calculate center from offices
+    double avgLat = _offices.map((o) => o.position.latitude).reduce((a, b) => a + b) / _offices.length;
+    double avgLng = _offices.map((o) => o.position.longitude).reduce((a, b) => a + b) / _offices.length;
+    return LatLng(avgLat, avgLng);
+  }
 
   List<OfficeLocation> get filteredOffices {
     final query = searchQuery.value.toLowerCase();
@@ -89,6 +71,28 @@ class OfficeController extends GetxController {
               office.address.toLowerCase().contains(query),
         )
         .toList();
+  }
+
+  Future<void> loadOffices() async {
+    isLoading.value = true;
+    errorMessage.value = null;
+    
+    try {
+      final officeModels = await getOfficesUsecase.execute();
+      _offices.assignAll(
+        officeModels.map((model) => OfficeLocation.fromModel(model)).toList(),
+      );
+    } catch (e) {
+      errorMessage.value = e.toString();
+      // Keep empty list on error, or you could show a snackbar
+      Get.snackbar(
+        'Error',
+        'Failed to load offices: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoading.value = false;
+    }
   }
 
   void updateSearch(String value) {

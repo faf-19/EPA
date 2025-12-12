@@ -1,9 +1,13 @@
+import 'package:eprs/domain/usecases/get_offices_usecase.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import '../../data/datasources/remote/auth_remote_datasource.dart';
 import '../../data/datasources/local/auth_local_datasource.dart';
+import '../../data/datasources/remote/office_remote_datasource.dart';
 import '../../data/repositories/auth_repository_impl.dart';
+import '../../data/repositories/office_repository_impl.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../../domain/repositories/office_repository.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/signup_usecase.dart';
 import '../../domain/usecases/verify_otp_usecase.dart';
@@ -72,6 +76,31 @@ class InjectionContainer {
     Get.put<ResendOtpUseCase>(
       ResendOtpUseCase(
         Get.find<AuthRepository>(),
+      ),
+      permanent: true,
+    );
+
+    // Register Office Data Sources
+    Get.put<OfficeRemoteDataSource>(
+      OfficeRemoteDatasourceImpl(
+        dio: Get.find<DioClient>().dio,
+        storage: Get.find<GetStorage>(),
+      ),
+      permanent: true,
+    );
+
+    // Register Office Repository
+    Get.put<OfficeRepository>(
+      OfficeRepositoryImpl(
+        remoteDataSource: Get.find<OfficeRemoteDataSource>(),
+      ),
+      permanent: true,
+    );
+
+    // Register Office Use Cases
+    Get.put<GetOfficesUsecase>(
+      GetOfficesUsecase(
+        repository: Get.find<OfficeRepository>(),
       ),
       permanent: true,
     );
