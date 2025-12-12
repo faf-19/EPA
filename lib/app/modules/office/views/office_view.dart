@@ -1,5 +1,6 @@
 import 'package:eprs/app/modules/bottom_nav/widgets/bottom_nav_footer.dart';
 import 'package:eprs/app/widgets/custom_app_bar.dart';
+import 'package:eprs/domain/usecases/get_offices_usecase.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:get/get.dart';
@@ -24,7 +25,9 @@ class _OfficeViewState extends State<OfficeView> {
     super.initState();
     controller = Get.isRegistered<OfficeController>()
         ? Get.find<OfficeController>()
-        : Get.put(OfficeController());
+        : Get.put(OfficeController(
+            getOfficesUsecase: Get.find<GetOfficesUsecase>(),
+          ));
   }
 
   @override
