@@ -23,6 +23,7 @@ class ReportController extends GetxController {
   // State
   final count = 0.obs;
 
+  final isInTheSpot = false.obs; // "Are you in the spot" - yes/no choice
   final autoDetectLocation = true.obs;
   final detectedAddress = 'Tap Search Location\nAddis Ababa | N.L | W-1'.obs;
 
@@ -184,6 +185,7 @@ class ReportController extends GetxController {
     soundPeriod.value = 'Day';
     
     // Clear location detection
+    isInTheSpot.value = false;
     detectedPosition.value = null;
     detectedAddress.value = 'Tap Search Location\nAddis Ababa | N.L | W-1';
     autoDetectLocation.value = false;
@@ -630,10 +632,67 @@ class ReportController extends GetxController {
   // ----------------------------
   // LOCATION LOGIC
   // ----------------------------
-  void toggleAutoDetect(bool v) {
-    autoDetectLocation.value = v;
-    detectionError.value = null;
-    if (v) detectLocation();
+  Future<void> toggleAutoDetect(bool v) async {
+    if (v) {
+      // When turning ON, request permission (this will show native dialog)
+      try {
+        // Check if location services are enabled
+        bool enabled = await Geolocator.isLocationServiceEnabled();
+        if (!enabled) {
+          Get.snackbar(
+            'Location Services',
+            'Please enable location services in your device settings',
+            snackPosition: SnackPosition.BOTTOM,
+          );
+          return; // Don't turn on the toggle
+        }
+
+        // Check current permission status
+        LocationPermission permission = await Geolocator.checkPermission();
+        
+        // If permission is denied, request it (this shows native dialog)
+        if (permission == LocationPermission.denied) {
+          permission = await Geolocator.requestPermission();
+        }
+
+        // Handle the permission result
+        if (permission == LocationPermission.denied) {
+          // User denied permission after seeing the dialog
+          Get.snackbar(
+            'Permission Denied',
+            'Location permission is required to detect your location',
+            snackPosition: SnackPosition.BOTTOM,
+          );
+          return; // Don't turn on the toggle
+        }
+
+        if (permission == LocationPermission.deniedForever) {
+          // Permission permanently denied, guide user to settings
+          Get.snackbar(
+            'Permission Required',
+            'Location permission is permanently denied. Please enable it in app settings',
+            snackPosition: SnackPosition.BOTTOM,
+            duration: const Duration(seconds: 4),
+          );
+          return; // Don't turn on the toggle
+        }
+
+        // Permission granted (whileInUse or always), turn on and detect location
+        autoDetectLocation.value = true;
+        detectionError.value = null;
+        detectLocation();
+      } catch (e) {
+        Get.snackbar(
+          'Error',
+          'Failed to request location permission: ${e.toString()}',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+      }
+    } else {
+      // Turning OFF - no permission needed
+      autoDetectLocation.value = false;
+      detectionError.value = null;
+    }
   }
 
   void togglePhoneOptIn(bool v) {
