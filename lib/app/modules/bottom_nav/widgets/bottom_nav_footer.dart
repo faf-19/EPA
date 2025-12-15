@@ -75,7 +75,7 @@ class _BottomNavItemButton extends StatelessWidget {
                 
                 child: Image.asset(
                   'assets/navbarIcons/${data.icon}',
-                  color: isSelected ? AppColors.onPrimary : bottomNavInactiveColor,
+                  color: isSelected ?  bottomNavInactiveColor : AppColors.onPrimary,
                   width: isSelected ? 22 : 24,
                   height: isSelected ? 22 : 24,
                 )
@@ -85,7 +85,7 @@ class _BottomNavItemButton extends StatelessWidget {
                 data.label,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: isSelected ? Colors.white : bottomNavInactiveColor,
+                  color: isSelected ? bottomNavInactiveColor : AppColors.onPrimary,
                   fontSize: 11.5,
                   fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 ),
