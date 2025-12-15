@@ -173,7 +173,7 @@ class StatusView extends GetView<StatusController> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
-          color: isActive ? const Color(0xFF16A34A) : const Color(0xFFF5F5F5),
+          color: isActive ? AppColors.primary : const Color(0xFFF5F5F5),
           borderRadius: BorderRadius.circular(10),
           // border: isActive ? null : Border.all(color: const Color(0xFFECEFF6)),
           // boxShadow: isActive
