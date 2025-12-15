@@ -900,8 +900,6 @@ class _ReportViewState extends State<ReportView> {
                         controller: controller.descriptionController,
                         maxLines: 3,
                         decoration: InputDecoration(
-                          hintText:
-                              'Describe the issue in detail. What exactly is the Problem? When did you notice it?',
                           hintStyle: TextStyle(fontSize: 13),
                           fillColor: const Color(0xFFF3F7F4),
                           filled: true,
