@@ -1355,6 +1355,17 @@ class _ReportViewState extends State<ReportView> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
 
+                // Cancel button
+                _buildRecordingButton(
+                  icon: Icons.cancel_outlined,
+                  label: 'Cancel',
+                  color: (isRecording || isPaused) && !isWeb
+                      ? AppColors.primary
+                      : Colors.grey.shade400,
+                  enabled: (isRecording || isPaused) && !isWeb,
+                  onPressed: () => controller.cancelRecording(),
+                ),
+
                 // Pause/Resume button
                 _buildRecordingButton(
                   icon: isRecording
@@ -1386,19 +1397,7 @@ class _ReportViewState extends State<ReportView> {
                       : Colors.grey.shade400,
                   enabled: (isRecording || isPaused) && !isWeb,
                   onPressed: () => controller.stopRecording(),
-                ),
-                // Cancel button
-                _buildRecordingButton(
-                  icon: Icons.cancel_outlined,
-                  label: 'Cancel',
-                  color: (isRecording || isPaused) && !isWeb
-                      ? AppColors.primary
-                      : Colors.grey.shade400,
-                  enabled: (isRecording || isPaused) && !isWeb,
-                  onPressed: () => controller.cancelRecording(),
-                ),
-                
-                
+                ),  
               ],
             ),
           ],

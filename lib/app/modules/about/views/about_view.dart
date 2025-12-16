@@ -1,3 +1,4 @@
+import 'package:eprs/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -10,14 +11,15 @@ class AboutView extends GetView<AboutController> {
 
   @override
   Widget build(BuildContext context) {
-    final paragraphStyle = TextStyle(color: Colors.deepPurple[600], height: 1.5);
+    final paragraphStyle = TextStyle(
+      color: Color.fromRGBO(99, 85, 127, 1),
+      height: 1.5,
+      fontSize: 14,
+    );
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F1F8),
-      appBar: const CustomAppBar(
-        title: 'About Us',
-        showBack: true,
-      ),
+      backgroundColor: AppColors.onPrimary,
+      appBar: const CustomAppBar(title: 'About Us', showBack: true),
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 18),
@@ -29,7 +31,8 @@ class AboutView extends GetView<AboutController> {
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   child: Image.asset(
                     'assets/logo.png',
-                    height: 110,
+                    width: 244,
+                    height: 133,
                     fit: BoxFit.contain,
                   ),
                 ),
@@ -39,7 +42,10 @@ class AboutView extends GetView<AboutController> {
 
               Text(
                 '1. Introduction',
-                style: const TextStyle(fontWeight: FontWeight.w700),
+                style: const TextStyle(
+                  fontWeight: FontWeight.w700,
+                fontSize: 15,
+                ),
               ),
               const SizedBox(height: 8),
               Text(
@@ -54,14 +60,20 @@ class AboutView extends GetView<AboutController> {
               ),
 
               const SizedBox(height: 12),
-              Text(
-                'Our system promotes:',
-                style: paragraphStyle,
-              ),
+              Text('Our system promotes:', style: paragraphStyle),
               const SizedBox(height: 8),
-              _bullet('Transparency — Every report is traceable from submission to resolution.', paragraphStyle),
-              _bullet('Accountability — Each action is logged and monitored to ensure proper follow-up.', paragraphStyle),
-              _bullet('Community Engagement — Citizens, communities, and institutions collaborate to keep Ethiopia clean and green.', paragraphStyle),
+              _bullet(
+                'Transparency — Every report is traceable from submission to resolution.',
+                paragraphStyle,
+              ),
+              _bullet(
+                'Accountability — Each action is logged and monitored to ensure proper follow-up.',
+                paragraphStyle,
+              ),
+              _bullet(
+                'Community Engagement — Citizens, communities, and institutions collaborate to keep Ethiopia clean and green.',
+                paragraphStyle,
+              ),
 
               const SizedBox(height: 12),
               Text(
@@ -86,7 +98,7 @@ class AboutView extends GetView<AboutController> {
         children: [
           const Padding(
             padding: EdgeInsets.only(right: 12, top: 6),
-            child: Icon(Icons.circle, size: 6, color: Colors.deepPurpleAccent),
+            child: Icon(Icons.circle, size: 6, color: Color.fromRGBO(99, 85, 127, 1)),
           ),
           Expanded(child: Text(text, style: style)),
         ],
