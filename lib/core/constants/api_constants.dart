@@ -30,5 +30,8 @@ class ApiConstants {
   static const Duration sendTimeout = Duration(seconds: 30);
 
   static const String officesEndpoint = '${baseUrl}epa-office-locations';
+  
+  // Awareness endpoint
+  static const String awarenessEndpoint = '${baseUrl}awareness';
 }
 

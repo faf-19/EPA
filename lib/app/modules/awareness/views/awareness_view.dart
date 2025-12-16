@@ -1,5 +1,6 @@
 import 'package:eprs/app/modules/bottom_nav/controllers/bottom_nav_controller.dart';
 import 'package:eprs/core/theme/app_colors.dart';
+import 'package:eprs/data/models/awareness_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import '../controllers/awareness_controller.dart';
@@ -7,6 +8,43 @@ import '../controllers/awareness_controller.dart';
 
 class AwarenessView extends GetView<AwarenessController> {
   const AwarenessView({super.key});
+  
+  /// Build network image with fallback URL patterns
+  Widget _buildNetworkImageWithFallback(String primaryUrl, AwarenessModel awareness) {
+    // For now, just use the primary URL
+    // If it fails, we'll need to check with backend team about the correct route
+    return Image.network(
+      primaryUrl,
+      width: 72,
+      height: 72,
+      fit: BoxFit.cover,
+      loadingBuilder: (context, child, loadingProgress) {
+        if (loadingProgress == null) return child;
+        return Container(
+          color: Colors.grey[200],
+          child: const Center(
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+            ),
+          ),
+        );
+      },
+      errorBuilder: (c, e, s) {
+        print('Image load error for URL: $primaryUrl');
+        print('Error: $e');
+        print('Note: If images are not loading, the server might serve files from a different route.');
+        print('Please check with backend team about the correct static file serving route.');
+        return Container(
+          color: Colors.grey[200],
+          child: const Icon(
+            Icons.image_not_supported,
+            color: Colors.grey,
+            size: 32,
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,65 +140,127 @@ class AwarenessView extends GetView<AwarenessController> {
 
               // List of awareness items recreated as a Column so it participates in
               // the outer SingleChildScrollView (avoids nested scrollables).
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                child: Column(
-                  children: List.generate(3, (i) {
-                    return Padding(
-                      padding: EdgeInsets.only(bottom: i == 2 ? 24.0 : 18.0),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+              Obx(() {
+                if (controller.isLoading.value) {
+                  return const Padding(
+                    padding: EdgeInsets.all(32.0),
+                    child: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
+                }
+
+                if (controller.errorMessage.value != null) {
+                  return Padding(
+                    padding: const EdgeInsets.all(32.0),
+                    child: Center(
+                      child: Column(
                         children: [
-                          Container(
-                            width: 72,
-                            height: 72,
-                            decoration: BoxDecoration(
-                              color: Colors.grey[200],
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.asset(
-                                'assets/awareness.png',
-                                width: 72,
-                                height: 72,
-                                fit: BoxFit.cover,
-                                errorBuilder: (c, e, s) =>
-                                    Container(color: Colors.grey[200]),
-                              ),
-                            ),
+                          const Icon(
+                            Icons.error_outline,
+                            size: 48,
+                            color: Colors.red,
                           ),
-                          const SizedBox(width: 14),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: const [
-                                Text(
-                                  'Awareness 1',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w800,
-                                    fontSize: 16,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                SizedBox(height: 6),
-                                Text(
-                                  'Clean Ethiopia ("we," "our," "us") is committed to protecting your privacy. This Privacy Policy explains how we collect,',
-                                  style: TextStyle(
-                                    color: Color(0xFF5D5A6B),
-                                    height: 1.45,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ],
-                            ),
+                          const SizedBox(height: 16),
+                          Text(
+                            controller.errorMessage.value ?? 'An error occurred',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(color: Colors.red),
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () => controller.loadAwareness(),
+                            child: const Text('Retry'),
                           ),
                         ],
                       ),
-                    );
-                  }),
-                ),
-              ),
+                    ),
+                  );
+                }
+
+                if (controller.awarenessList.isEmpty) {
+                  return const Padding(
+                    padding: EdgeInsets.all(32.0),
+                    child: Center(
+                      child: Text(
+                        'No awareness items available',
+                        style: TextStyle(
+                          color: Color(0xFF5D5A6B),
+                          fontSize: 14,
+                        ),
+                      ),
+                    ),
+                  );
+                }
+
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  child: Column(
+                    children: List.generate(controller.awarenessList.length, (i) {
+                      final awareness = controller.awarenessList[i];
+                      final imageUrl = controller.getImageUrl(awareness);
+                      return Padding(
+                        padding: EdgeInsets.only(
+                          bottom: i == controller.awarenessList.length - 1 ? 24.0 : 18.0,
+                        ),
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                              width: 72,
+                              height: 72,
+                              decoration: BoxDecoration(
+                                color: Colors.grey[200],
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
+                                child: imageUrl.isNotEmpty
+                                    ? _buildNetworkImageWithFallback(imageUrl, awareness)
+                                    : Container(
+                                        color: Colors.grey[200],
+                                        child: const Icon(
+                                          Icons.image_not_supported,
+                                          color: Colors.grey,
+                                          size: 32,
+                                        ),
+                                      ),
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    awareness.title,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w800,
+                                      fontSize: 16,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    awareness.awarenessDescription,
+                                    style: const TextStyle(
+                                      color: Color(0xFF5D5A6B),
+                                      height: 1.45,
+                                      fontSize: 14,
+                                    ),
+                                    maxLines: 3,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ),
+                );
+              }),
             ],
           ),
         ),
