@@ -4,14 +4,18 @@ import 'package:get_storage/get_storage.dart';
 import '../../data/datasources/remote/auth_remote_datasource.dart';
 import '../../data/datasources/local/auth_local_datasource.dart';
 import '../../data/datasources/remote/office_remote_datasource.dart';
+import '../../data/datasources/remote/awareness_remote_datasource.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../data/repositories/office_repository_impl.dart';
+import '../../data/repositories/awareness_repository_impl.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/repositories/office_repository.dart';
+import '../../domain/repositories/awareness_repository.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/signup_usecase.dart';
 import '../../domain/usecases/verify_otp_usecase.dart';
 import '../../domain/usecases/resend_otp_usecase.dart';
+import '../../domain/usecases/get_awareness_usecase.dart';
 import '../network/dio_client.dart';
 
 /// Dependency Injection Container
@@ -101,6 +105,31 @@ class InjectionContainer {
     Get.put<GetOfficesUsecase>(
       GetOfficesUsecase(
         repository: Get.find<OfficeRepository>(),
+      ),
+      permanent: true,
+    );
+
+    // Register Awareness Data Sources
+    Get.put<AwarenessRemoteDataSource>(
+      AwarenessRemoteDataSourceImpl(
+        dio: Get.find<DioClient>().dio,
+        storage: Get.find<GetStorage>(),
+      ),
+      permanent: true,
+    );
+
+    // Register Awareness Repository
+    Get.put<AwarenessRepository>(
+      AwarenessRepositoryImpl(
+        remoteDataSource: Get.find<AwarenessRemoteDataSource>(),
+      ),
+      permanent: true,
+    );
+
+    // Register Awareness Use Cases
+    Get.put<GetAwarenessUseCase>(
+      GetAwarenessUseCase(
+        repository: Get.find<AwarenessRepository>(),
       ),
       permanent: true,
     );
