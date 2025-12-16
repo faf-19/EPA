@@ -31,15 +31,13 @@ class FaqView extends GetView<FaqController> {
 
     return Scaffold(
       appBar: const CustomAppBar(title: 'FAQ'),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      body: SafeArea(// padding: const EdgeInsets.symmetric(vertical: 12.0),
           child: Column(
             children: [
               Material(
                 color: Colors.white,
                 elevation: 2,
-                borderRadius: BorderRadius.circular(12),
+                // borderRadius: BorderRadius.circular(12),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8.0),
                   child: ListView.separated(
@@ -67,7 +65,6 @@ class FaqView extends GetView<FaqController> {
               const SizedBox(height: 24),
             ],
           ),
-        ),
       ),
       bottomNavigationBar: const BottomNavBarFooter(),
     );

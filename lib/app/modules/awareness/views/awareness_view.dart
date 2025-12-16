@@ -15,8 +15,8 @@ class AwarenessView extends GetView<AwarenessController> {
     // If it fails, we'll need to check with backend team about the correct route
     return Image.network(
       primaryUrl,
-      width: 72,
-      height: 72,
+      width: 80,
+      height: 80,
       fit: BoxFit.cover,
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) return child;
@@ -50,7 +50,7 @@ class AwarenessView extends GetView<AwarenessController> {
   Widget build(BuildContext context) {
     // Non-overlapping layout: banner then card below it
     return Scaffold(
-      backgroundColor: const Color(0xFFF3F1F8),
+      backgroundColor: AppColors.onPrimary,
       body: SafeArea(
         // Make the whole page scrollable so the banner, cards and list
         // can all fit on smaller devices without overflow.
@@ -102,7 +102,7 @@ class AwarenessView extends GetView<AwarenessController> {
                             child: const Icon(
                               Icons.arrow_back,
                               color: AppColors.onPrimary,
-                              size: 26,
+                              size: 23,
                             ),
                           ),
                           const SizedBox(width: 12),
@@ -113,7 +113,7 @@ class AwarenessView extends GetView<AwarenessController> {
                                 'Awareness',
                                 style: TextStyle(
                                   color: AppColors.onPrimary,
-                                  fontSize: 18,
+                                  fontSize: 14,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -123,6 +123,7 @@ class AwarenessView extends GetView<AwarenessController> {
                                 style: TextStyle(
                                   color: AppColors.onPrimary,
                                   fontSize: 13,
+                                  fontWeight: FontWeight.w700,
                                 ),
                               ),
                             ],
@@ -214,7 +215,7 @@ class AwarenessView extends GetView<AwarenessController> {
                                 borderRadius: BorderRadius.circular(12),
                               ),
                               child: ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
+                                borderRadius: BorderRadius.circular(10),
                                 child: imageUrl.isNotEmpty
                                     ? _buildNetworkImageWithFallback(imageUrl, awareness)
                                     : Container(
@@ -236,17 +237,17 @@ class AwarenessView extends GetView<AwarenessController> {
                                     awareness.title,
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w800,
-                                      fontSize: 16,
-                                      color: Colors.black87,
+                                      fontSize: 11,
+                                      color: const Color.fromRGBO(0, 0, 0, 1),
                                     ),
                                   ),
                                   const SizedBox(height: 6),
                                   Text(
                                     awareness.awarenessDescription,
                                     style: const TextStyle(
-                                      color: Color(0xFF5D5A6B),
+                                      color: const Color.fromRGBO(99, 85, 127, 1),
                                       height: 1.45,
-                                      fontSize: 14,
+                                      fontSize: 10,
                                     ),
                                     maxLines: 3,
                                     overflow: TextOverflow.ellipsis,
