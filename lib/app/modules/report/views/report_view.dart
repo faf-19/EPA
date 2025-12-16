@@ -37,6 +37,9 @@ class _ReportViewState extends State<ReportView> {
       if (controller.autoDetectLocation.value) {
         controller.detectLocation();
       }
+      if (widget.reportType == ReportTypeEnum.sound.name) {
+        controller.fetchSoundAreas();
+      }
     });
   }
 
@@ -44,18 +47,7 @@ class _ReportViewState extends State<ReportView> {
   Widget build(BuildContext context) {
     // Set report type in controller
     controller.reportType = widget.reportType;
-    // Area data used by the dropdown in the form. Declared here so
-    // they're regular statements (not placed inside the widget list).
-    final areas = [
-      'Select land use type',
-      'Environmental Pollution',
-      'Urban Waste',
-      'Environmental Compliance',
-      'Chemical & Hazardous Waste',
-    ];
-
-    // Separate notifier for the area dropdown (null means placeholder)
-    final areasNotifier = ValueNotifier<String?>(null);
+    final isSoundReport = widget.reportType == ReportTypeEnum.sound.name;
 
     return Scaffold(
       appBar: CustomAppBar(
@@ -136,13 +128,12 @@ class _ReportViewState extends State<ReportView> {
 
               const SizedBox(height: 12),
 
-              if (widget.reportType == ReportTypeEnum.sound.name)
+              if (isSoundReport)
                 Card(
                   color: const Color(0xFFFFFFFF),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  // elevation: 6,
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(
@@ -156,76 +147,111 @@ class _ReportViewState extends State<ReportView> {
                           ),
                         ),
                         const SizedBox(height: 12),
-                        ButtonTheme(
-                          alignedDropdown: true,
-                          child: ValueListenableBuilder<String?>(
-                            valueListenable: areasNotifier,
-                            builder: (context, value, _) {
-                              return DropdownButtonFormField<String>(
-                                initialValue: value,
-                                isExpanded: true,
-                                dropdownColor: Colors.white,
-                                alignment: AlignmentDirectional.centerStart,
-                                itemHeight: 48,
-                                menuMaxHeight: 260,
-                                borderRadius: BorderRadius.circular(8),
-                                items: areas
-                                    .skip(1) // skip placeholder; use hint instead
-                                    .map(
-                                      (c) => DropdownMenuItem(
-                                        value: c,
-                                        child: Text(
-                                          c,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            color: Colors.black87,
-                                          ),
-                                        ),
-                                      ),
-                                    )
-                                    .toList(),
-                                onChanged: (v) {
-                                  areasNotifier.value = v;
-                                },
-                                decoration: InputDecoration(
-                                  isDense: true,
-                                  contentPadding: const EdgeInsets.symmetric(
-                                    horizontal: 14,
-                                    vertical: 14,
-                                  ),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(
-                                      color: Color.fromRGBO(212, 212, 212, 1),
-                                      width: 1,
+                        Obx(() {
+                          if (controller.isLoadingSoundAreas.value) {
+                            return const Center(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(vertical: 8.0),
+                                child: CircularProgressIndicator(),
+                              ),
+                            );
+                          }
+
+                          if (controller.soundAreasError.value != null) {
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  controller.soundAreasError.value ?? 'Failed to load areas',
+                                  style: const TextStyle(color: Colors.red),
+                                ),
+                                const SizedBox(height: 8),
+                                TextButton(
+                                  onPressed: controller.fetchSoundAreas,
+                                  child: const Text('Retry'),
+                                ),
+                              ],
+                            );
+                          }
+
+                          if (controller.soundAreas.isEmpty) {
+                            return const Text(
+                              'No sound areas available',
+                              style: TextStyle(color: Colors.black54),
+                            );
+                          }
+
+                          final items = controller.soundAreas;
+                          final value = controller.selectedSoundAreaId.value;
+
+                          return DropdownButtonFormField<String?>(
+                            value: value,
+                            isExpanded: true,
+                            dropdownColor: Colors.white,
+                            alignment: AlignmentDirectional.centerStart,
+                            itemHeight: 48,
+                            menuMaxHeight: 260,
+                            borderRadius: BorderRadius.circular(8),
+                            items: [
+                              const DropdownMenuItem<String?>(
+                                value: null,
+                                child: Text(
+                                  'Select sound area',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(color: Colors.black54),
+                                ),
+                              ),
+                              ...items.map(
+                                (area) => DropdownMenuItem<String?>(
+                                  value: area.id,
+                                  child: Text(
+                                    area.name,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      color: Colors.black87,
                                     ),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(
-                                      color: Color.fromRGBO(212, 212, 212, 1),
-                                      width: 1,
-                                    ),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                    borderSide: BorderSide(
-                                      color: Color.fromRGBO(212, 212, 212, 1),
-                                      width: 1.1,
-                                    ),
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.white,
-                                  hintText: areas.first,
-                                  hintStyle: TextStyle(
-                                    color: Colors.grey.shade600,
-                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
-                              );
-                            },
-                          ),
-                        ),
+                              ),
+                            ],
+                            onChanged: controller.selectSoundArea,
+                            decoration: InputDecoration(
+                              isDense: true,
+                              contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 14,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Color.fromRGBO(212, 212, 212, 1),
+                                  width: 1,
+                                ),
+                              ),
+                              enabledBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Color.fromRGBO(212, 212, 212, 1),
+                                  width: 1,
+                                ),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: BorderSide(
+                                  color: Color.fromRGBO(212, 212, 212, 1),
+                                  width: 1.1,
+                                ),
+                              ),
+                              filled: true,
+                              fillColor: Colors.white,
+                              hintText: 'Select sound area',
+                              hintStyle: TextStyle(
+                                color: Colors.grey.shade600,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          );
+                        }),
                       ],
                     ),
                   ),
@@ -1328,26 +1354,7 @@ class _ReportViewState extends State<ReportView> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                // Stop button
-                _buildRecordingButton(
-                  icon: Icons.stop,
-                  label: 'Stop',
-                  color: (isRecording || isPaused) && !isWeb
-                      ? AppColors.primary
-                      : Colors.grey.shade400,
-                  enabled: (isRecording || isPaused) && !isWeb,
-                  onPressed: () => controller.stopRecording(),
-                ),
-                // Cancel button
-                _buildRecordingButton(
-                  icon: Icons.cancel_outlined,
-                  label: 'Cancel',
-                  color: (isRecording || isPaused) && !isWeb
-                      ? AppColors.primary
-                      : Colors.grey.shade400,
-                  enabled: (isRecording || isPaused) && !isWeb,
-                  onPressed: () => controller.cancelRecording(),
-                ),
+
                 // Pause/Resume button
                 _buildRecordingButton(
                   icon: isRecording
@@ -1369,6 +1376,29 @@ class _ReportViewState extends State<ReportView> {
                     }
                   },
                 ),
+
+                // Stop button
+                _buildRecordingButton(
+                  icon: Icons.stop,
+                  label: 'Stop',
+                  color: (isRecording || isPaused) && !isWeb
+                      ? AppColors.primary
+                      : Colors.grey.shade400,
+                  enabled: (isRecording || isPaused) && !isWeb,
+                  onPressed: () => controller.stopRecording(),
+                ),
+                // Cancel button
+                _buildRecordingButton(
+                  icon: Icons.cancel_outlined,
+                  label: 'Cancel',
+                  color: (isRecording || isPaused) && !isWeb
+                      ? AppColors.primary
+                      : Colors.grey.shade400,
+                  enabled: (isRecording || isPaused) && !isWeb,
+                  onPressed: () => controller.cancelRecording(),
+                ),
+                
+                
               ],
             ),
           ],

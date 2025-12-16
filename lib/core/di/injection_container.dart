@@ -1,16 +1,20 @@
 import 'package:eprs/domain/usecases/get_offices_usecase.dart';
+import 'package:eprs/domain/usecases/get_sound_areas_usecase.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import '../../data/datasources/remote/auth_remote_datasource.dart';
 import '../../data/datasources/local/auth_local_datasource.dart';
 import '../../data/datasources/remote/office_remote_datasource.dart';
 import '../../data/datasources/remote/awareness_remote_datasource.dart';
+import '../../data/datasources/remote/sound_area_remote_datasource.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../data/repositories/office_repository_impl.dart';
 import '../../data/repositories/awareness_repository_impl.dart';
+import '../../data/repositories/sound_area_repository_impl.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/repositories/office_repository.dart';
 import '../../domain/repositories/awareness_repository.dart';
+import '../../domain/repositories/sound_area_repository.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/signup_usecase.dart';
 import '../../domain/usecases/verify_otp_usecase.dart';
@@ -130,6 +134,31 @@ class InjectionContainer {
     Get.put<GetAwarenessUseCase>(
       GetAwarenessUseCase(
         repository: Get.find<AwarenessRepository>(),
+      ),
+      permanent: true,
+    );
+
+    // Register Sound Areas Data Sources
+    Get.put<SoundAreaRemoteDataSource>(
+      SoundAreaRemoteDataSourceImpl(
+        dio: Get.find<DioClient>().dio,
+        storage: Get.find<GetStorage>(),
+      ),
+      permanent: true,
+    );
+
+    // Register Sound Areas Repository
+    Get.put<SoundAreaRepository>(
+      SoundAreaRepositoryImpl(
+        remoteDataSource: Get.find<SoundAreaRemoteDataSource>(),
+      ),
+      permanent: true,
+    );
+
+    // Register Sound Areas Use Case
+    Get.put<GetSoundAreasUseCase>(
+      GetSoundAreasUseCase(
+        repository: Get.find<SoundAreaRepository>(),
       ),
       permanent: true,
     );
