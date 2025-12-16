@@ -18,8 +18,15 @@ import 'package:eprs/core/network/dio_client.dart';
 import 'package:eprs/core/constants/api_constants.dart';
 import 'package:eprs/app/routes/app_pages.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:eprs/data/models/sound_area_model.dart';
+import 'package:eprs/domain/usecases/get_sound_areas_usecase.dart';
+import 'package:eprs/core/enums/report_type_enum.dart';
 
 class ReportController extends GetxController {
+  final GetSoundAreasUseCase getSoundAreasUseCase;
+
+  ReportController({required this.getSoundAreasUseCase});
+
   // State
   final count = 0.obs;
 
@@ -30,6 +37,12 @@ class ReportController extends GetxController {
   final selectedRegion = 'Select Region'.obs;
   final selectedZone = 'Select Zone'.obs;
   final selectedWoreda = 'Select Woreda'.obs;
+
+  // Sound areas (for sound report type)
+  final soundAreas = <SoundAreaModel>[].obs;
+  final isLoadingSoundAreas = false.obs;
+  final soundAreasError = RxnString();
+  final selectedSoundAreaId = RxnString();
 
   // API-backed location lists (each item: {'id': '...', 'name': '...'})
   final regions = <Map<String, String>>[].obs;
@@ -144,6 +157,11 @@ class ReportController extends GetxController {
     }
     // Fetch regions from API
     fetchRegions();
+
+    // Fetch sound areas only for sound report type
+    if (reportType == ReportTypeEnum.sound.name) {
+      fetchSoundAreas();
+    }
   }
 
   void loadAuthState() {
@@ -183,6 +201,7 @@ class ReportController extends GetxController {
     selectedDate.value = null;
     selectedTime.value = null;
     soundPeriod.value = 'Day';
+    selectedSoundAreaId.value = null;
     
     // Clear location detection
     isInTheSpot.value = false;
@@ -215,6 +234,29 @@ class ReportController extends GetxController {
     pollutionCategoryId = null;
     
     print('Form reset completed');
+  }
+
+  /// Load sound areas from API
+  Future<void> fetchSoundAreas() async {
+    isLoadingSoundAreas.value = true;
+    soundAreasError.value = null;
+    try {
+      final areas = await getSoundAreasUseCase.execute();
+      soundAreas.assignAll(areas);
+      // Reset selection if list is available
+      if (areas.isNotEmpty) {
+        selectedSoundAreaId.value = null;
+      }
+    } catch (e) {
+      soundAreasError.value = e.toString();
+    } finally {
+      isLoadingSoundAreas.value = false;
+    }
+  }
+
+  /// Update selected sound area
+  void selectSoundArea(String? id) {
+    selectedSoundAreaId.value = id;
   }
   
   // Private method for internal use (calls public resetForm)

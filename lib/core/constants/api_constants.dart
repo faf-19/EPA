@@ -33,5 +33,8 @@ class ApiConstants {
   
   // Awareness endpoint
   static const String awarenessEndpoint = '${baseUrl}awareness';
+
+  // Sound areas endpoint
+  static const String soundAreasEndpoint = '${baseUrl}sound-areas';
 }
 
