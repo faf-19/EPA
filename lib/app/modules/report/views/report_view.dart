@@ -804,12 +804,12 @@ class _ReportViewState extends State<ReportView> {
                                 controller.selectedRegion.value = 'Select Region';
                               }
                               return _buildDropdown(
-                                'Region',
+                                'Region / City Administration',
                                 names,
                                 value: controller.selectedRegion.value,
                                 enabled: true, // Always enabled so users can see and select options
                                 onChanged: (v) {
-                                  final selected = v ?? 'Select Region';
+                                  final selected = v ?? 'Select Region / City Administration';
                                   controller.selectedRegion.value = selected;
                                   // find id and load zones (always fetch to populate dropdowns)
                                   final id = controller.findIdByName(controller.regions, selected);
@@ -832,7 +832,7 @@ class _ReportViewState extends State<ReportView> {
                                 controller.selectedZone.value = 'Select Zone';
                               }
                               return _buildDropdown(
-                                'Zone',
+                                'Zone / City',
                                 names,
                                 value: controller.selectedZone.value,
                                 enabled: true, // Always enabled so users can see and select options
