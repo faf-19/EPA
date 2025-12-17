@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 
 import 'package:eprs/app/widgets/custom_app_bar.dart';
 import 'package:eprs/core/enums/report_type_enum.dart';
@@ -672,27 +671,50 @@ class _ReportViewState extends State<ReportView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // "Are you in the spot" Yes/No choice
-                      const Text(
-                        'Are you in the spot',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
+                       Row(
+                        children: const [
+                          Text(
+                            'Are you in the spot',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            '*',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+
+                       ),
                       const SizedBox(height: 12),
                       Obx(() {
-                        final isInSpot = controller.isInTheSpot.value;
+                        final isInSpotValue = controller.isInTheSpot.value;
+                        final isInSpot = isInSpotValue == true; // Only true if explicitly true
+                        final isNotInSpot = isInSpotValue == false; // Only true if explicitly false
+                        // If isInSpotValue is null, both isInSpot and isNotInSpot will be false
                         return Row(
                           children: [
                             Expanded(
                               child: OutlinedButton(
-                                onPressed: () {
+                                onPressed: () async {
+                                  controller.hasSelectedLocationOption.value = true;
                                   controller.isInTheSpot.value = true;
                                   // Clear region/zone/woreda selections when switching to "Yes"
                                   controller.selectedRegion.value = 'Select Region / City Administration';
                                   controller.selectedZone.value = 'Select Zone';
                                   controller.selectedWoreda.value = 'Select Woreda';
+                                  controller.zones.clear();
+                                  controller.woredas.clear();
+                                  
+                                  // Auto-enable location toggle when "Yes" is pressed
+                                  if (!controller.autoDetectLocation.value) {
+                                    await controller.toggleAutoDetect(true);
+                                  }
                                 },
                                 style: OutlinedButton.styleFrom(
                                   padding: const EdgeInsets.symmetric(
@@ -720,6 +742,7 @@ class _ReportViewState extends State<ReportView> {
                             Expanded(
                               child: OutlinedButton(
                                 onPressed: () {
+                                  controller.hasSelectedLocationOption.value = true;
                                   controller.isInTheSpot.value = false;
                                   // Clear auto-detect location when switching to "No"
                                   controller.autoDetectLocation.value = false;
@@ -730,10 +753,10 @@ class _ReportViewState extends State<ReportView> {
                                     vertical: 14,
                                   ),
                                   side: BorderSide(
-                                    color: !isInSpot ? AppColors.primary : Color.fromRGBO(212, 212, 212, 1),
-                                    width: !isInSpot ? 1.1 : 1,
+                                    color: isNotInSpot ? AppColors.primary : Color.fromRGBO(212, 212, 212, 1),
+                                    width: isNotInSpot ? 1.1 : 1,
                                   ),
-                                  backgroundColor: !isInSpot ? AppColors.primary.withOpacity(0.08) : Colors.white,
+                                  backgroundColor: isNotInSpot ? AppColors.primary.withOpacity(0.08) : Colors.white,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(8),
                                   ),
@@ -741,7 +764,7 @@ class _ReportViewState extends State<ReportView> {
                                 child: Text(
                                   'No',
                                   style: TextStyle(
-                                    color: !isInSpot ? AppColors.primary : Colors.black87,
+                                    color: isNotInSpot ? AppColors.primary : Colors.black87,
                                   ),
                                 ),
                               ),
@@ -749,79 +772,86 @@ class _ReportViewState extends State<ReportView> {
                           ],
                         );
                       }),
-                      const SizedBox(height: 20),
-                      Row(
-                        children: const [
-                          Icon(
-                            Icons.location_on_outlined,
-                            size: 18,
-                            color: Colors.black87,
-                          ),
-                          SizedBox(width: 8),
-                          Text(
-                            'Location',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          SizedBox(width: 6),
-                          Text(
-                            '*',
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 12,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF0FFF6),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Row(
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.location_on_outlined,
-                              size: 18,
-                              color: Colors.black54,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Obx(
-                                () => Text(
-                                  controller.autoDetectLocation.value
-                                      ? controller.detectedAddress.value
-                                      : 'Tap Search Location\nAddis Ababa | N.L | W-1',
-                                  style: const TextStyle(color: Colors.black54),
-                                ),
-                              ),
-                            ),
-                            // Custom ON/OFF pill with label inside (matches design)
-                            // Only show toggle when "Are you in the spot" is "Yes"
-                            Obx(() => controller.isInTheSpot.value 
-                              ? Column(children: [_onOffToggle()])
-                              : const SizedBox.shrink()),
-                          ],
-                        ),
-                      ),
-                      // Region/Zone/Woreda dropdowns; only show when "Are you in the spot" is "No"
+                      // Show Location section only when "Yes" is selected
                       Obx(() {
-                        // Only show dropdowns if user selected "No" for "Are you in the spot"
-                        if (controller.isInTheSpot.value) {
+                        if (!controller.hasSelectedLocationOption.value || controller.isInTheSpot.value != true) {
                           return const SizedBox.shrink();
                         }
                         return Column(
                           children: [
+                            const SizedBox(height: 20),
+                            Row(
+                              children: const [
+                                Icon(
+                                  Icons.location_on_outlined,
+                                  size: 18,
+                                  color: Colors.black87,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  'Location',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                                SizedBox(width: 6),
+                                Text(
+                                  '*',
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ],
+                            ),
                             const SizedBox(height: 12),
-                            // Region / City dropdown (populated from API)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 12,
+                              ),
+                              decoration: BoxDecoration(
+                                color: const Color(0xFFF0FFF6),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  const Icon(
+                                    Icons.location_on_outlined,
+                                    size: 18,
+                                    color: Colors.black54,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Obx(
+                                      () => Text(
+                                        controller.autoDetectLocation.value
+                                            ? controller.detectedAddress.value
+                                            : 'Tap Search Location\nAddis Ababa | N.L | W-1',
+                                        style: const TextStyle(color: Colors.black54),
+                                      ),
+                                    ),
+                                  ),
+                                  // Custom ON/OFF pill with label inside (matches design)
+                                  Column(children: [_onOffToggle()]),
+                                ],
+                              ),
+                            ),
+                          ],
+                        );
+                      }),
+                      // Region/Zone/Woreda dropdowns; only show when "Are you in the spot" is "No"
+                      Obx(() {
+                        // Only show dropdowns if user selected "No" for "Are you in the spot"
+                        if (!controller.hasSelectedLocationOption.value || controller.isInTheSpot.value != false) {
+                          return const SizedBox.shrink();
+                        }
+                        return Column(
+                          children: [
+                            const SizedBox(height: 20),
+                            // Region / City dropdown (populated from API) - always show first
                             Obx(() {
                               final items = controller.regionsAndCities;
                               final names = ['Select Region / City Administration'] + items.map((e) => e['name']!).toList();
@@ -833,68 +863,125 @@ class _ReportViewState extends State<ReportView> {
                                 'Region / City Administration',
                                 names,
                                 value: controller.selectedRegion.value,
-                                enabled: true, // Always enabled so users can see and select options
+                                enabled: true,
                                 onChanged: (v) {
                                   final selected = v ?? 'Select Region / City Administration';
                                   controller.selectedRegion.value = selected;
-                                  // find id and load zones (always fetch to populate dropdowns)
-                                  // Check if it's a region (regions have zones) or city (cities might not have zones)
+                                  // Clear zone and woreda when region changes
+                                  controller.selectedZone.value = 'Select Zone';
+                                  controller.selectedWoreda.value = 'Select Woreda';
+                                  controller.woredas.clear();
+                                  
+                                  // find id and load zones
                                   final id = controller.findIdByName(controller.regionsAndCities, selected);
                                   final selectedItem = items.where((item) => item['name'] == selected).firstOrNull;
                                   final isRegion = selectedItem?['type'] == 'region';
                                   
+                                  print('🔄 Region selected: $selected');
+                                  print('   ID: $id');
+                                  print('   Is Region: $isRegion');
+                                  print('   Selected item: $selectedItem');
+                                  
                                   if (id != null && isRegion) {
+                                    print('✅ Fetching zones for region ID: $id');
                                     controller.fetchZonesForRegion(id);
                                   } else {
-                                    // Clear zones and woredas for cities or when nothing is selected
+                                    print('⚠️ Not fetching zones - ID: $id, isRegion: $isRegion');
+                                    // Clear zones for cities or when nothing is selected
                                     controller.zones.clear();
-                                    controller.woredas.clear();
                                   }
                                 },
                               );
                             }),
-                            const SizedBox(height: 8),
-                            // Zone dropdown (depends on selected region)
+                            // Zone dropdown - only show when a region is selected
                             Obx(() {
+                              // Only show if a region is selected (not the placeholder)
+                              final isRegionSelected = controller.selectedRegion.value != 'Select Region / City Administration';
+                              if (!isRegionSelected) {
+                                return const SizedBox.shrink();
+                              }
+                              
                               final items = controller.zones;
                               final names = ['Select Zone'] + items.map((e) => e['name']!).toList();
+                              
+                              // Show loading indicator while fetching zones
+                              if (controller.isLoadingZones.value) {
+                                return Column(
+                                  children: [
+                                    const SizedBox(height: 8),
+                                    _buildDropdown(
+                                      'Zone / City',
+                                      ['Select Zone'],
+                                      value: 'Select Zone',
+                                      enabled: false,
+                                      onChanged: null,
+                                    ),
+                                    const SizedBox(height: 4),
+                                    const Center(
+                                      child: Padding(
+                                        padding: EdgeInsets.symmetric(vertical: 8.0),
+                                        child: CircularProgressIndicator(strokeWidth: 2),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              }
+                              
                               // Ensure selectedZone is set to placeholder if not in list
                               if (items.isNotEmpty && !names.contains(controller.selectedZone.value)) {
                                 controller.selectedZone.value = 'Select Zone';
                               }
-                              return _buildDropdown(
-                                'Zone / City',
-                                names,
-                                value: controller.selectedZone.value,
-                                enabled: true, // Always enabled so users can see and select options
-                                onChanged: (v) {
-                                  final selected = v ?? 'Select Zone';
-                                  controller.selectedZone.value = selected;
-                                  // find id and load woredas (always fetch to populate dropdowns)
-                                  final id = controller.findIdByName(controller.zones, selected);
-                                  if (id != null) {
-                                    controller.fetchWoredasForZone(id);
-                                  } else {
-                                    controller.woredas.clear();
-                                  }
-                                },
+                              
+                              return Column(
+                                children: [
+                                  const SizedBox(height: 8),
+                                  _buildDropdown(
+                                    'Zone / City',
+                                    names,
+                                    value: controller.selectedZone.value,
+                                    enabled: items.isNotEmpty, // Disable if no zones available
+                                    onChanged: items.isNotEmpty ? (v) {
+                                      final selected = v ?? 'Select Zone';
+                                      controller.selectedZone.value = selected;
+                                      // Clear woreda when zone changes
+                                      controller.selectedWoreda.value = 'Select Woreda';
+                                      
+                                      // find id and load woredas
+                                      final id = controller.findIdByName(controller.zones, selected);
+                                      if (id != null) {
+                                        controller.fetchWoredasForZone(id);
+                                      } else {
+                                        controller.woredas.clear();
+                                      }
+                                    } : null,
+                                  ),
+                                ],
                               );
                             }),
-                            const SizedBox(height: 8),
-                            // Woreda dropdown (depends on selected zone)
+                            // Woreda dropdown - only show when a zone is selected
                             Obx(() {
+                              // Only show if a zone is selected (not the placeholder) and woredas are available
+                              if (controller.selectedZone.value == 'Select Zone' || 
+                                  controller.woredas.isEmpty) {
+                                return const SizedBox.shrink();
+                              }
                               final items = controller.woredas;
                               final names = ['Select Woreda'] + items.map((e) => e['name']!).toList();
                               // Ensure selectedWoreda is set to placeholder if not in list
                               if (items.isNotEmpty && !names.contains(controller.selectedWoreda.value)) {
                                 controller.selectedWoreda.value = 'Select Woreda';
                               }
-                              return _buildDropdown(
-                                'Woreda',
-                                names,
-                                value: controller.selectedWoreda.value,
-                                enabled: true, // Always enabled so users can see and select options
-                                onChanged: (v) => controller.selectedWoreda.value = v ?? 'Select Woreda',
+                              return Column(
+                                children: [
+                                  const SizedBox(height: 8),
+                                  _buildDropdown(
+                                    'Woreda',
+                                    names,
+                                    value: controller.selectedWoreda.value,
+                                    enabled: true,
+                                    onChanged: (v) => controller.selectedWoreda.value = v ?? 'Select Woreda',
+                                  ),
+                                ],
                               );
                             }),
                           ],
@@ -1060,6 +1147,7 @@ class _ReportViewState extends State<ReportView> {
               Obx(() => Row(
                 children: [
                   Checkbox(
+                    activeColor: AppColors.primary,
                     value: controller.termsAccepted.value,
                     onChanged: (v) => controller.termsAccepted.value = v ?? false,
                   ),

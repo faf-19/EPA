@@ -35,7 +35,8 @@ class ReportController extends GetxController {
   // State
   final count = 0.obs;
 
-  final isInTheSpot = false.obs; // "Are you in the spot" - yes/no choice
+  final isInTheSpot = Rxn<bool>(); // "Are you in the spot" - null initially (neither selected)
+  final hasSelectedLocationOption = false.obs; // Track if user has made a selection
   final autoDetectLocation = true.obs;
   final detectedAddress = 'Tap Search Location\nAddis Ababa | N.L | W-1'.obs;
 
@@ -217,8 +218,9 @@ class ReportController extends GetxController {
     soundPeriod.value = 'Day';
     selectedSoundAreaId.value = null;
     
-    // Clear location detection
-    isInTheSpot.value = false;
+    // Clear location detection - reset to initial state (null = neither selected)
+    isInTheSpot.value = null;
+    hasSelectedLocationOption.value = false;
     detectedPosition.value = null;
     detectedAddress.value = 'Tap Search Location\nAddis Ababa | N.L | W-1';
     autoDetectLocation.value = false;
@@ -704,8 +706,16 @@ class ReportController extends GetxController {
 
   String? findIdByName(List<Map<String, String>> list, String name) {
     try {
-      return list.firstWhere((e) => e['name'] == name)['id'];
-    } catch (_) {
+      if (list.isEmpty) {
+        print('⚠️ findIdByName: List is empty for name: $name');
+        return null;
+      }
+      final found = list.firstWhere((e) => e['name'] == name);
+      final id = found['id'];
+      print('✅ findIdByName: Found "$name" → ID: $id');
+      return id;
+    } catch (e) {
+      print('❌ findIdByName: Not found "$name" in list. Available names: ${list.map((e) => e['name']).toList()}');
       return null;
     }
   }
@@ -1361,6 +1371,27 @@ class ReportController extends GetxController {
       return;
     }
     
+    // Validate "Are you in the spot" is selected
+    if (!hasSelectedLocationOption.value || isInTheSpot.value == null) {
+      Get.snackbar('Error', 'Please select "Are you in the spot"', snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+    
+    // Validate location based on selection
+    if (isInTheSpot.value == true) {
+      // If "Yes", location should be detected or manually entered
+      if (!autoDetectLocation.value && detectedPosition.value == null) {
+        Get.snackbar('Error', 'Please enable location detection or provide location details', snackPosition: SnackPosition.BOTTOM);
+        return;
+      }
+    } else {
+      // If "No", region/zone/woreda should be selected
+      if (selectedRegion.value == 'Select Region / City Administration') {
+        Get.snackbar('Error', 'Please select a region/city', snackPosition: SnackPosition.BOTTOM);
+        return;
+      }
+    }
+    
     isSubmitting.value = true;
     
     try {
@@ -1378,6 +1409,14 @@ class ReportController extends GetxController {
       final zoneId = findIdByName(zones, selectedZone.value) ?? '';
       final woredaId = findIdByName(woredas, selectedWoreda.value) ?? '';
       
+      // Debug logging for location IDs
+      print('📍 Location IDs for submission:');
+      print('   Selected Region: ${selectedRegion.value} → ID: $regionId');
+      print('   Selected Zone: ${selectedZone.value} → ID: $zoneId');
+      print('   Selected Woreda: ${selectedWoreda.value} → ID: $woredaId');
+      print('   Available zones: ${zones.map((z) => z['name']).toList()}');
+      print('   Available woredas: ${woredas.map((w) => w['name']).toList()}');
+      
       // Get location coordinates
       String locationUrl = '';
       if (autoDetectLocation.value && detectedPosition.value != null) {
@@ -1389,9 +1428,26 @@ class ReportController extends GetxController {
       final formData = dio.FormData();
       
       // Add text fields
-      if (regionId.isNotEmpty) formData.fields.add(MapEntry('region_id', regionId));
-      if (zoneId.isNotEmpty) formData.fields.add(MapEntry('zone_id', zoneId));
-      if (woredaId.isNotEmpty) formData.fields.add(MapEntry('Woreda_id', woredaId));
+      if (regionId.isNotEmpty) {
+        formData.fields.add(MapEntry('region_id', regionId));
+        print('✅ Added region_id: $regionId');
+      } else {
+        print('⚠️ Region ID is empty');
+      }
+      
+      if (zoneId.isNotEmpty) {
+        formData.fields.add(MapEntry('zone_id', zoneId));
+        print('✅ Added zone_id: $zoneId');
+      } else {
+        print('⚠️ Zone ID is empty - selectedZone: ${selectedZone.value}, zones count: ${zones.length}');
+      }
+      
+      if (woredaId.isNotEmpty) {
+        formData.fields.add(MapEntry('Woreda_id', woredaId));
+        print('✅ Added Woreda_id: $woredaId');
+      } else {
+        print('⚠️ Woreda ID is empty');
+      }
       if (locationUrl.isNotEmpty) formData.fields.add(MapEntry('location_url', locationUrl));
       formData.fields.add(MapEntry('detail', descriptionController.text.trim()));
       
