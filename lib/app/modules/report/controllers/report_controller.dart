@@ -20,12 +20,17 @@ import 'package:eprs/app/routes/app_pages.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:eprs/data/models/sound_area_model.dart';
 import 'package:eprs/domain/usecases/get_sound_areas_usecase.dart';
+import 'package:eprs/domain/usecases/get_cities_usecase.dart';
 import 'package:eprs/core/enums/report_type_enum.dart';
 
 class ReportController extends GetxController {
   final GetSoundAreasUseCase getSoundAreasUseCase;
+  final GetCitiesUseCase getCitiesUseCase;
 
-  ReportController({required this.getSoundAreasUseCase});
+  ReportController({
+    required this.getSoundAreasUseCase,
+    required this.getCitiesUseCase,
+  });
 
   // State
   final count = 0.obs;
@@ -34,7 +39,7 @@ class ReportController extends GetxController {
   final autoDetectLocation = true.obs;
   final detectedAddress = 'Tap Search Location\nAddis Ababa | N.L | W-1'.obs;
 
-  final selectedRegion = 'Select Region'.obs;
+  final selectedRegion = 'Select Region / City Administration'.obs;
   final selectedZone = 'Select Zone'.obs;
   final selectedWoreda = 'Select Woreda'.obs;
 
@@ -46,10 +51,13 @@ class ReportController extends GetxController {
 
   // API-backed location lists (each item: {'id': '...', 'name': '...'})
   final regions = <Map<String, String>>[].obs;
+  final cities = <Map<String, String>>[].obs;
+  final regionsAndCities = <Map<String, String>>[].obs; // Combined list
   final zones = <Map<String, String>>[].obs;
   final woredas = <Map<String, String>>[].obs;
 
   final isLoadingRegions = false.obs;
+  final isLoadingCities = false.obs;
   final isLoadingZones = false.obs;
   final isLoadingWoredas = false.obs;
 
@@ -155,8 +163,9 @@ class ReportController extends GetxController {
     if (autoDetectLocation.value) {
       detectLocation();
     }
-    // Fetch regions from API
+    // Fetch regions and cities from API
     fetchRegions();
+    fetchCities();
 
     // Fetch sound areas only for sound report type
     if (reportType == ReportTypeEnum.sound.name) {
@@ -185,14 +194,16 @@ class ReportController extends GetxController {
     phoneController.clear();
     
     // Clear selected values
-    selectedRegion.value = 'Select Region';
+    selectedRegion.value = 'Select Region / City Administration';
     selectedZone.value = 'Select Zone';
     selectedWoreda.value = 'Select Woreda';
     
     // Clear location data
-    regions.clear();
-    zones.clear();
-    woredas.clear();
+      regions.clear();
+      cities.clear();
+      regionsAndCities.clear();
+      zones.clear();
+      woredas.clear();
     
     // Clear picked images
     pickedImagesX.clear();
@@ -428,7 +439,7 @@ class ReportController extends GetxController {
   }
 
   // ----------------------------
-  // LOCATION API (regions / zones / woredas)
+  // LOCATION API (regions / cities / zones / woredas)
   // ----------------------------
   Future<void> fetchRegions() async {
     isLoadingRegions.value = true;
@@ -482,6 +493,9 @@ class ReportController extends GetxController {
       // Debug: print mapped regions so we can verify UI data
       print('Mapped regions for UI: ${regions.map((r) => r['name']).toList()}');
       print('Total regions loaded: ${regions.length}');
+      
+      // Update combined list
+      _updateRegionsAndCities();
     } catch (e) {
       print('Error fetching regions: $e');
       Get.snackbar(
@@ -492,6 +506,65 @@ class ReportController extends GetxController {
     } finally {
       isLoadingRegions.value = false;
     }
+  }
+
+  Future<void> fetchCities() async {
+    print('🔄 Starting to fetch cities...');
+    isLoadingCities.value = true;
+    try {
+      print('📡 Calling getCitiesUseCase.execute()...');
+      final citiesList = await getCitiesUseCase.execute();
+      print('✅ Received ${citiesList.length} cities from usecase');
+      
+      cities.clear();
+      final mappedCities = citiesList.map<Map<String, String>>((city) {
+        return {
+          'id': city.id,
+          'name': city.name,
+          'type': 'city', // Mark as city to distinguish from regions
+        };
+      }).toList();
+      
+      cities.addAll(mappedCities);
+      print('📋 Mapped cities for UI:');
+      for (var i = 0; i < cities.length; i++) {
+        print('   City $i: ${cities[i]['name']} (id: ${cities[i]['id']})');
+      }
+      print('✅ Total cities loaded: ${cities.length}');
+      
+      // Update combined list
+      _updateRegionsAndCities();
+      print('✅ Cities successfully added to regionsAndCities list');
+    } catch (e, stackTrace) {
+      print('❌ Error fetching cities: $e');
+      print('Stack trace: $stackTrace');
+      Get.snackbar(
+        'Error',
+        'Failed to load cities: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    } finally {
+      isLoadingCities.value = false;
+      print('🏁 Finished fetching cities (isLoadingCities = false)');
+    }
+  }
+
+  void _updateRegionsAndCities() {
+    print('🔄 Updating combined regionsAndCities list...');
+    regionsAndCities.clear();
+    // Add regions with type marker
+    final mappedRegions = regions.map((r) => {
+      'id': r['id']!,
+      'name': r['name']!,
+      'type': 'region', // Mark as region
+    }).toList();
+    regionsAndCities.addAll(mappedRegions);
+    print('   Added ${mappedRegions.length} regions');
+    // Add cities
+    regionsAndCities.addAll(cities);
+    print('   Added ${cities.length} cities');
+    print('✅ Total regions and cities combined: ${regionsAndCities.length}');
+    print('   Combined list: ${regionsAndCities.map((e) => '${e['name']} (${e['type']})').toList()}');
   }
 
   Future<void> fetchZonesForRegion(String regionId) async {
@@ -1236,7 +1309,7 @@ class ReportController extends GetxController {
       }
       
       // Get location IDs
-      final regionId = findIdByName(regions, selectedRegion.value) ?? '';
+      final regionId = findIdByName(regionsAndCities, selectedRegion.value) ?? '';
       final zoneId = findIdByName(zones, selectedZone.value) ?? '';
       final woredaId = findIdByName(woredas, selectedWoreda.value) ?? '';
       
