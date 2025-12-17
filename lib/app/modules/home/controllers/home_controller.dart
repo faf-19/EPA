@@ -122,6 +122,7 @@ class HomeController extends GetxController {
   
   // Fetch pollution categories from API
   Future<void> fetchPollutionCategories() async {
+    print('🔄 Starting to fetch pollution categories...');
     try {
       final httpClient = Get.find<DioClient>().dio;
       final token = box.read('auth_token');
@@ -132,15 +133,23 @@ class HomeController extends GetxController {
         }),
       );
       
+      print('📡 Pollution Categories API Response: ${res.data}');
+      print('📡 Response Status Code: ${res.statusCode}');
+      
       final data = res.data;
       List items = [];
       if (data is List) {
         items = data;
+        print('✓ Categories data is a direct List with ${items.length} items');
       } else if (data is Map) {
         if (data['data'] is List) {
           items = data['data'];
+          print('✓ Categories data found in "data" key with ${items.length} items');
         } else if (data['categories'] is List) {
           items = data['categories'];
+          print('✓ Categories data found in "categories" key with ${items.length} items');
+        } else {
+          print('⚠️ Could not find categories array. Available keys: ${data.keys.toList()}');
         }
       }
       
@@ -150,26 +159,60 @@ class HomeController extends GetxController {
           final id = item['pollution_category_id']?.toString() ?? item['id']?.toString() ?? '';
           final name = item['pollution_category']?.toString() ?? item['name']?.toString() ?? '';
           if (id.isNotEmpty && name.isNotEmpty) {
-            // Store both original case and lowercase for lookup
-            pollutionCategories[name.toLowerCase().trim()] = id;
-            pollutionCategories[name.trim()] = id; // Also store original case
-            print('Loaded category: "$name" (ID: $id)');
+            // Store multiple variations for flexible lookup
+            final normalizedName = name.toLowerCase().trim();
+            pollutionCategories[normalizedName] = id; // lowercase: "pollution"
+            pollutionCategories[name.trim()] = id; // original case: "Pollution"
+            pollutionCategories[name.trim().toLowerCase()] = id; // lowercase original: "pollution"
+            
+            // Also handle common variations
+            if (normalizedName == 'pollution') {
+              pollutionCategories['air pollution'] = id;
+            }
+            
+            print('📋 Loaded category: "$name" (ID: $id)');
+            print('   - Stored as: "$normalizedName", "${name.trim()}"');
           }
         }
       }
       
-      print('Loaded pollution categories: ${pollutionCategories.keys.toList()}');
-    } catch (e) {
-      print('Error fetching pollution categories: $e');
+      print('✅ Loaded ${pollutionCategories.length} pollution category mappings');
+      print('   Available keys: ${pollutionCategories.keys.toList()}');
+    } catch (e, stackTrace) {
+      print('❌ Error fetching pollution categories: $e');
+      print('Stack trace: $stackTrace');
     }
   }
   
-  // Get pollution category ID by name
+  // Get pollution category ID by name (handles various formats)
   String? getPollutionCategoryId(String categoryName) {
-    final lowerName = categoryName.toLowerCase().trim();
-    final id = pollutionCategories[lowerName];
-    print('Looking up category: "$categoryName" (normalized: "$lowerName") -> ID: $id');
-    print('Available categories: ${pollutionCategories.keys.toList()}');
+    print('🔍 Looking up pollution category for: "$categoryName"');
+    
+    // Normalize the input
+    final normalized = categoryName.toLowerCase().trim();
+    
+    // Try direct lookup first
+    var id = pollutionCategories[normalized];
+    
+    // If not found, try with capitalized first letter
+    if (id == null && normalized.isNotEmpty) {
+      final capitalized = normalized[0].toUpperCase() + normalized.substring(1);
+      id = pollutionCategories[capitalized];
+    }
+    
+    // If still not found, try exact match (case-insensitive)
+    if (id == null) {
+      for (var key in pollutionCategories.keys) {
+        if (key.toLowerCase() == normalized) {
+          id = pollutionCategories[key];
+          break;
+        }
+      }
+    }
+    
+    print('   Result: ${id != null ? "✅ Found ID: $id" : "❌ Not found"}');
+    print('   Available categories: ${pollutionCategories.keys.toList()}');
+    
     return id;
   }
 

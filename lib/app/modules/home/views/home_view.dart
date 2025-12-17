@@ -116,7 +116,15 @@ class _ReportTile extends StatelessWidget {
           // Get pollution category ID from controller
           final homeController = Get.find<HomeController>();
           final categoryId = homeController.getPollutionCategoryId(reportType);
-          print('Navigating to report with type: $reportType, categoryId: $categoryId');
+          
+          print('📤 Navigating to report:');
+          print('   - Report Type: $reportType');
+          print('   - Category ID: ${categoryId ?? "NOT FOUND"}');
+          
+          if (categoryId == null) {
+            print('⚠️ Warning: No category ID found for "$reportType"');
+            print('   Available categories: ${homeController.pollutionCategories.keys.toList()}');
+          }
           
           // Push onto the nearest Navigator (the nested navigator created by the shell)
           Get.toNamed("/report", arguments: {

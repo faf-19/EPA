@@ -9,7 +9,6 @@ import 'package:flutter/gestures.dart';
 import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
 import 'package:eprs/app/routes/app_pages.dart';
-import 'package:audio_waveforms/audio_waveforms.dart';
 
 import '../controllers/report_controller.dart';
 
@@ -186,7 +185,7 @@ class _ReportViewState extends State<ReportView> {
                           final value = controller.selectedSoundAreaId.value;
 
                           return DropdownButtonFormField<String?>(
-                            value: value,
+                            initialValue: value,
                             isExpanded: true,
                             dropdownColor: Colors.white,
                             alignment: AlignmentDirectional.centerStart,
@@ -1287,6 +1286,9 @@ class _ReportViewState extends State<ReportView> {
   }
 
   Widget _buildRecordingUI(BuildContext context) {
+    // Build waveform outside Obx to keep it stable
+    final waveformWidget = _buildWaveform();
+    
     return Obx(() {
       final duration = controller.recordingDuration.value;
       final isPaused = controller.isPaused.value;
@@ -1325,11 +1327,8 @@ class _ReportViewState extends State<ReportView> {
                 ),
               ),
             if (isWeb) const SizedBox(height: 12),
-            // Waveform visualization
-            SizedBox(
-              height: 80,
-              child: _buildWaveform(),
-            ),
+            // Waveform visualization - built outside Obx to keep it stable
+            waveformWidget,
             const SizedBox(height: 16),
             // Frequency and Duration display
             Row(
@@ -1384,8 +1383,18 @@ class _ReportViewState extends State<ReportView> {
                   color: (isRecording || isPaused) && !isWeb
                       ? AppColors.primary
                       : Colors.grey.shade400,
-                  enabled: (isRecording || isPaused) && !isWeb,
-                  onPressed: () => controller.cancelRecording(),
+                  enabled: (isRecording || isPaused) && !isWeb && !controller.isCanceling.value,
+                  onPressed: () {
+                    if (controller.isCanceling.value) return;
+                    controller.cancelRecording().catchError((error) {
+                      print('Error canceling recording: $error');
+                      Get.snackbar(
+                        'Error',
+                        'Failed to cancel recording: ${error.toString()}',
+                        snackPosition: SnackPosition.BOTTOM,
+                      );
+                    });
+                  },
                 ),
 
                 // Pause/Resume button
@@ -1417,8 +1426,18 @@ class _ReportViewState extends State<ReportView> {
                   color: (isRecording || isPaused) && !isWeb
                       ? AppColors.primary
                       : Colors.grey.shade400,
-                  enabled: (isRecording || isPaused) && !isWeb,
-                  onPressed: () => controller.stopRecording(),
+                  enabled: (isRecording || isPaused) && !isWeb && !controller.isStopping.value,
+                  onPressed: () {
+                    if (controller.isStopping.value) return;
+                    controller.stopRecording().catchError((error) {
+                      print('Error stopping recording: $error');
+                      Get.snackbar(
+                        'Error',
+                        'Failed to stop recording: ${error.toString()}',
+                        snackPosition: SnackPosition.BOTTOM,
+                      );
+                    });
+                  },
                 ),  
               ],
             ),
@@ -1429,38 +1448,29 @@ class _ReportViewState extends State<ReportView> {
   }
 
   Widget _buildWaveform() {
+    // Custom waveform using decibel readings from noise meter
+    // This creates a real-time animated waveform visualization
     return Obx(() {
-      final isPaused = controller.isPaused.value;
       final isRecording = controller.isRecording.value;
+      final isPaused = controller.isPaused.value;
+      final decibel = isRecording ? controller.currentDecibel.value : 0.0;
       
-      if (!isRecording && !isPaused) {
-        // Show empty waveform when not recording
-        return Container(
-          height: 80,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: Colors.transparent,
-            borderRadius: BorderRadius.circular(8),
-          ),
-        );
-      }
+      // Normalize decibel to 0-1 range (assuming 0-100 dB range)
+      // Add some minimum value to ensure waves are visible even with low sound
+      final normalized = ((decibel.clamp(0.0, 100.0) / 100.0) * 0.8 + 0.2).clamp(0.0, 1.0);
       
       return SizedBox(
         height: 80,
         width: double.infinity,
-        child: AudioWaveforms(
-          recorderController: controller.recorderController,
-          size: const Size(double.infinity, 80),
-          waveStyle: WaveStyle(
-            waveColor: isPaused ? Colors.grey.shade400 : AppColors.primary,
-            extendWaveform: true,
-            showMiddleLine: false,
-            waveThickness: 3.5,
-            waveCap: StrokeCap.round,
-            spacing: 4,
-            showBottom: true,
-            showTop: true,
+        child: CustomPaint(
+          painter: _WaveformPainter(
+            amplitude: isPaused ? 0.0 : normalized,
+            color: isPaused 
+                ? Colors.grey.shade400 
+                : (isRecording ? AppColors.primary : Colors.grey.shade300),
+            isActive: isRecording && !isPaused,
           ),
+          size: Size.infinite,
         ),
       );
     });
@@ -1480,7 +1490,15 @@ class _ReportViewState extends State<ReportView> {
           color: enabled ? color : Colors.grey.shade300,
           borderRadius: BorderRadius.circular(30),
           child: InkWell(
-            onTap: enabled ? onPressed : null,
+            onTap: enabled
+                ? () {
+                    try {
+                      onPressed();
+                    } catch (e) {
+                      print('Error in recording button callback: $e');
+                    }
+                  }
+                : null,
             borderRadius: BorderRadius.circular(30),
             child: Container(
               width: 56,
@@ -1746,5 +1764,82 @@ class _DashedRectPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
+// Custom waveform painter that creates animated waves based on audio amplitude
+// Uses decibel readings from noise meter to create real-time visualization
+class _WaveformPainter extends CustomPainter {
+  final double amplitude;
+  final Color color;
+  final bool isActive;
+  static final List<double> _waveData = List.generate(60, (_) => 0.0);
+
+  _WaveformPainter({
+    required this.amplitude,
+    required this.color,
+    required this.isActive,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (!isActive) {
+      // Draw flat line when not recording
+      final paint = Paint()
+        ..color = color.withOpacity(0.3)
+        ..strokeWidth = 2
+        ..style = PaintingStyle.stroke;
+      canvas.drawLine(
+        Offset(0, size.height / 2),
+        Offset(size.width, size.height / 2),
+        paint,
+      );
+      return;
+    }
+
+    // Update wave data with new amplitude
+    _waveData.removeAt(0);
+    _waveData.add(amplitude);
+
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 3.5
+      ..strokeCap = StrokeCap.round
+      ..style = PaintingStyle.stroke;
+
+    final centerY = size.height / 2;
+    final barWidth = size.width / _waveData.length;
+    final maxHeight = size.height * 0.45;
+
+    // Draw waveform bars with spacing
+    for (int i = 0; i < _waveData.length; i++) {
+      final x = i * barWidth + barWidth / 2;
+      final barHeight = _waveData[i] * maxHeight;
+      
+      // Add minimum height for visibility
+      final minHeight = maxHeight * 0.1;
+      final finalHeight = barHeight < minHeight ? minHeight : barHeight;
+      
+      // Draw top bar
+      canvas.drawLine(
+        Offset(x, centerY - finalHeight),
+        Offset(x, centerY),
+        paint,
+      );
+      
+      // Draw bottom bar (mirrored)
+      canvas.drawLine(
+        Offset(x, centerY),
+        Offset(x, centerY + finalHeight),
+        paint,
+      );
+    }
+  }
+
+  @override
+  bool shouldRepaint(_WaveformPainter oldDelegate) {
+    return oldDelegate.amplitude != amplitude ||
+        oldDelegate.color != color ||
+        oldDelegate.isActive != isActive;
+  }
 }
 

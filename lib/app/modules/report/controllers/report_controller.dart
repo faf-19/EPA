@@ -71,6 +71,9 @@ class ReportController extends GetxController {
   // Helper to add a file
   void addPickedImage(XFile file) {
     pickedImagesX.add(file);
+    // Force update - RxList should auto-update but ensure it does
+    pickedImagesX.refresh();
+    print('📁 File added to list. Total: ${pickedImagesX.length}, Name: ${file.name}');
   }
   
   // Helper to remove a file
@@ -946,12 +949,17 @@ class ReportController extends GetxController {
       // Clear any previous waveform frames before a new recording
       try {
         recorderController.reset();
+        // Small delay to ensure reset completes
+        await Future.delayed(const Duration(milliseconds: 100));
       } catch (_) {}
 
+      // Start recording - waveform will automatically work when recording starts
       await recorderController.record(
         path: filePath,
         recorderSettings: recorderSettings,
       );
+      
+      print('✅ Recording started, waveform should be active');
       
       audioFilePath.value = filePath;
       isRecording.value = true;
@@ -1028,129 +1036,186 @@ class ReportController extends GetxController {
     }
   }
 
-  Future<void> stopRecording() async {
-    try {
-      if (!isRecording.value && !isPaused.value) {
-        Get.snackbar('Info', 'No active recording to stop', snackPosition: SnackPosition.BOTTOM);
-        return;
-      }
+  final isStopping = false.obs;
+  final isCanceling = false.obs;
 
-      // Stop without auto-reset so we can manage file + UI updates
-      final path = await recorderController.stop(false);
+  Future<void> stopRecording() async {
+    if (isStopping.value) return;
+    if (!isRecording.value && !isPaused.value) {
+      Get.snackbar('Info', 'No active recording to stop', snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
+
+    isStopping.value = true;
+    
+    try {
+      // Store path before stopping
+      final savePath = audioFilePath.value;
+      
+      // Stop timer and noise meter
       _recordingTimer?.cancel();
       _stopNoiseMeter();
+      
+      // Stop the recorder - same pattern as camera/video (await the operation)
+      String? finalPath = savePath;
+      if (recorderController.isRecording) {
+        try {
+          // Stop recorder and get the file path
+          final stoppedPath = await recorderController.stop().timeout(
+            const Duration(seconds: 3),
+          );
+          if (stoppedPath != null && stoppedPath.isNotEmpty) {
+            finalPath = stoppedPath;
+          }
+        } catch (e) {
+          print('⚠️ Error stopping recorder: $e');
+          // Try alternative stop method
+          try {
+            recorderController.stop();
+          } catch (_) {}
+        }
+      }
+      
+      // Wait for file to be finalized
+      await Future.delayed(const Duration(milliseconds: 500));
+      
+      // Add file immediately - EXACTLY like camera/video pattern
+      if (finalPath != null && finalPath.isNotEmpty) {
+        final file = File(finalPath);
+        
+        // Check if file exists (with retry)
+        bool exists = await file.exists();
+        if (!exists) {
+          await Future.delayed(const Duration(milliseconds: 500));
+          exists = await file.exists();
+        }
+        
+        if (exists) {
+          // Add file immediately - same as pickFromCamera/pickVideoFromCamera
+          final xFile = XFile(finalPath);
+          _removeExistingAudioAttachments();
+          addPickedImage(xFile);
+          Get.snackbar('Upload', 'File added', snackPosition: SnackPosition.BOTTOM);
+        } else {
+          // Try to find the file in directory
+          try {
+            final dir = file.parent;
+            if (await dir.exists()) {
+              final files = await dir.list().toList();
+              final audioFiles = files.where((f) {
+                final name = f.path.split('/').last.toLowerCase();
+                return name.endsWith('.m4a') && name.contains('voice_note');
+              }).toList();
+              
+              if (audioFiles.isNotEmpty) {
+                // Get most recent
+                audioFiles.sort((a, b) {
+                  try {
+                    return File(b.path).statSync().modified.compareTo(File(a.path).statSync().modified);
+                  } catch (_) {
+                    return 0;
+                  }
+                });
+                
+                final xFile = XFile(audioFiles.first.path);
+                _removeExistingAudioAttachments();
+                addPickedImage(xFile);
+                Get.snackbar('Upload', 'File added', snackPosition: SnackPosition.BOTTOM);
+              } else {
+                Get.snackbar('Error', 'Recording file not found', snackPosition: SnackPosition.BOTTOM);
+              }
+            }
+          } catch (e) {
+            Get.snackbar('Error', 'Failed to save recording', snackPosition: SnackPosition.BOTTOM);
+          }
+        }
+      }
+      
+      // Reset UI state after file is added
       isRecording.value = false;
       isPaused.value = false;
-      
-      // Prefer the path returned from stop(); fallback to the stored path
-      final savePath = path ?? audioFilePath.value;
-      if (savePath != null && savePath.isNotEmpty) {
-        try {
-          final file = File(savePath);
-          if (await file.exists()) {
-            // Create XFile from the saved audio path
-            final xFile = XFile(savePath);
-            // Remove previous audio recordings so only the latest is kept
-            _removeExistingAudioAttachments();
-            addPickedImage(xFile);
-            pickedImagesX.refresh();
-            Get.snackbar(
-              'Recording Saved',
-              'Voice note has been saved',
-              snackPosition: SnackPosition.BOTTOM,
-            );
-          } else {
-            Get.snackbar(
-              'Recording Error',
-              'Audio file not found. Please try again.',
-              snackPosition: SnackPosition.BOTTOM,
-            );
-          }
-        } catch (_) {
-          Get.snackbar(
-            'Recording Error',
-            'Unable to read the audio file. Please try again.',
-            snackPosition: SnackPosition.BOTTOM,
-          );
-        }
-      } else {
-        Get.snackbar(
-          'Recording Error',
-          'No audio file was created. Please try again.',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-      }
-
-      // Clear waveform data to reset UI
-      try {
-        recorderController.reset();
-      } catch (_) {}
-
-      // Reset state
       recordingDuration.value = Duration.zero;
-      audioFilePath.value = null;
+      currentDecibel.value = 0.0;
+      maxDecibel.value = 0.0;
       _pausedDuration = Duration.zero;
       _recordingStartTime = null;
       _pauseStartTime = null;
-      currentDecibel.value = 0.0;
-      maxDecibel.value = 0.0;
-      pickedImagesX.refresh();
+      audioFilePath.value = null;
+      
+      // Reset recorder
+      try {
+        recorderController.reset();
+      } catch (_) {}
     } catch (e) {
-      Get.snackbar(
-        'Recording Error',
-        'Failed to stop recording: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-      );
+      print('❌ Error in stopRecording: $e');
+      Get.snackbar('Error', 'Failed to stop recording', snackPosition: SnackPosition.BOTTOM);
+    } finally {
+      isStopping.value = false;
     }
   }
 
   Future<void> cancelRecording() async {
-    try {
-      if (!isRecording.value && !isPaused.value) {
-        Get.snackbar('Info', 'No active recording to cancel', snackPosition: SnackPosition.BOTTOM);
-        return;
-      }
+    if (isCanceling.value) return;
+    if (!isRecording.value && !isPaused.value) {
+      Get.snackbar('Info', 'No active recording to cancel', snackPosition: SnackPosition.BOTTOM);
+      return;
+    }
 
-      await recorderController.stop(false);
-      _recordingTimer?.cancel();
-      _stopNoiseMeter();
-      
-      // Delete the file if it exists (only on mobile)
-      if (audioFilePath.value != null && !kIsWeb) {
+    isCanceling.value = true;
+    
+    // INSTANTLY reset UI state - don't wait for anything
+    _recordingTimer?.cancel();
+    _stopNoiseMeter();
+    isRecording.value = false;
+    isPaused.value = false;
+    recordingDuration.value = Duration.zero;
+    currentDecibel.value = 0.0;
+    maxDecibel.value = 0.0;
+    _pausedDuration = Duration.zero;
+    _recordingStartTime = null;
+    _pauseStartTime = null;
+    _removeExistingAudioAttachments();
+    pickedImagesX.refresh();
+    
+    // Store path for cleanup
+    final pathToDelete = audioFilePath.value;
+    audioFilePath.value = null;
+    
+    // Reset recorder UI immediately
+    try {
+      recorderController.reset();
+    } catch (_) {}
+    
+    // Show message immediately
+    Get.snackbar('Cancelled', 'Recording discarded', snackPosition: SnackPosition.BOTTOM);
+    
+      // Clean up recorder and file in background (don't wait)
+      Future.microtask(() async {
         try {
-          final file = File(audioFilePath.value!);
+          // Stop recorder in background (non-blocking)
+          if (recorderController.isRecording) {
+            try {
+              await recorderController.stop(false).timeout(
+                const Duration(seconds: 2),
+              );
+            } catch (_) {
+              // Ignore errors - we don't care if it fails
+            }
+          }
+        } catch (_) {}
+      
+      // Delete file in background
+      if (pathToDelete != null && !kIsWeb) {
+        try {
+          final file = File(pathToDelete);
           if (await file.exists()) {
             await file.delete();
           }
-        } catch (_) {
-          // Ignore errors
-        }
+        } catch (_) {}
       }
-      // Clear waveform data to reset UI
-      try {
-        recorderController.reset();
-      } catch (_) {}
-
-      // Reset state
-      isRecording.value = false;
-      isPaused.value = false;
-      recordingDuration.value = Duration.zero;
-      audioFilePath.value = null;
-      currentDecibel.value = 0.0;
-      maxDecibel.value = 0.0;
-      _pausedDuration = Duration.zero;
-      _recordingStartTime = null;
-      _pauseStartTime = null;
-      _removeExistingAudioAttachments();
-      pickedImagesX.refresh();
-      Get.snackbar('Cancelled', 'Recording discarded', snackPosition: SnackPosition.BOTTOM);
-    } catch (e) {
-      Get.snackbar(
-        'Recording Error',
-        'Failed to cancel recording: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-    }
+    });
+    
+    isCanceling.value = false;
   }
 
   String formatDuration(Duration duration) {

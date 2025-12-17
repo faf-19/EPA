@@ -238,14 +238,14 @@ class AwarenessView extends GetView<AwarenessController> {
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w800,
                                       fontSize: 11,
-                                      color: const Color.fromRGBO(0, 0, 0, 1),
+                                      color: Color.fromRGBO(0, 0, 0, 1),
                                     ),
                                   ),
                                   const SizedBox(height: 6),
                                   Text(
                                     awareness.awarenessDescription,
                                     style: const TextStyle(
-                                      color: const Color.fromRGBO(99, 85, 127, 1),
+                                      color: Color.fromRGBO(99, 85, 127, 1),
                                       height: 1.45,
                                       fontSize: 10,
                                     ),
