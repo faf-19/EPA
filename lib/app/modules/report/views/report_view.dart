@@ -4,6 +4,7 @@ import 'package:eprs/app/widgets/custom_app_bar.dart';
 import 'package:eprs/core/enums/report_type_enum.dart';
 import 'package:eprs/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 
 import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
@@ -690,7 +691,7 @@ class _ReportViewState extends State<ReportView> {
                                 onPressed: () {
                                   controller.isInTheSpot.value = true;
                                   // Clear region/zone/woreda selections when switching to "Yes"
-                                  controller.selectedRegion.value = 'Select Region';
+                                  controller.selectedRegion.value = 'Select Region / City Administration';
                                   controller.selectedZone.value = 'Select Zone';
                                   controller.selectedWoreda.value = 'Select Woreda';
                                 },
@@ -821,13 +822,13 @@ class _ReportViewState extends State<ReportView> {
                         return Column(
                           children: [
                             const SizedBox(height: 12),
-                            // Region dropdown (populated from API)
+                            // Region / City dropdown (populated from API)
                             Obx(() {
-                              final items = controller.regions;
-                              final names = ['Select Region'] + items.map((e) => e['name']!).toList();
+                              final items = controller.regionsAndCities;
+                              final names = ['Select Region / City Administration'] + items.map((e) => e['name']!).toList();
                               // Ensure selectedRegion is set to placeholder if not in list
                               if (items.isNotEmpty && !names.contains(controller.selectedRegion.value)) {
-                                controller.selectedRegion.value = 'Select Region';
+                                controller.selectedRegion.value = 'Select Region / City Administration';
                               }
                               return _buildDropdown(
                                 'Region / City Administration',
@@ -838,10 +839,15 @@ class _ReportViewState extends State<ReportView> {
                                   final selected = v ?? 'Select Region / City Administration';
                                   controller.selectedRegion.value = selected;
                                   // find id and load zones (always fetch to populate dropdowns)
-                                  final id = controller.findIdByName(controller.regions, selected);
-                                  if (id != null) {
+                                  // Check if it's a region (regions have zones) or city (cities might not have zones)
+                                  final id = controller.findIdByName(controller.regionsAndCities, selected);
+                                  final selectedItem = items.where((item) => item['name'] == selected).firstOrNull;
+                                  final isRegion = selectedItem?['type'] == 'region';
+                                  
+                                  if (id != null && isRegion) {
                                     controller.fetchZonesForRegion(id);
                                   } else {
+                                    // Clear zones and woredas for cities or when nothing is selected
                                     controller.zones.clear();
                                     controller.woredas.clear();
                                   }
@@ -927,12 +933,13 @@ class _ReportViewState extends State<ReportView> {
                         maxLines: 3,
                         decoration: InputDecoration(
                           hintStyle: TextStyle(fontSize: 13),
-                          fillColor: const Color(0xFFF3F7F4),
+                          fillColor: const Color.fromRGBO(202, 213, 226, 1),
                           filled: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide: BorderSide(color: Color.fromRGBO(212, 212, 212, 1)),
                           ),
+                         
                           enabledBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide: BorderSide(
@@ -941,7 +948,7 @@ class _ReportViewState extends State<ReportView> {
                             ),
                           ),
 
-                          // 🔹 Focused border (also missing)
+                          // Focused border (also missing)
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide: BorderSide(
@@ -1057,11 +1064,26 @@ class _ReportViewState extends State<ReportView> {
                     value: controller.termsAccepted.value,
                     onChanged: (v) => controller.termsAccepted.value = v ?? false,
                   ),
-                  const Expanded(
-                    child: Text(
-                      'I Agree To The Terms And Conditions',
-                      style: TextStyle(
-                        color: AppColors.primary
+                  Expanded(
+                    child: Text.rich(
+                      TextSpan(
+                        text: 'I Agree To The ',
+                        style: const TextStyle(
+                          color: AppColors.primary,
+                        ),
+                        children: [
+                          TextSpan(
+                            text: 'Terms And Conditions',
+                            style: const TextStyle(
+                              color: AppColors.primary,
+                              decoration: TextDecoration.underline,
+                            ),
+                            recognizer: TapGestureRecognizer()
+                              ..onTap = () {
+                                Get.toNamed(Routes.TERM_AND_CONDITIONS);
+                              },
+                          ),
+                        ],
                       ),
                     ),
                   ),

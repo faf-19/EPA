@@ -1,5 +1,6 @@
 import 'package:eprs/domain/usecases/get_offices_usecase.dart';
 import 'package:eprs/domain/usecases/get_sound_areas_usecase.dart';
+import 'package:eprs/domain/usecases/get_cities_usecase.dart';
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import '../../data/datasources/remote/auth_remote_datasource.dart';
@@ -7,14 +8,17 @@ import '../../data/datasources/local/auth_local_datasource.dart';
 import '../../data/datasources/remote/office_remote_datasource.dart';
 import '../../data/datasources/remote/awareness_remote_datasource.dart';
 import '../../data/datasources/remote/sound_area_remote_datasource.dart';
+import '../../data/datasources/remote/city_remote_datasource.dart';
 import '../../data/repositories/auth_repository_impl.dart';
 import '../../data/repositories/office_repository_impl.dart';
 import '../../data/repositories/awareness_repository_impl.dart';
 import '../../data/repositories/sound_area_repository_impl.dart';
+import '../../data/repositories/city_repository_impl.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../../domain/repositories/office_repository.dart';
 import '../../domain/repositories/awareness_repository.dart';
 import '../../domain/repositories/sound_area_repository.dart';
+import '../../domain/repositories/city_repository.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/signup_usecase.dart';
 import '../../domain/usecases/verify_otp_usecase.dart';
@@ -159,6 +163,31 @@ class InjectionContainer {
     Get.put<GetSoundAreasUseCase>(
       GetSoundAreasUseCase(
         repository: Get.find<SoundAreaRepository>(),
+      ),
+      permanent: true,
+    );
+
+    // Register City Data Sources
+    Get.put<CityRemoteDataSource>(
+      CityRemoteDataSourceImpl(
+        dio: Get.find<DioClient>().dio,
+        storage: Get.find<GetStorage>(),
+      ),
+      permanent: true,
+    );
+
+    // Register City Repository
+    Get.put<CityRepository>(
+      CityRepositoryImpl(
+        remoteDataSource: Get.find<CityRemoteDataSource>(),
+      ),
+      permanent: true,
+    );
+
+    // Register City Use Case
+    Get.put<GetCitiesUseCase>(
+      GetCitiesUseCase(
+        repository: Get.find<CityRepository>(),
       ),
       permanent: true,
     );
