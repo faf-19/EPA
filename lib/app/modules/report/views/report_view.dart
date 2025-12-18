@@ -991,6 +991,64 @@ class _ReportViewState extends State<ReportView> {
                   ),
                 ),
               ),
+              
+              const SizedBox(height: 12),
+
+              // a specific location card
+              Card(
+                color: AppColors.onPrimary,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                // elevation: 6,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(13, 12, 13, 12),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Specific Location Details',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      TextFormField(
+                        // controller: controller.descriptionController,
+                        maxLines: 3,
+                        decoration: InputDecoration(
+                          hintStyle: TextStyle(fontSize: 13),
+                          fillColor: const Color.fromRGBO(202, 213, 226, 0.2),
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(color: Color.fromRGBO(212, 212, 212, 1)),
+                          ),
+                         
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                              color: Color.fromRGBO(212, 212, 212, 1),
+                              width: 0.4, // 👉 thinner
+                            ),
+                          ),
+
+                          // Focused border (also missing)
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide(
+                              color: Color.fromRGBO(212, 212, 212, 1), // green
+                              width: 0.8, // slightly thicker for visibility
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
 
               const SizedBox(height: 12),
 
@@ -1019,7 +1077,7 @@ class _ReportViewState extends State<ReportView> {
                         maxLines: 3,
                         decoration: InputDecoration(
                           hintStyle: TextStyle(fontSize: 13),
-                          fillColor: const Color.fromRGBO(202, 213, 226, 1),
+                          fillColor: const Color.fromRGBO(202, 213, 226, 0.2),
                           filled: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -1139,6 +1197,8 @@ class _ReportViewState extends State<ReportView> {
                         ),
                       ),
                     )),
+
+
 
 
               const SizedBox(height: 18),
