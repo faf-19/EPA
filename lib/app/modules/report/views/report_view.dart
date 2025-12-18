@@ -1039,7 +1039,7 @@ class _ReportViewState extends State<ReportView> {
                             borderRadius: BorderRadius.circular(8),
                             borderSide: BorderSide(
                               color: Color.fromRGBO(212, 212, 212, 1), // green
-                              width: 0.8, // slightly thicker for visibility
+                              width: 0.8, // slightly thicker fFor visibility
                             ),
                           ),
                         ),
@@ -1697,6 +1697,7 @@ class _ReportViewState extends State<ReportView> {
         DropdownButtonFormField<String>(
           key: ValueKey('${label}_${items.length}'),
           initialValue: currentValue,
+          dropdownColor: Colors.white,
           items: items.isEmpty
               ? null
               : items
