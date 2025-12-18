@@ -41,7 +41,7 @@ class ReportController extends GetxController {
   final detectedAddress = 'Tap Search Location\nAddis Ababa | N.L | W-1'.obs;
 
   final selectedRegion = 'Select Region / City Administration'.obs;
-  final selectedZone = 'Select Zone'.obs;
+  final selectedZone = 'Select Zone / Sub-City'.obs;
   final selectedWoreda = 'Select Woreda'.obs;
 
   // Sound areas (for sound report type)
@@ -199,7 +199,7 @@ class ReportController extends GetxController {
     
     // Clear selected values
     selectedRegion.value = 'Select Region / City Administration';
-    selectedZone.value = 'Select Zone';
+    selectedZone.value = 'Select Zone / Sub-City';
     selectedWoreda.value = 'Select Woreda';
     
     // Clear location data
@@ -315,7 +315,7 @@ class ReportController extends GetxController {
   
   void loadLocalZones(String regionId) {
     zones.clear();
-    selectedZone.value = 'Select Zone';
+    selectedZone.value = 'Select Zone / Sub-City';
     woredas.clear();
     selectedWoreda.value = 'Select Woreda';
     
@@ -830,7 +830,7 @@ class ReportController extends GetxController {
 
       zones.clear();
       // Reset zone selection when loading new zones
-      selectedZone.value = 'Select Zone';
+      selectedZone.value = 'Select Zone / Sub-City';
       woredas.clear();
       selectedWoreda.value = 'Select Woreda';
       

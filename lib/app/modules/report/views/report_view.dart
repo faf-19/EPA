@@ -505,7 +505,7 @@ class _ReportViewState extends State<ReportView> {
                             _evidenceTile(
                               context,
                               Icons.videocam_outlined,
-                              'Take Video',
+                              'Record Video',
                               isVideo: true,
                             ),
                           ],
@@ -706,7 +706,7 @@ class _ReportViewState extends State<ReportView> {
                                   controller.isInTheSpot.value = true;
                                   // Clear region/zone/woreda selections when switching to "Yes"
                                   controller.selectedRegion.value = 'Select Region / City Administration';
-                                  controller.selectedZone.value = 'Select Zone';
+                                  controller.selectedZone.value = 'Select Zone / Sub-City';
                                   controller.selectedWoreda.value = 'Select Woreda';
                                   controller.zones.clear();
                                   controller.woredas.clear();
@@ -868,7 +868,7 @@ class _ReportViewState extends State<ReportView> {
                                   final selected = v ?? 'Select Region / City Administration';
                                   controller.selectedRegion.value = selected;
                                   // Clear zone and woreda when region changes
-                                  controller.selectedZone.value = 'Select Zone';
+                                  controller.selectedZone.value = 'Select Zone / Sub-City';
                                   controller.selectedWoreda.value = 'Select Woreda';
                                   controller.woredas.clear();
                                   
@@ -902,7 +902,7 @@ class _ReportViewState extends State<ReportView> {
                               }
                               
                               final items = controller.zones;
-                              final names = ['Select Zone'] + items.map((e) => e['name']!).toList();
+                              final names = ['Select Zone / Sub-City'] + items.map((e) => e['name']!).toList();
                               
                               // Show loading indicator while fetching zones
                               if (controller.isLoadingZones.value) {
@@ -910,9 +910,9 @@ class _ReportViewState extends State<ReportView> {
                                   children: [
                                     const SizedBox(height: 8),
                                     _buildDropdown(
-                                      'Zone / City',
-                                      ['Select Zone'],
-                                      value: 'Select Zone',
+                                      'Zone / Sub-City',
+                                      ['Select Zone / Sub-City'],
+                                      value: 'Select Zone / Sub-City',
                                       enabled: false,
                                       onChanged: null,
                                     ),
@@ -928,8 +928,11 @@ class _ReportViewState extends State<ReportView> {
                               }
                               
                               // Ensure selectedZone is set to placeholder if not in list
+                              // Use post-frame callback to avoid setState during build
                               if (items.isNotEmpty && !names.contains(controller.selectedZone.value)) {
-                                controller.selectedZone.value = 'Select Zone';
+                                WidgetsBinding.instance.addPostFrameCallback((_) {
+                                  controller.selectedZone.value = 'Select Zone / Sub-City';
+                                });
                               }
                               
                               return Column(
@@ -941,7 +944,7 @@ class _ReportViewState extends State<ReportView> {
                                     value: controller.selectedZone.value,
                                     enabled: items.isNotEmpty, // Disable if no zones available
                                     onChanged: items.isNotEmpty ? (v) {
-                                      final selected = v ?? 'Select Zone';
+                                      final selected = v ?? 'Select Zone / Sub-City';
                                       controller.selectedZone.value = selected;
                                       // Clear woreda when zone changes
                                       controller.selectedWoreda.value = 'Select Woreda';
@@ -961,7 +964,7 @@ class _ReportViewState extends State<ReportView> {
                             // Woreda dropdown - only show when a zone is selected
                             Obx(() {
                               // Only show if a zone is selected (not the placeholder) and woredas are available
-                              if (controller.selectedZone.value == 'Select Zone' || 
+                              if (controller.selectedZone.value == 'Select Zone / Sub-City' || 
                                   controller.woredas.isEmpty) {
                                 return const SizedBox.shrink();
                               }
@@ -1016,7 +1019,8 @@ class _ReportViewState extends State<ReportView> {
                       const SizedBox(height: 12),
                       TextFormField(
                         // controller: controller.descriptionController,
-                        maxLines: 3,
+                        
+                        maxLines: 1,
                         decoration: InputDecoration(
                           hintStyle: TextStyle(fontSize: 13),
                           fillColor: const Color.fromRGBO(202, 213, 226, 0.2),
@@ -1064,13 +1068,26 @@ class _ReportViewState extends State<ReportView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Description',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
+                      Row(
+                        children: const [
+                          Text(
+                            'Description',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            '*',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+
+                       ),
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: controller.descriptionController,
@@ -1300,7 +1317,7 @@ class _ReportViewState extends State<ReportView> {
                   children: [
                     ListTile(
                       leading: const Icon(Icons.videocam_outlined),
-                      title: const Text('Take Video'),
+                      title: const Text('Record a Video'),
                       onTap: () => Navigator.of(sheetCtx).pop(1),
                     ),
                     ListTile(
