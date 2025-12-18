@@ -392,50 +392,270 @@ class ReportController extends GetxController {
   // ----------------------------
   Future<void> pickTime(BuildContext context) async {
     final initial = selectedTime.value ?? TimeOfDay.now();
+    int selectedHour = initial.hour;
+    int selectedMinute = initial.minute;
+    bool isAM = initial.hour < 12;
 
-    final picked = await showTimePicker(
+    // Convert to 12-hour format for display
+    if (selectedHour == 0) {
+      selectedHour = 12;
+    } else if (selectedHour > 12) {
+      selectedHour = selectedHour - 12;
+      isAM = false;
+    } else if (selectedHour == 12) {
+      isAM = false;
+    } else {
+      isAM = true;
+    }
+
+    final picked = await showDialog<TimeOfDay>(
       context: context,
-      initialTime: initial,
-      builder: (ctx, child) {
-        return Theme(
-          data: Theme.of(ctx).copyWith(
-            colorScheme: ColorScheme.light(
-              primary: AppColors.primary,
-              onPrimary: Colors.white,
-              surface: Colors.white,
-              onSurface: Colors.black87,
-            ),
-
-            timePickerTheme: TimePickerThemeData(
+      builder: (BuildContext ctx) {
+        String? activePicker; // Track which picker is being scrolled
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return Dialog(
               backgroundColor: AppColors.onPrimary,
-              dialBackgroundColor: Colors.white,
-
-              // Custom AM/PM background (use plain Color for compatibility)
-              dayPeriodColor: AppColors.primary.withOpacity(0.12),
-
-              // Custom AM/PM text color
-              dayPeriodTextColor: AppColors.primary,
-
-              dayPeriodTextStyle: const TextStyle(
-                fontWeight: FontWeight.w600,
-                fontSize: 14,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
               ),
-
-              // Hour/minute text color
-              hourMinuteTextColor: AppColors.onPrimary,
-            ),
-
-            textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.primary,
+              child: Container(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Select time',
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    SizedBox(
+                      height: 200,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          // Hour picker
+                          Expanded(
+                            child: NotificationListener<ScrollNotification>(
+                              onNotification: (notification) {
+                                if (notification is ScrollStartNotification) {
+                                  setState(() {
+                                    activePicker = 'hour';
+                                  });
+                                } else if (notification is ScrollEndNotification) {
+                                  setState(() {
+                                    activePicker = null;
+                                  });
+                                }
+                                return false;
+                              },
+                              child: ListWheelScrollView.useDelegate(
+                                itemExtent: 50,
+                                diameterRatio: 1.5,
+                                physics: const FixedExtentScrollPhysics(),
+                                controller: FixedExtentScrollController(
+                                  initialItem: selectedHour - 1,
+                                ),
+                                onSelectedItemChanged: (index) {
+                                  setState(() {
+                                    selectedHour = index + 1;
+                                    activePicker = 'hour';
+                                  });
+                                },
+                                childDelegate: ListWheelChildBuilderDelegate(
+                                  builder: (context, index) {
+                                    final hour = index + 1;
+                                    final isSelected = hour == selectedHour;
+                                    return Center(
+                                      child: Text(
+                                        hour.toString().padLeft(2, '0'),
+                                        style: TextStyle(
+                                          fontSize: isSelected ? 32 : 24,
+                                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                          // Hour should NOT be primary when selecting hour
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  childCount: 12,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 8),
+                            child: Text(
+                              ':',
+                              style: TextStyle(
+                                fontSize: 32,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                          ),
+                          // Minute picker
+                          Expanded(
+                            child: NotificationListener<ScrollNotification>(
+                              onNotification: (notification) {
+                                if (notification is ScrollStartNotification) {
+                                  setState(() {
+                                    activePicker = 'minute';
+                                  });
+                                } else if (notification is ScrollEndNotification) {
+                                  setState(() {
+                                    activePicker = null;
+                                  });
+                                }
+                                return false;
+                              },
+                              child: ListWheelScrollView.useDelegate(
+                                itemExtent: 50,
+                                diameterRatio: 1.5,
+                                physics: const FixedExtentScrollPhysics(),
+                                controller: FixedExtentScrollController(
+                                  initialItem: selectedMinute,
+                                ),
+                                onSelectedItemChanged: (index) {
+                                  setState(() {
+                                    selectedMinute = index;
+                                    activePicker = 'minute';
+                                  });
+                                },
+                                childDelegate: ListWheelChildBuilderDelegate(
+                                  builder: (context, index) {
+                                    final minute = index;
+                                    final isSelected = minute == selectedMinute;
+                                    // Minute should be primary when selecting hour OR when minute is selected
+                                    final shouldBePrimary = activePicker == 'hour' || isSelected;
+                                    return Center(
+                                      child: Text(
+                                        minute.toString().padLeft(2, '0'),
+                                        style: TextStyle(
+                                          fontSize: isSelected ? 32 : 24,
+                                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                          color: shouldBePrimary ? AppColors.primary : Colors.black87,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  childCount: 60,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    // AM/PM selector
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        OutlinedButton(
+                          onPressed: () {
+                            setState(() {
+                              isAM = true;
+                            });
+                          },
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                            side: BorderSide(
+                              color: isAM ? AppColors.primary : Colors.grey,
+                              width: isAM ? 2 : 1,
+                            ),
+                            backgroundColor: isAM
+                                ? AppColors.primary.withOpacity(0.12)
+                                : Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text(
+                            'AM',
+                            style: TextStyle(
+                              color: isAM ? AppColors.primary : Colors.black87,
+                              fontWeight: isAM ? FontWeight.bold : FontWeight.normal,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        OutlinedButton(
+                          onPressed: () {
+                            setState(() {
+                              isAM = false;
+                            });
+                          },
+                          style: OutlinedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
+                            side: BorderSide(
+                              color: !isAM ? AppColors.primary : Colors.grey,
+                              width: !isAM ? 2 : 1,
+                            ),
+                            backgroundColor: !isAM
+                                ? AppColors.primary.withOpacity(0.12)
+                                : Colors.transparent,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text(
+                            'PM',
+                            style: TextStyle(
+                              color: !isAM ? AppColors.primary : Colors.black87,
+                              fontWeight: !isAM ? FontWeight.bold : FontWeight.normal,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 20),
+                    // Action buttons
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        TextButton(
+                          onPressed: () => Navigator.of(ctx).pop(),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(color: AppColors.primary),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        TextButton(
+                          onPressed: () {
+                            // Convert back to 24-hour format
+                            int hour24 = selectedHour;
+                            if (!isAM && selectedHour != 12) {
+                              hour24 = selectedHour + 12;
+                            } else if (isAM && selectedHour == 12) {
+                              hour24 = 0;
+                            }
+                            Navigator.of(ctx).pop(
+                              TimeOfDay(hour: hour24, minute: selectedMinute),
+                            );
+                          },
+                          child: Text(
+                            'OK',
+                            style: TextStyle(color: AppColors.primary),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ),
-
-          child: MediaQuery(
-            data: MediaQuery.of(ctx).copyWith(alwaysUse24HourFormat: false),
-            child: child!,
-          ),
+            );
+          },
         );
       },
     );
