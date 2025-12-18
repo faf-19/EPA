@@ -54,8 +54,11 @@ class AwarenessView extends GetView<AwarenessController> {
       body: SafeArea(
         // Make the whole page scrollable so the banner, cards and list
         // can all fit on smaller devices without overflow.
-        child: SingleChildScrollView(
-          child: Column(
+        child: RefreshIndicator(
+          onRefresh: () => controller.loadAwareness(),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Banner (no overlap)
@@ -264,6 +267,7 @@ class AwarenessView extends GetView<AwarenessController> {
               }),
             ],
           ),
+        ),
         ),
       ),
       // Bottom nav provided by app shell; remove the nested bar here.
