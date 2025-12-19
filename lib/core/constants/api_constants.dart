@@ -1,8 +1,8 @@
 /// API constants for the application
 class ApiConstants {
   // Base URL - Update this with your actual backend URL
-  // static const String baseUrl = 'http://196.188.240.103:4032/api/';
-  static const String baseUrl = 'http://10.179.217.61:5000/api/';
+  static const String baseUrl = 'http://196.188.240.103:4032/api/';
+  // static const String baseUrl = 'http://10.179.217.61:5000/api/';
   
   // Authentication endpoints
   static const String loginEndpoint = '/customer-accounts/login';
