@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:eprs/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import '../controllers/status_controller.dart';
@@ -48,7 +50,7 @@ class StatusDetailView extends StatelessWidget {
                         // Title (left side)
                         Expanded(
                           child: Text(
-                            report.title,
+                            report.reportType ?? 'N/A',
                             style: TextStyle(
                               fontFamily: AppFonts.primaryFont,
                               fontSize: 16,
@@ -134,26 +136,27 @@ class StatusDetailView extends StatelessWidget {
   }
 
   Color _getStatusColor(String status) {
-    final normalized = status.toLowerCase().replaceAll('_', ' ');
+    final normalized = status.toLowerCase();
     switch (normalized) {
       case 'under review':
-        return const Color(0xFFF7941D); // amber
+        return const Color(0xFF3F8ECF);
       case 'verified':
-        return const Color(0xFF1E88E5); // blue
+        return const Color(0xFF1E88E5);
       case 'under investigation':
-        return const Color(0xFF7E57C2); // purple
+      case 'under_investigation':
+        return const Color.fromRGBO(59, 161, 245, 1);
       case 'complete':
       case 'completed':
       case 'closed':
-        return const Color(0xFF00A650); // green
+        return const Color.fromRGBO(55, 165, 55, 1);
       case 'closed by penality':
-        return const Color(0xFFE04343); // red
+        return const Color(0xFFE04343);
       case 'closed by pollutant not found':
-        return const Color(0xFFAAAAAA); // grey
+        return const Color(0xFFAAAAAA);
       case 'rejected':
-        return const Color(0xFFFF383C); // red
+        return const Color.fromRGBO(245, 46, 50, 1);
       default: // Pending
-        return const Color.fromARGB(255, 247, 148, 29); // rgba(247,148,29,1)
+        return const Color.fromRGBO(255, 174, 65, 1);
     }
   }
 
@@ -162,13 +165,18 @@ class StatusDetailView extends StatelessWidget {
     final normalizedStatus = status.replaceAll('_', ' ');
     final isRejected = status == 'rejected';
     
+    final baseDateTimeLabel = _buildDateTimeLabel(report.date, report.time);
+
     // Define timeline stages
     final stages = [
-      {'name': 'Pending', 'date': report.date},
-      {'name': 'Under Review', 'date': report.date},
-      {'name': 'Verified', 'date': report.date},
-      {'name': 'Under Investigation', 'date': report.date},
-      {'name': isRejected ? 'Rejected' : 'Complete', 'date': report.date},
+      {
+        'name': 'Pending',
+        'date': baseDateTimeLabel,
+      },
+      {'name': 'Under Review'},
+      {'name': 'Verified'},
+      {'name': 'Under Investigation'},
+      {'name': isRejected ? 'Rejected' : 'Complete'},
     ];
 
     // Determine which stages are completed based on status
@@ -230,15 +238,13 @@ class StatusDetailView extends StatelessWidget {
                         : (isCurrent ? AppColors.primary : const Color(0xFFE0E0E0)),
                   ),
                   child: isCurrent && !isCompleted
-                      ? const SizedBox(
-                          width: 32,
-                          height: 32,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 3,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                          ),
-                        )
-                      : isCompleted
+                        ? Image.asset(
+                          'assets/progress.png',
+                          width: 25,
+                          height: 25 ,
+                          )
+                        
+                        : isCompleted
                           ? Icon(
                               isRejected && isLast ? Icons.close : Icons.check,
                               color: Colors.white,
@@ -308,16 +314,17 @@ class StatusDetailView extends StatelessWidget {
                     ),
                   ],
                   const SizedBox(height: 4),
-                  Text(
-                    stage['date']!,
-                    style: TextStyle(
-                      fontFamily: AppFonts.primaryFont,
-                      fontSize: 12,
-                      color: isCompleted || isCurrent
-                          ? (isRejected && isLast ? Colors.grey : AppColors.primary)
-                          : const Color(0xFFAAAAAA),
+                  if ((stage['date'] ?? (isCompleted ? baseDateTimeLabel : null)) != null)
+                    Text(
+                      (stage['date'] ?? baseDateTimeLabel)!,
+                      style: TextStyle(
+                        fontFamily: AppFonts.primaryFont,
+                        fontSize: 12,
+                        color: isCompleted || isCurrent
+                            ? (isRejected && isLast ? Colors.grey : AppColors.primary)
+                            : const Color(0xFFAAAAAA),
+                      ),
                     ),
-                  ),
                   if (!isLast) const SizedBox(height: 16),
                 ],
               ),
@@ -327,5 +334,11 @@ class StatusDetailView extends StatelessWidget {
       }),
     );
   }
+}
+
+String _buildDateTimeLabel(String date, String? time) {
+  final trimmedTime = time?.trim() ?? '';
+  if (trimmedTime.isEmpty) return date;
+  return '$trimmedTime · $date';
 }
 

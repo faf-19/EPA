@@ -110,6 +110,7 @@ flutter:
     - assets/chemical.png
     - assets/sound.png
     - assets/navbarIcons/
+    - assets/progress.png
   fonts:
     - family: Montserrat
       fonts:

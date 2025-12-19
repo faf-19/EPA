@@ -353,7 +353,9 @@ class _LoginOverlayState extends State<LoginOverlay> {
                             SizedBox(height: isSmall ? 14 : 22),
 
                             TextButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                Get.toNamed(Routes.HOME);
+                              },
                               child: Text(
                                 'Continue as Guest',
                                 style: GoogleFonts.poppins(

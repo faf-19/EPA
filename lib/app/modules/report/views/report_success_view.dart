@@ -5,8 +5,9 @@ import 'package:intl/intl.dart';
 class ReportSuccessView extends StatelessWidget {
   final String reportId;
   final DateTime? dateTime;
-
-  const ReportSuccessView({super.key, required this.reportId, this.dateTime});
+  final String? region;
+  // final String 
+  const ReportSuccessView({super.key, required this.reportId, this.dateTime, this.region});
 
   @override
   Widget build(BuildContext context) {
@@ -21,6 +22,9 @@ class ReportSuccessView extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
 
             children: [
+
+              Image(image:  AssetImage('assets/logo.png'), height: 300, width: 500,),
+
               const SizedBox(height: 40),
               // large check icon with circular background
               Container(

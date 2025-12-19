@@ -200,6 +200,7 @@ class StatusView extends GetView<StatusController> {
   final description = report.description;
   final date = report.date;
   final time = report.time ?? '';
+  final reportType = report.reportType ?? 'N/A';
   // STATUS COLORS
   Color pillBg;
   Color pillText;
@@ -271,7 +272,7 @@ class StatusView extends GetView<StatusController> {
           children: [
             Expanded(
               child: Text(
-                title,
+                reportType,
                 style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
