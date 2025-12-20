@@ -1,5 +1,3 @@
-import 'dart:math' as math;
-
 import 'package:eprs/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import '../controllers/status_controller.dart';
@@ -238,13 +236,21 @@ class StatusDetailView extends StatelessWidget {
                         : (isCurrent ? AppColors.primary : const Color(0xFFE0E0E0)),
                   ),
                   child: isCurrent && !isCompleted
-                        ? Image.asset(
-                          'assets/progress.png',
-                          width: 25,
-                          height: 25 ,
-                          )
-                        
-                        : isCompleted
+                      ? Center(
+                          child: Transform.scale(
+                            scale: 1.5,
+                            child: SizedBox.square(
+                              dimension: 16,
+                              child: Image.asset(
+                                'assets/progress.png',
+                                fit: BoxFit.contain,
+                                alignment: Alignment.center,
+                                filterQuality: FilterQuality.high,
+                              ),
+                            ),
+                          ),
+                        )
+                      : isCompleted
                           ? Icon(
                               isRejected && isLast ? Icons.close : Icons.check,
                               color: Colors.white,
