@@ -1,9 +1,12 @@
+import 'package:eprs/app/modules/report/controllers/report_controller.dart';
 import 'package:eprs/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:intl/intl.dart';
 import 'package:get/get.dart';
 
 class ReportSuccessView extends StatelessWidget {
+  ReportController get controller => Get.find<ReportController>();
   final String reportId;
   final DateTime? dateTime;
   final String? region;
@@ -63,11 +66,34 @@ class ReportSuccessView extends StatelessWidget {
     return !placeholders.contains(trimmed);
   }
 
+  String? _resolveName() {
+    try {
+      // Prefer controller if available and populated
+      if (Get.isRegistered<ReportController>()) {
+        final c = Get.find<ReportController>();
+        final n = c.name.value.trim();
+        if (n.isNotEmpty) return n;
+      }
+    } catch (_) {}
+
+    // Fallback to storage keys
+    try {
+      final box = Get.find<GetStorage>();
+      final n = (box.read('username')?.toString() ??
+              box.read('fullName')?.toString() ??
+              box.read('name')?.toString())
+          ?.trim();
+      if (n != null && n.isNotEmpty) return n;
+    } catch (_) {}
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     final dt = dateTime ?? DateTime.now();
     final formatted = DateFormat('dd MMM yyyy, hh:mm a').format(dt);
     final resolvedRegion = _resolveRegion(context);
+    final resolvedName = _resolveName();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -154,6 +180,8 @@ class ReportSuccessView extends StatelessWidget {
                               style: TextStyle(color: Color(0xFF6B7280)),
                             ),
                             SizedBox(height: 14),
+                            if (resolvedName != null) Text('Name', style: TextStyle(color: Color(0xFF6B7280))),
+                            SizedBox(height: 14),
                             Text(
                               'Date & Time:',
                               style: TextStyle(color: Color(0xFF6B7280)),
@@ -179,6 +207,15 @@ class ReportSuccessView extends StatelessWidget {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
+                          const SizedBox(height: 12),
+                          if (resolvedName != null)
+                            Text(
+                              resolvedName,
+                              style: const TextStyle(
+                                color: Color(0xFF0B2035),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           const SizedBox(height: 12),
                           Text(
                             formatted,

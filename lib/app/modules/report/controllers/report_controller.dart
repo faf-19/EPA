@@ -91,6 +91,8 @@ class ReportController extends GetxController {
   final phoneOptIn = false.obs;
   final isLoggedIn = false.obs;
   final box = GetStorage();
+  // Logged-in user's display name
+  final name = ''.obs;
 
   final selectedDate = Rxn<DateTime>();
   final selectedTime = Rxn<TimeOfDay>();
@@ -185,6 +187,14 @@ class ReportController extends GetxController {
     final storedPhone = box.read('phone')?.toString();
     if (isLoggedIn.value && storedPhone != null && storedPhone.isNotEmpty) {
       phoneController.text = storedPhone;
+    }
+
+    // Load display name if available (supports multiple keys)
+    final storedName = box.read('username')?.toString() ??
+        box.read('fullName')?.toString() ??
+        box.read('name')?.toString();
+    if (isLoggedIn.value && storedName != null && storedName.trim().isNotEmpty) {
+      name.value = storedName.trim();
     }
   }
   
