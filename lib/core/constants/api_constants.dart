@@ -24,6 +24,8 @@ class ApiConstants {
   
   // Complaints endpoint
   static const String complaintsEndpoint = '${baseUrl}complaints';
+  // Get complaints by customer id
+  static String complaintsByCustomerEndpoint(String customerId) => '${baseUrl}complaints/get_by_customer_id/$customerId';
   static String complaintByIdEndpoint(String complaintId) => '${baseUrl}complaints/$complaintId';
   
   // Timeout durations

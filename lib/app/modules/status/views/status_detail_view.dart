@@ -198,7 +198,7 @@ class StatusDetailView extends StatelessWidget {
         completedStages = 3; // Pending, Under Review, Verified completed
         activeStageIndex = 3; // Under Investigation is active
         break;
-      case 'complete':
+      case 'closed':
         completedStages = 5; // All stages completed
         activeStageIndex = -1;
         break;
