@@ -174,6 +174,7 @@ class AppPages {
         final arg = Get.arguments;
         String reportId = '';
         DateTime? dateTime;
+        String? region;
         
         if (arg is String) {
           // Backward compatibility: if argument is just a string, use it as reportId
@@ -182,11 +183,12 @@ class AppPages {
         } else if (arg is Map) {
           reportId = arg['reportId']?.toString() ?? '';
           dateTime = arg['dateTime'] as DateTime? ?? DateTime.now();
+          region = arg['region']?.toString();
         } else {
           dateTime = DateTime.now();
         }
         
-        return ReportSuccessView(reportId: reportId, dateTime: dateTime);
+        return ReportSuccessView(reportId: reportId, dateTime: dateTime, region: region);
       },
     ),
 

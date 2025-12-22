@@ -1,6 +1,7 @@
 import 'package:eprs/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:get/get.dart';
 
 class ReportSuccessView extends StatelessWidget {
   final String reportId;
@@ -9,10 +10,64 @@ class ReportSuccessView extends StatelessWidget {
   // final String 
   const ReportSuccessView({super.key, required this.reportId, this.dateTime, this.region});
 
+  // Resolve region value: prefer constructor arg, else try route arguments (GetX or Navigator)
+  String? _resolveRegion(BuildContext context) {
+    if (_isValidRegion(region)) return region;
+
+    // Try GetX arguments
+    try {
+      final args = Get.arguments;
+      final resolved = _extractRegionFromArgs(args);
+      if (_isValidRegion(resolved)) return resolved;
+    } catch (_) {}
+
+    // Try Navigator/ModalRoute arguments
+    final routeArgs = ModalRoute.of(context)?.settings.arguments;
+    final resolved2 = _extractRegionFromArgs(routeArgs);
+    if (_isValidRegion(resolved2)) return resolved2;
+
+    return null;
+  }
+
+  // Accept Map or String and try common keys
+  String? _extractRegionFromArgs(Object? args) {
+    if (args is String) return args;
+    if (args is Map) {
+      const candidates = [
+        'region',
+        'regionName',
+        'selectedRegion',
+        'regionOrCity',
+        'city',
+        'cityName',
+        'region_city',
+      ];
+      for (final key in candidates) {
+        final v = args[key];
+        if (v is String && _isValidRegion(v)) return v;
+      }
+    }
+    return null;
+  }
+
+  bool _isValidRegion(String? value) {
+    if (value == null) return false;
+    final trimmed = value.trim();
+    if (trimmed.isEmpty) return false;
+    const placeholders = [
+      'Select Region / City Administration',
+      'Select Region',
+      'Select Zone / Sub-City',
+      'Select Woreda',
+    ];
+    return !placeholders.contains(trimmed);
+  }
+
   @override
   Widget build(BuildContext context) {
     final dt = dateTime ?? DateTime.now();
     final formatted = DateFormat('dd MMM yyyy, hh:mm a').format(dt);
+    final resolvedRegion = _resolveRegion(context);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -93,7 +148,7 @@ class ReportSuccessView extends StatelessWidget {
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
-                          children: const [
+                          children:  [
                             Text(
                               'Report ID:',
                               style: TextStyle(color: Color(0xFF6B7280)),
@@ -103,6 +158,14 @@ class ReportSuccessView extends StatelessWidget {
                               'Date & Time:',
                               style: TextStyle(color: Color(0xFF6B7280)),
                             ),
+
+                              if (resolvedRegion != null) ...[
+                              SizedBox(height: 14),
+                              Text(
+                                'Region:',
+                                style: TextStyle(color: Color(0xFF6B7280)),
+                              ),
+                            ],
                           ],
                         ),
                       ),
@@ -124,6 +187,16 @@ class ReportSuccessView extends StatelessWidget {
                               fontWeight: FontWeight.w600,
                             ),
                           ),
+                          if (resolvedRegion != null) ...[
+                            const SizedBox(height: 12),
+                            Text(
+                              resolvedRegion!,
+                              style: const TextStyle(
+                                color: Color(0xFF0B2035),
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ],

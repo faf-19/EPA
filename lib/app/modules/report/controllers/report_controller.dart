@@ -1777,6 +1777,9 @@ class ReportController extends GetxController {
           reportId = 'REP-${DateTime.now().millisecondsSinceEpoch}';
         }
         
+        // Capture region/city before resetting the form
+        final regionToPass = selectedRegion.value;
+        
         // Clear form data before navigating
         _resetForm();
         
@@ -1786,11 +1789,17 @@ class ReportController extends GetxController {
           Get.offNamed(Routes.Report_Success, arguments: {
             'reportId': reportId,
             'dateTime': DateTime.now(),
+            'region': regionToPass,
           });
         } else {
           // User is a guest - go to OTP page
           print('User is a guest, navigating to OTP page');
-          Get.toNamed(Routes.Report_Otp);
+          // Pass along report info so OTP can forward to success with context
+          Get.toNamed(Routes.Report_Otp, arguments: {
+            'reportId': reportId,
+            'dateTime': DateTime.now(),
+            'region': regionToPass,
+          });
         }
       } else {
         Get.snackbar('Error', 'Failed to submit report', snackPosition: SnackPosition.BOTTOM);
