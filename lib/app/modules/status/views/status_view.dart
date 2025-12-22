@@ -195,7 +195,6 @@ class StatusView extends GetView<StatusController> {
   Widget _complaintCard({
   required ReportItem report,
 }) {
-  final title = report.title;
   final status = report.status;
   final description = report.description;
   final date = report.date;
