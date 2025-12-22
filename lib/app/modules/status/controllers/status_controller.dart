@@ -215,9 +215,9 @@ class StatusController extends GetxController {
       final httpClient = Get.find<DioClient>().dio;
       final token = storage.read('auth_token');
 
-      // Fetch all complaints from API
+      // Fetch complaints for the current user from API
       final response = await httpClient.get(
-        ApiConstants.complaintsEndpoint,
+        ApiConstants.complaintsByCustomerEndpoint(userId.toString()),
         options: Options(
           headers: {
             if (token != null) 'Authorization': 'Bearer $token',
@@ -246,17 +246,9 @@ class StatusController extends GetxController {
           }
         }
 
-        // Filter complaints to only show those belonging to the current user
-        // Match customer_id with the current user's ID
-        final userComplaints = complaintsList.where((complaint) {
-          if (complaint is! Map) return false;
-          final complaintCustomerId = complaint['customer_id']?.toString();
-          return complaintCustomerId == userId.toString();
-        }).toList();
-
-        // Convert to ReportItem list
+        // Convert to ReportItem list (API already returns only this user's complaints)
         allReports.assignAll(
-          userComplaints.map((json) => ReportItem.fromJson(
+          complaintsList.map((json) => ReportItem.fromJson(
             json is Map<String, dynamic> ? json : Map<String, dynamic>.from(json)
           )).toList(),
         );
