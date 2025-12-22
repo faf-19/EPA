@@ -115,12 +115,25 @@ class ReportOtpView extends GetView<ReportOtpController> {
                           child: ElevatedButton(
                             onPressed: controller.code.value.length == 4
                                 ? () {
-                                    final fakeId = 'REP-${DateTime.now().millisecondsSinceEpoch}';
+                                    // Prefer using provided args from controller
+                                    final args = Get.arguments;
+                                    String? region;
+                                    String? reportIdArg;
+                                    DateTime? dateTimeArg;
+                                    if (args is Map) {
+                                      reportIdArg = args['reportId']?.toString();
+                                      dateTimeArg = args['dateTime'] as DateTime?;
+                                      region = args['region']?.toString();
+                                    }
+                                    final reportId = reportIdArg ?? 'REP-${DateTime.now().millisecondsSinceEpoch}';
+                                    final dt = dateTimeArg ?? DateTime.now();
+
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
                                         builder: (_) => ReportSuccessView(
-                                          reportId: fakeId,
-                                          dateTime: DateTime.now(),
+                                          reportId: reportId,
+                                          dateTime: dt,
+                                          region: region,
                                         ),
                                       ),
                                     );
