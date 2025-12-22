@@ -222,9 +222,10 @@ class ReportController extends GetxController {
     // Clear picked images
     pickedImagesX.clear();
     
-    // Clear date and time
-    selectedDate.value = null;
-    selectedTime.value = null;
+    // Set date and time to current date and time
+    final now = DateTime.now();
+    selectedDate.value = now;
+    selectedTime.value = TimeOfDay.fromDateTime(now);
     soundPeriod.value = 'Day';
     selectedSoundAreaId.value = null;
     
