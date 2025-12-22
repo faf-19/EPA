@@ -13,6 +13,7 @@ class ReportItem {
   final String description;
   final String date; // date display (e.g., Sep 12, 2022)
   final String? time; // time display (e.g., 09:10:22 PM)
+  final List<ActivityLog>? activityLogs;
 
   ReportItem({
     this.id,
@@ -23,6 +24,7 @@ class ReportItem {
     required this.description,
     required this.date,
     this.time = '',
+    this.activityLogs,
   });
 
   // Factory constructor to create ReportItem from API response
@@ -118,6 +120,16 @@ class ReportItem {
       descriptionText = json['details'].toString();
     }
 
+    // Parse activity logs if present
+    final List<ActivityLog> logs = [];
+    if (json['activity_logs'] is List) {
+      for (final log in json['activity_logs']) {
+        if (log is Map<String, dynamic>) {
+          logs.add(ActivityLog.fromJson(log));
+        }
+      }
+    }
+
     return ReportItem(
       id: json['complaint_id']?.toString() ?? 
           json['id']?.toString() ?? 
@@ -131,6 +143,7 @@ class ReportItem {
       description: descriptionText,
       date: dateStr,
       time: timeStr,
+      activityLogs: logs,
     );
   }
 
@@ -172,6 +185,34 @@ class ReportItem {
   }
 }
 
+class ActivityLog {
+  final String? activityLogId;
+  final String? userId;
+  final String? oldStatus;
+  final String? newStatus;
+  final String? description;
+  final String? createdAt;
+
+  ActivityLog({
+    this.activityLogId,
+    this.userId,
+    this.oldStatus,
+    this.newStatus,
+    this.description,
+    this.createdAt,
+  });
+
+  factory ActivityLog.fromJson(Map<String, dynamic> json) {
+    return ActivityLog(
+      activityLogId: json['activity_log_id']?.toString() ?? json['id']?.toString(),
+      userId: json['user_id']?.toString(),
+      oldStatus: json['old_status']?.toString(),
+      newStatus: json['new_status']?.toString() ?? json['newStatus']?.toString(),
+      description: json['description']?.toString(),
+      createdAt: json['created_at']?.toString() ?? json['createdAt']?.toString(),
+    );
+  }
+}
 class StatusController extends GetxController {
   // simple counter left for possible future use
   final count = 0.obs;
@@ -293,6 +334,55 @@ class StatusController extends GetxController {
       filteredReports.assignAll(allReports);
     } else {
       filteredReports.assignAll(allReports.where((r) => r.status == f));
+    }
+  }
+
+  /// Fetch a single complaint by ID (includes activity logs)
+  Future<ReportItem?> fetchComplaintById(String complaintId) async {
+    try {
+      final storage = Get.find<GetStorage>();
+      final token = storage.read('auth_token');
+      
+      if (token == null) {
+        return null;
+      }
+
+      final httpClient = Get.find<DioClient>().dio;
+
+      final response = await httpClient.get(
+        ApiConstants.complaintByIdEndpoint(complaintId),
+        options: Options(
+          headers: {
+            'Authorization': 'Bearer $token',
+            'accept': '*/*',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = response.data;
+        
+        // Handle different response formats
+        Map<String, dynamic> complaintData;
+        if (data is Map) {
+          if (data['data'] is Map) {
+            complaintData = Map<String, dynamic>.from(data['data']);
+          } else {
+            complaintData = Map<String, dynamic>.from(data);
+          }
+        } else {
+          return null;
+        }
+
+        return ReportItem.fromJson(complaintData);
+      }
+      return null;
+    } on DioException catch (e) {
+      print('Error fetching complaint by ID: ${e.message}');
+      return null;
+    } catch (e) {
+      print('Error fetching complaint by ID: ${e.toString()}');
+      return null;
     }
   }
 }
