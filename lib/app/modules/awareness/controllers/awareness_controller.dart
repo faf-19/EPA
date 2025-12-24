@@ -41,21 +41,10 @@ class AwarenessController extends GetxController {
 String getImageUrl(AwarenessModel awareness) {
   if (awareness.filePath.trim().isEmpty) return '';
 
-  const baseUrl = ApiConstants.fileBaseUrl; // Replace with your actual base URL
+  const baseUrl = ApiConstants.fileBaseUrl;
 
-  // 1️⃣ Convert Windows filesystem path → URL path
-  String urlPath = awareness.filePath
-      .replaceAll('\\', '/')        // Windows → URL
-      .replaceAll('//', '/');       // safety
-
-  // 2️⃣ Encode spaces and special characters
-  // final encodedPath = urlPath
-  //     .split('/')
-  //     .map(Uri.encodeComponent)
-  //     .join('/');
-
-  // 3️⃣ Build final URL
-  final imageUrl = '$baseUrl'+'${awareness.filePath}';
+  // Delegate to model helper to build a proper URL
+  final imageUrl = awareness.getImageUrl(baseUrl);
 
   print('Awareness image URL: $imageUrl');
   print('Original file path: ${awareness.filePath}');

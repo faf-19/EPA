@@ -102,14 +102,10 @@ String _monthName(int month) {
       print("Here comes imageUrls: $imageUrls");
       imageCaptions[imageUrl] = news.title.isNotEmpty ? news.title : 'No title';
       final date = news.createdAt;
-      if (date != null) {
-        final localDate = date.toLocal();
-        imageDates[imageUrl] =
-            '${_monthName(localDate.month)} ${localDate.day}, ${localDate.year}';
-      } else {
-        imageDates[imageUrl] = '';
-      }
-    }
+      final localDate = date.toLocal();
+      imageDates[imageUrl] =
+          '${_monthName(localDate.month)} ${localDate.day}, ${localDate.year}';
+        }
 
     currentCarouselIndex.value = 0;
 
