@@ -64,12 +64,33 @@ class NewsModel {
 
   /// Get full image URL from file path
   String getImageUrl(String baseUrl) {
-    if (filePath.isEmpty) return '';
-    // Construct full URL by concatenating baseUrl and filePath
-    // filePath already includes 'public/' prefix from API
-    // URL encode the path to handle spaces and special characters
-    final encodedPath = Uri.encodeComponent(filePath).replaceAll('%2F', '/');
-    return '$baseUrl$encodedPath';
+    if (filePath.trim().isEmpty) return '';
+
+    // Use absolute URL as-is
+    final raw = filePath.trim();
+    if (raw.startsWith('http://') || raw.startsWith('https://')) {
+      return raw;
+    }
+
+    // Normalize separators and strip leading slash
+    var path = raw.replaceAll('\\', '/').replaceAll('//', '/');
+    if (path.startsWith('/')) path = path.substring(1);
+
+    // Remove common storage prefix if present
+    const publicPrefix = 'public/';
+    if (path.startsWith(publicPrefix)) {
+      path = path.substring(publicPrefix.length);
+    }
+
+    // Encode each segment
+    final encodedPath = path
+        .split('/')
+        .map(Uri.encodeComponent)
+        .join('/');
+
+    final normalizedBase = baseUrl.endsWith('/') ? baseUrl : '$baseUrl/';
+    return '$normalizedBase$encodedPath';
   }
+
 }
 

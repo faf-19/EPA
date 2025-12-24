@@ -64,12 +64,30 @@ class AwarenessModel {
 
   /// Get full image URL from file path
   String getImageUrl(String baseUrl) {
-    if (filePath.isEmpty) return '';
-    // Construct full URL by concatenating baseUrl and filePath
-    // filePath already includes 'public/' prefix from API
-    // URL encode the path to handle spaces and special characters
-    final encodedPath = Uri.encodeComponent(filePath).replaceAll('%2F', '/');
-    return '$baseUrl$encodedPath';
+    if (filePath.trim().isEmpty) return '';
+    final rawPath = filePath.trim();
+
+    // If API returns a full URL, use it directly
+    if (rawPath.startsWith('http://') || rawPath.startsWith('https://')) {
+      return rawPath;
+    }
+
+    // Normalize Windows-style path separators and redundant slashes
+    var urlPath = rawPath.replaceAll('\\', '/').replaceAll('//', '/');
+    // Remove leading slash to avoid // in final URL
+    if (urlPath.startsWith('/')) {
+      urlPath = urlPath.substring(1);
+    }
+
+    // Encode path segments to handle spaces/special characters
+    final encodedPath = urlPath
+        .split('/')
+        .map(Uri.encodeComponent)
+        .join('/');
+
+    // Build final URL robustly
+    final normalizedBase = baseUrl.endsWith('/') ? baseUrl : '$baseUrl/';
+    return '$normalizedBase$encodedPath';
   }
 }
 
