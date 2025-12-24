@@ -43,7 +43,18 @@ class CarouselBanner extends StatelessWidget {
                     child: Stack(
                       fit: StackFit.expand,
                       children: [
-                        Image.asset(url, fit: BoxFit.cover),
+                        if (url.startsWith('http'))
+                          Image.network(
+                            url,
+                            fit: BoxFit.cover,
+                            errorBuilder: (_, __, ___) => Container(
+                              color: Colors.grey.shade200,
+                              alignment: Alignment.center,
+                              child: const Icon(Icons.broken_image, color: Colors.grey),
+                            ),
+                          )
+                        else
+                          Image.asset(url, fit: BoxFit.cover),
                         // Top-left: Date and City
                         Positioned(
                           top: 12,
