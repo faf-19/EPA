@@ -93,7 +93,7 @@ String _monthName(int month) {
     imageCaptions.clear();
     imageDates.clear();
 
-    print(imageUrls);
+    print("🔄 Here comes imageUrls: $imageUrls");
     for (final news in newsList) {
       final imageUrl = news.getImageUrl(ApiConstants.fileBaseUrl);
       if (imageUrl.isEmpty) continue;
