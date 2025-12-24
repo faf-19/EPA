@@ -227,7 +227,7 @@ class ReportSuccessView extends StatelessWidget {
                           if (resolvedRegion != null) ...[
                             const SizedBox(height: 12),
                             Text(
-                              resolvedRegion!,
+                              resolvedRegion,
                               style: const TextStyle(
                                 color: Color(0xFF0B2035),
                                 fontWeight: FontWeight.w600,

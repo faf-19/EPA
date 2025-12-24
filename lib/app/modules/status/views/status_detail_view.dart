@@ -321,7 +321,7 @@ class _StatusDetailViewState extends State<StatusDetailView> {
       'under investigation',
       'complete', // also closed / rejected treated as terminal
     ];
-    int _priority(String s) {
+    int priority(String s) {
       final normalized = s.trim().toLowerCase();
       if (normalized == 'closed' || normalized == 'rejected') return 4;
       return stageOrder.indexOf(normalized).clamp(0, 4);
@@ -350,9 +350,9 @@ class _StatusDetailViewState extends State<StatusDetailView> {
     }
 
     // Highest achieved priority from logs or current report status
-    int highestAchieved = _priority(normalizedStatus);
+    int highestAchieved = priority(normalizedStatus);
     for (final s in achieved) {
-      highestAchieved = highestAchieved > _priority(s) ? highestAchieved : _priority(s);
+      highestAchieved = highestAchieved > priority(s) ? highestAchieved : priority(s);
     }
 
     // If terminal, everything is completed and no active spinner

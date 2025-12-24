@@ -45,5 +45,8 @@ class ApiConstants {
 
   //News endpoint
   static const String newsEndpoint = '${baseUrl}news';
+
+  // Update profile endpoint
+  static String updateProfileEndpoint(String id) => '${baseUrl}customer-accounts/update/$id';
 }
 
