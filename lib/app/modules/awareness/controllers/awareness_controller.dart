@@ -41,7 +41,7 @@ class AwarenessController extends GetxController {
 String getImageUrl(AwarenessModel awareness) {
   if (awareness.filePath.trim().isEmpty) return '';
 
-  const baseUrl = ApiConstants.baseUrl; // Replace with your actual base URL
+  const baseUrl = ApiConstants.fileBaseUrl; // Replace with your actual base URL
 
   // 1️⃣ Convert Windows filesystem path → URL path
   String urlPath = awareness.filePath

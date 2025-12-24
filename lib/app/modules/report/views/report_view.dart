@@ -139,7 +139,7 @@ class _ReportViewState extends State<ReportView> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Area',
+                          'Land Use Type',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
@@ -1010,7 +1010,7 @@ class _ReportViewState extends State<ReportView> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Specific Location Details',
+                        'Specific Location',
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 16,

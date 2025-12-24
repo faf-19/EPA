@@ -7,7 +7,9 @@ class BottomNavBinding extends Bindings {
   @override
   void dependencies() {
     Get.lazyPut<BottomNavController>(() => BottomNavController());
-    Get.lazyPut<HomeController>(() => HomeController());
+    Get.lazyPut<HomeController>(() => HomeController(  
+      getNewsUseCase: Get.find(),
+    )); // Ensure HomeController is available
   }
 }
 

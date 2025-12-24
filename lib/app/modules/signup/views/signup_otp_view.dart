@@ -10,7 +10,7 @@ class SignupOtpView extends GetView<SignupOtpController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F6FA),
+      backgroundColor: AppColors.onPrimary,
       appBar: const CustomAppBar(
         title: 'OTP Verification',
         subtitle: 'Verify your email',
