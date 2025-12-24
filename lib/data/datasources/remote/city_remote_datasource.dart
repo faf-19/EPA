@@ -38,27 +38,20 @@ class CityRemoteDataSourceImpl implements CityRemoteDataSource {
         List<dynamic> data;
         if (response.data is List) {
           data = response.data;
-          print('✓ Cities data is a direct List with ${data.length} items');
-        } else if (response.data is Map && response.data['cities'] is List) {
-          data = response.data['cities'];
-          print('✓ Cities data found in "cities" key with ${data.length} items');
-        } else if (response.data is Map && response.data['data'] is List) {
+        } else if (response.data is Map<String, dynamic> && response.data.containsKey('data')) {
           data = response.data['data'];
-          print('✓ Cities data found in "data" key with ${data.length} items');
         } else {
-          print('✗ Unexpected response format. Available keys: ${(response.data as Map).keys.toList()}');
           throw Exception('Unexpected response format');
         }
         
         print('Raw cities data: $data');
         
         final citiesList = data.map((e) => CityModel.fromJson(e)).toList();
+
+        print('new citiesList length: ${citiesList.length}');
         
         print('=== PARSED CITIES (${citiesList.length} total) ===');
-        for (var i = 0; i < citiesList.length; i++) {
-          final city = citiesList[i];
-          print('City $i: id=${city.id}, name=${city.name}, description=${city.description ?? "N/A"}');
-        }
+        
         print('=== END CITIES LIST ===');
         
         return citiesList;

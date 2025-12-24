@@ -2,6 +2,7 @@
 class ApiConstants {
   // Base URL - Update this with your actual backend URL
   static const String baseUrl = 'http://196.188.240.103:4032/api/';
+  static const String fileBaseUrl = 'http://196.188.240.103:4032/';
   // static const String baseUrl = 'http://10.179.217.61:5000/api/';
   
   // Authentication endpoints
@@ -40,5 +41,9 @@ class ApiConstants {
 
   // Sound areas endpoint
   static const String soundAreasEndpoint = '${baseUrl}sound-areas';
+
+
+  //News endpoint
+  static const String newsEndpoint = '${baseUrl}news';
 }
 
