@@ -93,15 +93,14 @@ String _monthName(int month) {
     imageCaptions.clear();
     imageDates.clear();
 
-    print("Hello from fetch news");
     print(imageUrls);
     for (final news in newsList) {
       final imageUrl = news.getImageUrl(ApiConstants.fileBaseUrl);
       if (imageUrl.isEmpty) continue;
 
       imageUrls.add(imageUrl);
+      print("Here comes imageUrls: $imageUrls");
       imageCaptions[imageUrl] = news.title.isNotEmpty ? news.title : 'No title';
-
       final date = news.createdAt;
       if (date != null) {
         final localDate = date.toLocal();
@@ -112,7 +111,6 @@ String _monthName(int month) {
       }
     }
 
-    print("Hello form the other side");
     currentCarouselIndex.value = 0;
 
     print('✅ Loaded ${imageUrls.length} news items');
