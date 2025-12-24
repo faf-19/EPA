@@ -85,9 +85,9 @@ String _monthName(int month) {
     final List<NewsModel> newsList =
         await getNewsUseCase.execute();
 
-    if (newsList.isEmpty) {
-      return;
-    }
+    // if (newsList.isEmpty) {
+    //   return;
+    // }
     // Clear mock data
     imageUrls.clear();
     imageCaptions.clear();
