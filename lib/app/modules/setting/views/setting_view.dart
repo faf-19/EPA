@@ -95,12 +95,115 @@ class SettingView extends GetView<SettingController> {
         // Edit profile button
         OutlinedButton(
           onPressed: () {
-            // TODO: Navigate to edit profile page
-            // Get.snackbar(
-            //   'Edit Profile',
-            //   'Edit profile feature coming soon',
-            //   snackPosition: SnackPosition.BOTTOM,
-            // );
+            final nameController =
+                TextEditingController(text: controller.userName.value);
+
+            Get.defaultDialog(
+              title: 'Edit Profile',
+              backgroundColor: Colors.white,
+              radius: 12,
+              contentPadding:
+                  const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Name',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: nameController,
+                    autofocus: true,
+                    decoration: InputDecoration(
+                      hintText: 'Enter your name',
+                      isDense: true,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 12,
+                      ),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Get.back(),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(color: AppColors.primary),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: () async {
+                            final newName = nameController.text.trim();
+                            if (newName.isEmpty) {
+                              Get.snackbar(
+                                'Name required',
+                                'Please enter a valid name to continue.',
+                                snackPosition: SnackPosition.BOTTOM,
+                              );
+                              return;
+                            }
+
+                            try {
+                              await controller.updateUserName(newName);
+                              Get.back();
+                              Get.snackbar(
+                                'Profile updated',
+                                'Your name has been saved.',
+                                snackPosition: SnackPosition.BOTTOM,
+                              );
+                            } catch (e) {
+                              Get.snackbar(
+                                'Update failed',
+                                e.toString().replaceFirst('Exception: ', ''),
+                                snackPosition: SnackPosition.BOTTOM,
+                              );
+                            }
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                          child: const Text(
+                            'Save',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            );
           },
           style: OutlinedButton.styleFrom(
             side: BorderSide(color: AppColors.primary, width: 1.5),

@@ -56,7 +56,7 @@ class ReportController extends GetxController {
   final regionsAndCities = <Map<String, String>>[].obs; // Combined list
   final zones = <Map<String, String>>[].obs;
   final woredas = <Map<String, String>>[].obs;
-
+  final subcities = <Map<String, String>>[].obs;
   final isLoadingRegions = false.obs;
   final isLoadingCities = false.obs;
   final isLoadingZones = false.obs;
@@ -784,6 +784,80 @@ class ReportController extends GetxController {
       print('🏁 Finished fetching cities (isLoadingCities = false)');
     }
   }
+
+//  Future<void> fetchSubCities() async {
+//     // isLoadingRegions.value = true; // reuse same loading flag for now
+//     try {
+//       final httpClient = Get.find<DioClient>().dio;
+//       final token = Get.find<GetStorage>().read('auth_token');
+//       final res = await httpClient.get(
+//         ApiConstants.subCitiesEndpoint,
+//         options: dio.Options(headers: {
+//           if (token != null) 'Authorization': 'Bearer $token',
+//         }),
+//       );
+
+//       print('SubCities API Response: ${res.data}');
+//       print('SubCities Type: ${res.data.runtimeType}');
+
+//       final data = res.data;
+//       List items = [];
+//       if (data is List) {
+//         items = data;
+//         print('Data is a List with ${items.length} items');
+//       } else if (data is Map) {
+//         // Try multiple possible keys for the data array
+//         if (data['data'] is List) {
+//           items = data['data'];
+//           print('Data found in data key: ${items.length} items');
+//         } else if (data['subCities'] is List) {
+//           items = data['subCities'];
+//           print('Data found in subCities key: ${items.length} items');
+//         } else if (data['subcities'] is List) {
+//           items = data['subcities'];
+//           print('Data found in subcities key: ${items.length} items');
+//         } else if (data['results'] is List) {
+//           items = data['results'];
+//           print('Data found in results key: ${items.length} items');
+//         } else {
+//           print('Warning: Could not find data array in response. Available keys: ${data.keys.toList()}');
+//         }
+//       }
+
+//       subcities.clear();
+//       final mappedSubCities = items.map<Map<String, String>>((e) {
+//         // Prefer explicit sub-city keys, with safe fallbacks
+//         final id = (e is Map && (e['sub_city_id'] != null))
+//             ? e['sub_city_id']?.toString() ?? ''
+//             : (e['subcity_id']?.toString() ??
+//                e['subCityId']?.toString() ??
+//                e['id']?.toString() ?? '');
+//         final name = (e is Map && (e['sub_city_name'] != null))
+//             ? (e['sub_city_name']?.toString() ?? '')
+//             : (e['subcity_name']?.toString() ??
+//                e['subCityName']?.toString() ??
+//                e['name']?.toString() ??
+//                e['title']?.toString() ?? '');
+//         return {'id': id, 'name': name};
+//       }).where((m) => m['id']!.isNotEmpty && m['name']!.isNotEmpty).toList();
+
+//       subcities.addAll(mappedSubCities);
+//       // Debug: print mapped subcities so we can verify UI data
+//       print('Mapped subcities for UI: ${subcities.map((r) => r['name']).toList()}');
+//       print('Total subcities loaded: ${subcities.length}');
+
+//     } catch (e) {
+//       print('Error fetching subcities: $e');
+//       Get.snackbar(
+//         'Error',
+//         'Failed to load subcities: ${e.toString()}',
+//         snackPosition: SnackPosition.BOTTOM,
+//       );
+//     } finally {
+//       isLoadingRegions.value = false;
+//     }
+//   }
+
 
   void _updateRegionsAndCities() {
     print('🔄 Updating combined regionsAndCities list...');

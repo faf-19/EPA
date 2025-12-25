@@ -1,5 +1,6 @@
 import '../entities/login_entity.dart';
 import '../entities/signup_entity.dart';
+import '../entities/update_profile_entity.dart';
 
 /// Repository interface for authentication operations
 /// This is part of the domain layer and defines the contract
@@ -32,5 +33,10 @@ abstract class AuthRepository {
   
   /// Get current user token
   Future<String?> getToken();
+
+  /// Update profile (e.g., full name)
+  Future<UpdateProfileResponseEntity> updateProfile(
+    UpdateProfileEntity updateProfileEntity,
+  );
 }
 

@@ -1,10 +1,12 @@
 import '../../domain/entities/login_entity.dart';
 import '../../domain/entities/signup_entity.dart';
+import '../../domain/entities/update_profile_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/remote/auth_remote_datasource.dart';
 import '../datasources/local/auth_local_datasource.dart';
 import '../models/login_model.dart';
 import '../models/signup_model.dart';
+import '../models/update_profile_model.dart';
 
 /// Implementation of AuthRepository
 /// This connects the domain layer with the data layer
@@ -128,6 +130,31 @@ class AuthRepositoryImpl implements AuthRepository {
   Future<bool> resendOtp(String email) async {
     try {
       return await remoteDataSource.resendOtp(email);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<UpdateProfileResponseEntity> updateProfile(
+    UpdateProfileEntity updateProfileEntity,
+  ) async {
+    try {
+      final updateModel = UpdateProfileModel(
+        id: updateProfileEntity.id,
+        fullName: updateProfileEntity.fullName,
+      );
+
+      final response = await remoteDataSource.updateProfile(updateModel);
+
+      // Persist updated name locally for quick access
+      if (response.fullName != null && response.fullName!.isNotEmpty) {
+        await localDataSource.saveUsername(response.fullName!);
+      } else {
+        await localDataSource.saveUsername(updateProfileEntity.fullName);
+      }
+
+      return response.toEntity();
     } catch (e) {
       rethrow;
     }
