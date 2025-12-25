@@ -27,6 +27,7 @@ import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/signup_usecase.dart';
 import '../../domain/usecases/verify_otp_usecase.dart';
 import '../../domain/usecases/resend_otp_usecase.dart';
+import '../../domain/usecases/update_profile_usecase.dart';
 import '../../domain/usecases/get_awareness_usecase.dart';
 import '../network/dio_client.dart';
 
@@ -47,6 +48,7 @@ class InjectionContainer {
     Get.put<AuthRemoteDataSource>(
       AuthRemoteDataSourceImpl(
         dio: Get.find<DioClient>().dio,
+        storage: Get.find<GetStorage>(),
       ),
       permanent: true,
     );
@@ -91,6 +93,13 @@ class InjectionContainer {
 
     Get.put<ResendOtpUseCase>(
       ResendOtpUseCase(
+        Get.find<AuthRepository>(),
+      ),
+      permanent: true,
+    );
+
+    Get.put<UpdateProfileUseCase>(
+      UpdateProfileUseCase(
         Get.find<AuthRepository>(),
       ),
       permanent: true,

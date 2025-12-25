@@ -1,13 +1,20 @@
 import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:eprs/domain/usecases/update_profile_usecase.dart';
 
 class SettingController extends GetxController {
+  final UpdateProfileUseCase updateProfileUseCase;
+
+  SettingController({required this.updateProfileUseCase});
+
   final count = 0.obs;
   
   // User data
   var userName = ''.obs;
   var phoneNumber = ''.obs;
   var isLoggedIn = false.obs;
+  var userId = ''.obs;
+  var isUpdating = false.obs;
 
   @override
   void onInit() {
@@ -28,11 +35,47 @@ class SettingController extends GetxController {
       phoneNumber.value = storage.read('phone') ?? 
                           storage.read('phone_number') ?? 
                           '';
+      userId.value = storage.read('userId') ?? storage.read('user_id') ?? '';
     }
   }
 
   void refreshUserData() {
     _loadUserData();
+  }
+
+  Future<void> updateUserName(String newName) async {
+    final trimmed = newName.trim();
+    if (trimmed.isEmpty) {
+      throw Exception('Name cannot be empty');
+    }
+
+    if (userId.value.trim().isEmpty) {
+      throw Exception('Missing user id');
+    }
+
+    isUpdating.value = true;
+    try {
+      final response = await updateProfileUseCase.execute(
+        id: userId.value,
+        fullName: trimmed,
+      );
+
+      final updatedName = response.fullName?.isNotEmpty == true
+          ? response.fullName!.trim()
+          : trimmed;
+
+      userName.value = updatedName;
+
+      final storage = Get.find<GetStorage>();
+      await storage.write('username', updatedName);
+      await storage.write('full_name', updatedName);
+
+      if (response.success != true) {
+        throw Exception(response.message ?? 'Profile update failed');
+      }
+    } finally {
+      isUpdating.value = false;
+    }
   }
 
   void increment() => count.value++;
