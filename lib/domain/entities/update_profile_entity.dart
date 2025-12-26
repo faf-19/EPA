@@ -2,10 +2,16 @@
 class UpdateProfileEntity {
   final String id;
   final String fullName;
+  final String? currentPassword;
+  final String? newPassword;
+  final String? confirmPassword;
 
   UpdateProfileEntity({
     required this.id,
     required this.fullName,
+    this.currentPassword,
+    this.newPassword,
+    this.confirmPassword,
   });
 }
 

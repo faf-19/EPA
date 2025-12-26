@@ -62,7 +62,7 @@ String _monthName(int month) {
 
  
   // === Getters ===
-  final box = GetStorage();
+  final box = Get.find<GetStorage>();
   
   // === Pollution Categories ===
   final RxMap<String, String> pollutionCategories = <String, String>{}.obs; // Map of category name to ID
@@ -74,7 +74,8 @@ String _monthName(int month) {
   @override
   void onInit() {
     super.onInit();
-    _loadUserFromStorage();   
+    _loadUserFromStorage();
+    _listenToUserChanges();
     fetchPollutionCategories();
     fetchNews();
   }
@@ -214,7 +215,7 @@ String _monthName(int month) {
 
   // FIXED: Load user from GetStorage (safe & fast)
   void _loadUserFromStorage() {
-    userName.value = box.read('username') ?? 'Guest';
+    userName.value = box.read('username') ?? box.read('full_name') ?? 'Guest';
     phoneNumber.value = box.read('phone') ?? '';
 
     // Optional: Welcome toast
@@ -230,6 +231,16 @@ String _monthName(int month) {
         );
       });
     }
+  }
+
+  // Keep the home header in sync when profile storage updates (e.g., after edit profile)
+  void _listenToUserChanges() {
+    box.listenKey('username', (value) {
+      userName.value = (value ?? box.read('full_name') ?? 'Guest').toString();
+    });
+    box.listenKey('full_name', (value) {
+      userName.value = (value ?? box.read('username') ?? 'Guest').toString();
+    });
   }
 
  

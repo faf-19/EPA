@@ -92,146 +92,369 @@ class SettingView extends GetView<SettingController> {
         )),
         const SizedBox(height: 16),
         
-        // Edit profile button
-        OutlinedButton(
-          onPressed: () {
-            final nameController =
-                TextEditingController(text: controller.userName.value);
+        // Edit profile & change password buttons
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 12,
+          runSpacing: 8,
+          children: [
+            SizedBox(
+              width: 150,
+              child: OutlinedButton(
+                onPressed: () {
+                  final nameController =
+                      TextEditingController(text: controller.userName.value);
 
-            Get.defaultDialog(
-              title: 'Edit Profile',
-              backgroundColor: Colors.white,
-              radius: 12,
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              content: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Name',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: nameController,
-                    autofocus: true,
-                    decoration: InputDecoration(
-                      hintText: 'Enter your name',
-                      isDense: true,
-                      contentPadding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 12,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 18),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton(
-                          onPressed: () => Get.back(),
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(color: AppColors.primary),
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
+                  Get.defaultDialog(
+                    title: 'Edit Profile',
+                    backgroundColor: Colors.white,
+                    radius: 12,
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Name',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: nameController,
+                          autofocus: true,
+                          decoration: InputDecoration(
+                            hintText: 'Enter your name',
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
+                            border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
-                          child: Text(
-                            'Cancel',
-                            style: TextStyle(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            final newName = nameController.text.trim();
-                            if (newName.isEmpty) {
-                              Get.snackbar(
-                                'Name required',
-                                'Please enter a valid name to continue.',
-                                snackPosition: SnackPosition.BOTTOM,
-                              );
-                              return;
-                            }
+                        const SizedBox(height: 18),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () => Get.back(),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(color: AppColors.primary),
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Cancel',
+                                  style: TextStyle(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  final newName = nameController.text.trim();
+                                  if (newName.isEmpty) {
+                                    Get.snackbar(
+                                      'Name required',
+                                      'Please enter a valid name to continue.',
+                                      snackPosition: SnackPosition.BOTTOM,
+                                    );
+                                    return;
+                                  }
 
-                            try {
-                              await controller.updateUserName(newName);
-                              Get.back();
-                              Get.snackbar(
-                                'Profile updated',
-                                'Your name has been saved.',
-                                snackPosition: SnackPosition.BOTTOM,
-                              );
-                            } catch (e) {
-                              Get.snackbar(
-                                'Update failed',
-                                e.toString().replaceFirst('Exception: ', ''),
-                                snackPosition: SnackPosition.BOTTOM,
-                              );
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: AppColors.primary,
-                            padding: const EdgeInsets.symmetric(vertical: 12),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                                  try {
+                                    await controller.updateUserName(newName);
+                                    Get.back();
+                                    Get.snackbar(
+                                      'Profile updated',
+                                      'Your name has been saved.',
+                                      snackPosition: SnackPosition.BOTTOM,
+                                    );
+                                  } catch (e) {
+                                    Get.snackbar(
+                                      'Update failed',
+                                      e.toString().replaceFirst('Exception: ', ''),
+                                      snackPosition: SnackPosition.BOTTOM,
+                                    );
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Save',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
                             ),
-                          ),
-                          child: const Text(
-                            'Save',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
+                          ],
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: AppColors.primary, width: 1.5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
                   ),
-                ],
-              ),
-            );
-          },
-          style: OutlinedButton.styleFrom(
-            side: BorderSide(color: AppColors.primary, width: 1.5),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.edit_outlined,
-                color: AppColors.primary,
-                size: 16,
-              ),
-              const SizedBox(width: 6),
-              Text(
-                'edit_profile',
-                style: TextStyle(
-                  fontFamily: AppFonts.primaryFont,
-                  fontSize: 13,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.edit_outlined,
+                      color: AppColors.primary,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'edit_profile',
+                      style: TextStyle(
+                        fontFamily: AppFonts.primaryFont,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
+            ),
+            SizedBox(
+              width: 180,
+              child: OutlinedButton(
+                onPressed: () {
+                  final currentController = TextEditingController();
+                  final newController = TextEditingController();
+                  final confirmController = TextEditingController();
+
+                  Get.defaultDialog(
+                    title: 'Update Password',
+                    backgroundColor: Colors.white,
+                    radius: 12,
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Current Password',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: currentController,
+                          autofocus: true,
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            hintText: 'Enter current password',
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        const Text(
+                          'New Password',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: newController,
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            hintText: 'Enter new password',
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        const Text(
+                          'Confirm Password',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: confirmController,
+                          obscureText: true,
+                          decoration: InputDecoration(
+                            hintText: 'Confirm new password',
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 12,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 18),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () => Get.back(),
+                                style: OutlinedButton.styleFrom(
+                                  side: BorderSide(color: AppColors.primary),
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Cancel',
+                                  style: TextStyle(
+                                    color: AppColors.primary,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () async {
+                                  final currentPwd = currentController.text.trim();
+                                  final newPwd = newController.text.trim();
+                                  final confirmPwd = confirmController.text.trim();
+
+                                  if (currentPwd.isEmpty ||
+                                      newPwd.isEmpty ||
+                                      confirmPwd.isEmpty) {
+                                    Get.snackbar(
+                                      'Password required',
+                                      'All password fields are required.',
+                                      snackPosition: SnackPosition.BOTTOM,
+                                    );
+                                    return;
+                                  }
+
+                                  if (newPwd != confirmPwd) {
+                                    Get.snackbar(
+                                      'Mismatch',
+                                      'New password and confirmation must match.',
+                                      snackPosition: SnackPosition.BOTTOM,
+                                    );
+                                    return;
+                                  }
+
+                                  try {
+                                    await controller.updatePassword(
+                                      currentPwd,
+                                      newPwd,
+                                      confirmPwd,
+                                    );
+                                    Get.back();
+                                    Get.snackbar(
+                                      'Password updated',
+                                      'Your password has been changed successfully.',
+                                      snackPosition: SnackPosition.BOTTOM,
+                                    );
+                                  } catch (e) {
+                                    Get.snackbar(
+                                      'Update failed',
+                                      e.toString().replaceFirst('Exception: ', ''),
+                                      snackPosition: SnackPosition.BOTTOM,
+                                    );
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  padding: const EdgeInsets.symmetric(vertical: 12),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Save',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(color: AppColors.primary, width: 1.5),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.lock_outline,
+                      color: AppColors.primary,
+                      size: 16,
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'update_password',
+                      style: TextStyle(
+                        fontFamily: AppFonts.primaryFont,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ],
     );
