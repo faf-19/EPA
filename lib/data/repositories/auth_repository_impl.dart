@@ -143,6 +143,9 @@ class AuthRepositoryImpl implements AuthRepository {
       final updateModel = UpdateProfileModel(
         id: updateProfileEntity.id,
         fullName: updateProfileEntity.fullName,
+        currentPassword: updateProfileEntity.currentPassword,
+        newPassword: updateProfileEntity.newPassword,
+        confirmPassword: updateProfileEntity.confirmPassword,
       );
 
       final response = await remoteDataSource.updateProfile(updateModel);

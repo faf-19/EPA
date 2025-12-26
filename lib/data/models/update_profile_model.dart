@@ -5,10 +5,19 @@ class UpdateProfileModel extends UpdateProfileEntity {
   UpdateProfileModel({
     required super.id,
     required super.fullName,
+    super.currentPassword,
+    super.newPassword,
+    super.confirmPassword,
   });
 
   Map<String, dynamic> toJson() => {
         'full_name': fullName,
+        if (currentPassword != null && currentPassword!.isNotEmpty)
+          'current_password': currentPassword,
+        if (newPassword != null && newPassword!.isNotEmpty)
+          'new_password': newPassword,
+        if (confirmPassword != null && confirmPassword!.isNotEmpty)
+          'confirm_password': confirmPassword,
       };
 }
 

@@ -78,5 +78,36 @@ class SettingController extends GetxController {
     }
   }
 
+  Future<void> updatePassword(
+    String currentPassword,
+    String newPassword,
+    String confirmPassword,
+  ) async {
+    if (userId.value.trim().isEmpty) {
+      throw Exception('Missing user id');
+    }
+
+    final effectiveName = userName.value.trim().isNotEmpty
+        ? userName.value.trim()
+        : 'User';
+
+    isUpdating.value = true;
+    try {
+      final response = await updateProfileUseCase.execute(
+        id: userId.value,
+        fullName: effectiveName,
+        currentPassword: currentPassword,
+        newPassword: newPassword,
+        confirmPassword: confirmPassword,
+      );
+
+      if (response.success != true) {
+        throw Exception(response.message ?? 'Password update failed');
+      }
+    } finally {
+      isUpdating.value = false;
+    }
+  }
+
   void increment() => count.value++;
 }
