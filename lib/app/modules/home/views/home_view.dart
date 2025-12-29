@@ -80,8 +80,8 @@ class HomeView extends GetView<HomeController> {
                         childAspectRatio: 1.6,
                         children: [
                           _ReportTile(image: "assets/pollution.png", url: Routes.REPORT, reportType: ReportTypeEnum.pollution.name),
-                          _ReportTile(image: "assets/waste.png", url: Routes.REPORT, reportType: ReportTypeEnum.waste.name),
-                          _ReportTile(image: "assets/chemical.png", url: Routes.REPORT, reportType: ReportTypeEnum.chemical.name),
+                          // _ReportTile(image: "assets/waste.png", url: Routes.REPORT, reportType: ReportTypeEnum.waste.name),
+                          // _ReportTile(image: "assets/chemical.png", url: Routes.REPORT, reportType: ReportTypeEnum.chemical.name),
                           _ReportTile(image: "assets/sound.png", url: Routes.REPORT, reportType: ReportTypeEnum.sound.name),
                         ],
                       ),
