@@ -35,8 +35,10 @@ class ReportController extends GetxController {
   // State
   final count = 0.obs;
 
-  final isInTheSpot = Rxn<bool>(); // "Are you in the spot" - null initially (neither selected)
-  final hasSelectedLocationOption = false.obs; // Track if user has made a selection
+  final isInTheSpot =
+      Rxn<bool>(); // "Are you in the spot" - null initially (neither selected)
+  final hasSelectedLocationOption =
+      false.obs; // Track if user has made a selection
   final autoDetectLocation = true.obs;
   final detectedAddress = 'Tap Search Location\nAddis Ababa | N.L | W-1'.obs;
 
@@ -65,18 +67,20 @@ class ReportController extends GetxController {
   // Store XFile for web compatibility
   // Renamed from pickedImages to force new instance (fixes hot reload type issues)
   final pickedImagesX = <XFile>[].obs;
-  
+
   // Getter for backward compatibility
   RxList<XFile> get pickedImages => pickedImagesX;
-  
+
   // Helper to add a file
   void addPickedImage(XFile file) {
     pickedImagesX.add(file);
     // Force update - RxList should auto-update but ensure it does
     pickedImagesX.refresh();
-    print('📁 File added to list. Total: ${pickedImagesX.length}, Name: ${file.name}');
+    print(
+      '📁 File added to list. Total: ${pickedImagesX.length}, Name: ${file.name}',
+    );
   }
-  
+
   // Helper to remove a file
   void removePickedImageAt(int index) {
     if (index >= 0 && index < pickedImagesX.length) {
@@ -99,16 +103,16 @@ class ReportController extends GetxController {
   final soundPeriod = 'Day'.obs; // 'Day' or 'Night' for sound reports
 
   final ImagePicker _picker = ImagePicker();
-  
+
   // Form controllers
   final descriptionController = TextEditingController();
   final phoneController = TextEditingController();
   final termsAccepted = false.obs;
-  
+
   // Report type and pollution category ID
   String reportType = '';
   String? pollutionCategoryId; // Will be set from route arguments
-  
+
   // Loading state for submission
   final isSubmitting = false.obs;
 
@@ -133,7 +137,7 @@ class ReportController extends GetxController {
   DateTime? _recordingStartTime;
   Duration _pausedDuration = Duration.zero;
   DateTime? _pauseStartTime;
-  
+
   // Noise meter state
   noise_meter.NoiseMeter? _noiseMeter;
   StreamSubscription<noise_meter.NoiseReading>? _noiseSubscription;
@@ -145,11 +149,11 @@ class ReportController extends GetxController {
     super.onInit();
     // Initialize recorder controller
     recorderController = RecorderController();
-    
+
     // Reset form to ensure clean state when entering the page
     _resetForm();
     _loadAuthState();
-    
+
     // Get report type and pollution category ID from arguments
     final args = Get.arguments;
     if (args is String) {
@@ -160,12 +164,16 @@ class ReportController extends GetxController {
       }
       if (args['pollutionCategoryId'] is String) {
         pollutionCategoryId = args['pollutionCategoryId'];
-        print('Received pollution category ID from route: $pollutionCategoryId');
+        print(
+          'Received pollution category ID from route: $pollutionCategoryId',
+        );
       } else {
-        print('No pollution category ID in route arguments. Available keys: ${args.keys.toList()}');
+        print(
+          'No pollution category ID in route arguments. Available keys: ${args.keys.toList()}',
+        );
       }
     }
-    
+
     if (autoDetectLocation.value) {
       detectLocation();
     }
@@ -190,14 +198,17 @@ class ReportController extends GetxController {
     }
 
     // Load display name if available (supports multiple keys)
-    final storedName = box.read('username')?.toString() ??
+    final storedName =
+        box.read('username')?.toString() ??
         box.read('fullName')?.toString() ??
         box.read('name')?.toString();
-    if (isLoggedIn.value && storedName != null && storedName.trim().isNotEmpty) {
+    if (isLoggedIn.value &&
+        storedName != null &&
+        storedName.trim().isNotEmpty) {
       name.value = storedName.trim();
     }
   }
-  
+
   // Private method for backward compatibility
   void _loadAuthState() => loadAuthState();
 
@@ -206,40 +217,40 @@ class ReportController extends GetxController {
     // Clear text fields
     descriptionController.clear();
     phoneController.clear();
-    
+
     // Clear selected values
     selectedRegion.value = 'Select Region / City Administration';
     selectedZone.value = 'Select Zone / Sub-City';
     selectedWoreda.value = 'Select Woreda';
-    
+
     // Clear location data
-      regions.clear();
-      cities.clear();
-      regionsAndCities.clear();
-      zones.clear();
-      woredas.clear();
-    
+    regions.clear();
+    cities.clear();
+    regionsAndCities.clear();
+    zones.clear();
+    woredas.clear();
+
     // Clear picked images
     pickedImagesX.clear();
-    
+
     // Set date and time to current date and time
     final now = DateTime.now();
     selectedDate.value = now;
     selectedTime.value = TimeOfDay.fromDateTime(now);
     soundPeriod.value = 'Day';
     selectedSoundAreaId.value = null;
-    
+
     // Clear location detection - reset to initial state (null = neither selected)
     isInTheSpot.value = null;
     hasSelectedLocationOption.value = false;
     detectedPosition.value = null;
     detectedAddress.value = 'Tap Search Location\nAddis Ababa | N.L | W-1';
     autoDetectLocation.value = false;
-    
+
     // Clear terms acceptance
     termsAccepted.value = false;
     phoneOptIn.value = false;
-    
+
     // Clear audio recording
     audioFilePath.value = null;
     isRecording.value = false;
@@ -250,16 +261,16 @@ class ReportController extends GetxController {
         recorderController.stop();
       }
     } catch (_) {}
-    
+
     // Clear noise meter readings
     currentDecibel.value = 0.0;
     maxDecibel.value = 0.0;
     _noiseSubscription?.cancel();
     _noiseSubscription = null;
-    
+
     // Reset pollution category ID
     pollutionCategoryId = null;
-    
+
     print('Form reset completed');
   }
 
@@ -285,10 +296,10 @@ class ReportController extends GetxController {
   void selectSoundArea(String? id) {
     selectedSoundAreaId.value = id;
   }
-  
+
   // Private method for internal use (calls public resetForm)
   void _resetForm() => resetForm();
-  
+
   @override
   void onClose() {
     // Ensure recording is stopped before disposing
@@ -309,7 +320,7 @@ class ReportController extends GetxController {
     phoneController.dispose();
     super.onClose();
   }
-  
+
   // ----------------------------
   // LOCAL DATA (temporary - replace with API later)
   // ----------------------------
@@ -323,13 +334,13 @@ class ReportController extends GetxController {
       {'id': 'abcdef12-3456-7890-abcd-ef1234567890', 'name': 'Addis Ababa'},
     ]);
   }
-  
+
   void loadLocalZones(String regionId) {
     zones.clear();
     selectedZone.value = 'Select Zone / Sub-City';
     woredas.clear();
     selectedWoreda.value = 'Select Woreda';
-    
+
     // Sample zones for Oromia
     if (regionId == 'bc7e6719-cfe4-4464-b237-2b0df88dd734') {
       zones.addAll([
@@ -346,11 +357,11 @@ class ReportController extends GetxController {
       ]);
     }
   }
-  
+
   void loadLocalWoredas(String zoneId) {
     woredas.clear();
     selectedWoreda.value = 'Select Woreda';
-    
+
     // Sample woredas with valid UUIDs
     woredas.addAll([
       {'id': 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', 'name': 'Woreda 1'},
@@ -385,10 +396,11 @@ class ReportController extends GetxController {
               onSurface: Colors.black87,
             ),
             textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.primary,
-              ),
-            ), dialogTheme: DialogThemeData(backgroundColor: const Color(0xFFF6F6FA)),
+              style: TextButton.styleFrom(foregroundColor: AppColors.primary),
+            ),
+            dialogTheme: DialogThemeData(
+              backgroundColor: const Color(0xFFF6F6FA),
+            ),
           ),
           child: child!,
         );
@@ -401,278 +413,284 @@ class ReportController extends GetxController {
   // ----------------------------
   // TIME PICKER (CUSTOM AM/PM)
   // ----------------------------
-  Future<void> pickTime(BuildContext context) async {
-    final initial = selectedTime.value ?? TimeOfDay.now();
-    int selectedHour = initial.hour;
-    int selectedMinute = initial.minute;
-    bool isAM = initial.hour < 12;
+Future<void> pickTime(BuildContext context) async {
+  final DateTime now = DateTime.now();
+  final TimeOfDay initial = selectedTime.value ?? TimeOfDay.fromDateTime(now);
 
-    // Convert to 12-hour format for display
-    if (selectedHour == 0) {
-      selectedHour = 12;
-    } else if (selectedHour > 12) {
-      selectedHour = selectedHour - 12;
-      isAM = false;
-    } else if (selectedHour == 12) {
-      isAM = false;
-    } else {
-      isAM = true;
-    }
+  int selectedHour;
+  int selectedMinute = initial.minute;
+  bool isAM;
 
-    final picked = await showDialog<TimeOfDay>(
-      context: context,
-      builder: (BuildContext ctx) {
-        String? activePicker; // Track which picker is being scrolled
-        return StatefulBuilder(
-          builder: (context, setState) {
-            return Dialog(
-              backgroundColor: AppColors.onPrimary,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
-              ),
-              child: Container(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Text(
-                      'Select time',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      height: 200,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          // Hour picker
-                          Expanded(
-                            child: NotificationListener<ScrollNotification>(
-                              onNotification: (notification) {
-                                if (notification is ScrollStartNotification) {
-                                  setState(() {
-                                    activePicker = 'hour';
-                                  });
-                                } else if (notification is ScrollEndNotification) {
-                                  setState(() {
-                                    activePicker = null;
-                                  });
-                                }
-                                return false;
-                              },
-                              child: ListWheelScrollView.useDelegate(
-                                itemExtent: 50,
-                                diameterRatio: 1.5,
-                                physics: const FixedExtentScrollPhysics(),
-                                controller: FixedExtentScrollController(
-                                  initialItem: selectedHour - 1,
-                                ),
-                                onSelectedItemChanged: (index) {
-                                  setState(() {
-                                    selectedHour = index + 1;
-                                    activePicker = 'hour';
-                                  });
-                                },
-                                childDelegate: ListWheelChildBuilderDelegate(
-                                  builder: (context, index) {
-                                    final hour = index + 1;
-                                    final isSelected = hour == selectedHour;
-                                    return Center(
-                                      child: Text(
-                                        hour.toString().padLeft(2, '0'),
-                                        style: TextStyle(
-                                          fontSize: isSelected ? 32 : 24,
-                                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                          // Hour should NOT be primary when selecting hour
-                                          color: Colors.black87,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  childCount: 12,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const Padding(
-                            padding: EdgeInsets.symmetric(horizontal: 8),
-                            child: Text(
-                              ':',
-                              style: TextStyle(
-                                fontSize: 32,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black87,
-                              ),
-                            ),
-                          ),
-                          // Minute picker
-                          Expanded(
-                            child: NotificationListener<ScrollNotification>(
-                              onNotification: (notification) {
-                                if (notification is ScrollStartNotification) {
-                                  setState(() {
-                                    activePicker = 'minute';
-                                  });
-                                } else if (notification is ScrollEndNotification) {
-                                  setState(() {
-                                    activePicker = null;
-                                  });
-                                }
-                                return false;
-                              },
-                              child: ListWheelScrollView.useDelegate(
-                                itemExtent: 50,
-                                diameterRatio: 1.5,
-                                physics: const FixedExtentScrollPhysics(),
-                                controller: FixedExtentScrollController(
-                                  initialItem: selectedMinute,
-                                ),
-                                onSelectedItemChanged: (index) {
-                                  setState(() {
-                                    selectedMinute = index;
-                                    activePicker = 'minute';
-                                  });
-                                },
-                                childDelegate: ListWheelChildBuilderDelegate(
-                                  builder: (context, index) {
-                                    final minute = index;
-                                    final isSelected = minute == selectedMinute;
-                                    // Minute should be primary when selecting hour OR when minute is selected
-                                    final shouldBePrimary = activePicker == 'hour' || isSelected;
-                                    return Center(
-                                      child: Text(
-                                        minute.toString().padLeft(2, '0'),
-                                        style: TextStyle(
-                                          fontSize: isSelected ? 32 : 24,
-                                          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                          color: shouldBePrimary ? AppColors.primary : Colors.black87,
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  childCount: 60,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    // AM/PM selector
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        OutlinedButton(
-                          onPressed: () {
-                            setState(() {
-                              isAM = true;
-                            });
-                          },
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                            side: BorderSide(
-                              color: isAM ? AppColors.primary : Colors.grey,
-                              width: isAM ? 2 : 1,
-                            ),
-                            backgroundColor: isAM
-                                ? AppColors.primary.withOpacity(0.12)
-                                : Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: Text(
-                            'AM',
-                            style: TextStyle(
-                              color: isAM ? AppColors.primary : Colors.black87,
-                              fontWeight: isAM ? FontWeight.bold : FontWeight.normal,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        OutlinedButton(
-                          onPressed: () {
-                            setState(() {
-                              isAM = false;
-                            });
-                          },
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 12,
-                            ),
-                            side: BorderSide(
-                              color: !isAM ? AppColors.primary : Colors.grey,
-                              width: !isAM ? 2 : 1,
-                            ),
-                            backgroundColor: !isAM
-                                ? AppColors.primary.withOpacity(0.12)
-                                : Colors.transparent,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                          child: Text(
-                            'PM',
-                            style: TextStyle(
-                              color: !isAM ? AppColors.primary : Colors.black87,
-                              fontWeight: !isAM ? FontWeight.bold : FontWeight.normal,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    // Action buttons
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: [
-                        TextButton(
-                          onPressed: () => Navigator.of(ctx).pop(),
-                          child: Text(
-                            'Cancel',
-                            style: TextStyle(color: AppColors.primary),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        TextButton(
-                          onPressed: () {
-                            // Convert back to 24-hour format
-                            int hour24 = selectedHour;
-                            if (!isAM && selectedHour != 12) {
-                              hour24 = selectedHour + 12;
-                            } else if (isAM && selectedHour == 12) {
-                              hour24 = 0;
-                            }
-                            Navigator.of(ctx).pop(
-                              TimeOfDay(hour: hour24, minute: selectedMinute),
-                            );
-                          },
-                          child: Text(
-                            'OK',
-                            style: TextStyle(color: AppColors.primary),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        );
-      },
+  // ─── Convert initial time to 12-hour ───
+  if (initial.hour == 0) {
+    selectedHour = 12;
+    isAM = true;
+  } else if (initial.hour == 12) {
+    selectedHour = 12;
+    isAM = false;
+  } else if (initial.hour > 12) {
+    selectedHour = initial.hour - 12;
+    isAM = false;
+  } else {
+    selectedHour = initial.hour;
+    isAM = true;
+  }
+
+  final bool isToday =
+      selectedDate.value?.year == now.year &&
+      selectedDate.value?.month == now.month &&
+      selectedDate.value?.day == now.day;
+
+  // Current time in 12-hour format to help disable periods
+  final int nowHour12 = (now.hour == 0 || now.hour == 12)
+      ? 12
+      : (now.hour > 12 ? now.hour - 12 : now.hour);
+  final bool nowIsAM = now.hour < 12;
+  final int nowMinute = now.minute;
+
+  // ─── SINGLE SOURCE OF TRUTH (FIX) ───
+  bool isFutureTime(int hour12, int minute, bool am) {
+    if (!isToday) return false;
+
+    int hour24 = hour12;
+    if (am && hour12 == 12) hour24 = 0;
+    if (!am && hour12 != 12) hour24 = hour12 + 12;
+
+    final DateTime selected = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      hour24,
+      minute,
     );
 
-    if (picked != null) selectedTime.value = picked;
+    return selected.isAfter(now);
   }
+
+  // Disable entire period when all its times are in the future
+  bool isPeriodCompletelyFuture(bool am) {
+    if (!isToday) return false;
+    // If it's AM now, the entire PM is in the future
+    if (!am) return nowIsAM;
+    // AM is never completely future for today
+    return false;
+  }
+
+  final picked = await showDialog<TimeOfDay>(
+    context: context,
+    builder: (ctx) {
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return Dialog(
+            backgroundColor: AppColors.onPrimary,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Select time',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // ───────── TIME PICKERS ─────────
+                  SizedBox(
+                    height: 200,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // ─── Hour ───
+                        Expanded(
+                          child: ListWheelScrollView.useDelegate(
+                            itemExtent: 50,
+                            physics: const FixedExtentScrollPhysics(),
+                            controller: FixedExtentScrollController(
+                              initialItem: selectedHour - 1,
+                            ),
+                            onSelectedItemChanged: (index) {
+                              final h = index + 1;
+                              if (isFutureTime(h, selectedMinute, isAM)) return;
+
+                              setState(() => selectedHour = h);
+                            },
+                            childDelegate: ListWheelChildBuilderDelegate(
+                              childCount: 12,
+                              builder: (_, i) {
+                                final hour = i + 1;
+                                final isSelected = hour == selectedHour;
+                                final disabled =
+                                    isFutureTime(hour, selectedMinute, isAM);
+
+                                return Center(
+                                  child: Text(
+                                    hour.toString().padLeft(2, '0'),
+                                    style: TextStyle(
+                                      fontSize: isSelected ? 32 : 24,
+                                      fontWeight: isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                      color: disabled
+                                          ? Colors.grey.shade400
+                                          : Colors.black87,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 8),
+                          child: Text(
+                            ':',
+                            style: TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black87,
+                            ),
+                          ),
+                        ),
+
+                        // ─── Minute ───
+                        Expanded(
+                          child: ListWheelScrollView.useDelegate(
+                            itemExtent: 50,
+                            physics: const FixedExtentScrollPhysics(),
+                            controller: FixedExtentScrollController(
+                              initialItem: selectedMinute,
+                            ),
+                            onSelectedItemChanged: (index) {
+                              if (isFutureTime(
+                                  selectedHour, index, isAM)) return;
+
+                              setState(() => selectedMinute = index);
+                            },
+                            childDelegate: ListWheelChildBuilderDelegate(
+                              childCount: 60,
+                              builder: (_, minute) {
+                                final isSelected = minute == selectedMinute;
+                                final disabled = isFutureTime(
+                                  selectedHour,
+                                  minute,
+                                  isAM,
+                                );
+
+                                return Center(
+                                  child: Text(
+                                    minute.toString().padLeft(2, '0'),
+                                    style: TextStyle(
+                                      fontSize: isSelected ? 32 : 24,
+                                      fontWeight: isSelected
+                                          ? FontWeight.bold
+                                          : FontWeight.normal,
+                                      color: disabled
+                                          ? Colors.grey.shade400
+                                          : isSelected
+                                              ? AppColors.primary
+                                              : Colors.black87,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // ───────── AM / PM ─────────
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      OutlinedButton(
+                        onPressed: isPeriodCompletelyFuture(true)
+                            ? null
+                            : () {
+                                if (isFutureTime(selectedHour, selectedMinute, true)) return;
+                                setState(() => isAM = true);
+                              },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: isAM ? AppColors.primary : null,
+                        ),
+                        child: const Text('AM'),
+                      ),
+                      const SizedBox(width: 12),
+                      OutlinedButton(
+                        onPressed: isPeriodCompletelyFuture(false)
+                            ? null
+                            : () {
+                                if (isFutureTime(selectedHour, selectedMinute, false)) return;
+                                setState(() => isAM = false);
+                              },
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: !isAM ? AppColors.primary : null,
+                        ),
+                        child: const Text('PM'),
+                      ),
+                    ],
+                  ),
+
+                  const SizedBox(height: 20),
+
+                  // ───────── ACTIONS ─────────
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(color: AppColors.primary),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      TextButton(
+                        onPressed: isFutureTime(selectedHour, selectedMinute, isAM)
+                            ? null
+                            : () {
+                                int hour24 = selectedHour;
+                                if (isAM && hour24 == 12) hour24 = 0;
+                                if (!isAM && hour24 != 12) hour24 += 12;
+
+                                Navigator.pop(
+                                  ctx,
+                                  TimeOfDay(
+                                    hour: hour24,
+                                    minute: selectedMinute,
+                                  ),
+                                );
+                              },
+                        child: Text(
+                          'OK',
+                          style: TextStyle(color: AppColors.primary),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    },
+  );
+
+  if (picked != null) {
+    selectedTime.value = picked;
+  }
+}
 
   // ----------------------------
   // LOCATION API (regions / cities / zones / woredas)
@@ -684,9 +702,9 @@ class ReportController extends GetxController {
       final token = Get.find<GetStorage>().read('auth_token');
       final res = await httpClient.get(
         ApiConstants.regionsEndpoint,
-        options: dio.Options(headers: {
-          if (token != null) 'Authorization': 'Bearer $token',
-        }),
+        options: dio.Options(
+          headers: {if (token != null) 'Authorization': 'Bearer $token'},
+        ),
       );
 
       print('Regions API Response: ${res.data}');
@@ -709,27 +727,35 @@ class ReportController extends GetxController {
           items = data['results'];
           print('Data found in results key: ${items.length} items');
         } else {
-          print('Warning: Could not find data array in response. Available keys: ${data.keys.toList()}');
+          print(
+            'Warning: Could not find data array in response. Available keys: ${data.keys.toList()}',
+          );
         }
       }
 
       regions.clear();
-      final mappedRegions = items.map<Map<String, String>>((e) {
-        // Prefer explicit keys from the API response (region_id / region_name)
-        final id = (e is Map && (e['region_id'] != null))
-            ? e['region_id']?.toString() ?? ''
-            : (e['id']?.toString() ?? e['regionId']?.toString() ?? '');
-        final name = (e is Map && (e['region_name'] != null))
-            ? (e['region_name']?.toString() ?? '')
-            : (e['name']?.toString() ?? e['title']?.toString() ?? e['region']?.toString() ?? '');
-        return {'id': id, 'name': name};
-      }).where((m) => m['id']!.isNotEmpty && m['name']!.isNotEmpty).toList();
-      
+      final mappedRegions = items
+          .map<Map<String, String>>((e) {
+            // Prefer explicit keys from the API response (region_id / region_name)
+            final id = (e is Map && (e['region_id'] != null))
+                ? e['region_id']?.toString() ?? ''
+                : (e['id']?.toString() ?? e['regionId']?.toString() ?? '');
+            final name = (e is Map && (e['region_name'] != null))
+                ? (e['region_name']?.toString() ?? '')
+                : (e['name']?.toString() ??
+                      e['title']?.toString() ??
+                      e['region']?.toString() ??
+                      '');
+            return {'id': id, 'name': name};
+          })
+          .where((m) => m['id']!.isNotEmpty && m['name']!.isNotEmpty)
+          .toList();
+
       regions.addAll(mappedRegions);
       // Debug: print mapped regions so we can verify UI data
       print('Mapped regions for UI: ${regions.map((r) => r['name']).toList()}');
       print('Total regions loaded: ${regions.length}');
-      
+
       // Update combined list
       _updateRegionsAndCities();
     } catch (e) {
@@ -751,7 +777,7 @@ class ReportController extends GetxController {
       print('📡 Calling getCitiesUseCase.execute()...');
       final citiesList = await getCitiesUseCase.execute();
       print('✅ Received ${citiesList.length} cities from usecase');
-      
+
       cities.clear();
       final mappedCities = citiesList.map<Map<String, String>>((city) {
         return {
@@ -760,14 +786,14 @@ class ReportController extends GetxController {
           'type': 'city', // Mark as city to distinguish from regions
         };
       }).toList();
-      
+
       cities.addAll(mappedCities);
       print('📋 Mapped cities for UI:');
       for (var i = 0; i < cities.length; i++) {
         print('   City $i: ${cities[i]['name']} (id: ${cities[i]['id']})');
       }
       print('✅ Total cities loaded: ${cities.length}');
-      
+
       // Update combined list
       _updateRegionsAndCities();
       print('✅ Cities successfully added to regionsAndCities list');
@@ -785,96 +811,101 @@ class ReportController extends GetxController {
     }
   }
 
-//  Future<void> fetchSubCities() async {
-//     // isLoadingRegions.value = true; // reuse same loading flag for now
-//     try {
-//       final httpClient = Get.find<DioClient>().dio;
-//       final token = Get.find<GetStorage>().read('auth_token');
-//       final res = await httpClient.get(
-//         ApiConstants.subCitiesEndpoint,
-//         options: dio.Options(headers: {
-//           if (token != null) 'Authorization': 'Bearer $token',
-//         }),
-//       );
+  //  Future<void> fetchSubCities() async {
+  //     // isLoadingRegions.value = true; // reuse same loading flag for now
+  //     try {
+  //       final httpClient = Get.find<DioClient>().dio;
+  //       final token = Get.find<GetStorage>().read('auth_token');
+  //       final res = await httpClient.get(
+  //         ApiConstants.subCitiesEndpoint,
+  //         options: dio.Options(headers: {
+  //           if (token != null) 'Authorization': 'Bearer $token',
+  //         }),
+  //       );
 
-//       print('SubCities API Response: ${res.data}');
-//       print('SubCities Type: ${res.data.runtimeType}');
+  //       print('SubCities API Response: ${res.data}');
+  //       print('SubCities Type: ${res.data.runtimeType}');
 
-//       final data = res.data;
-//       List items = [];
-//       if (data is List) {
-//         items = data;
-//         print('Data is a List with ${items.length} items');
-//       } else if (data is Map) {
-//         // Try multiple possible keys for the data array
-//         if (data['data'] is List) {
-//           items = data['data'];
-//           print('Data found in data key: ${items.length} items');
-//         } else if (data['subCities'] is List) {
-//           items = data['subCities'];
-//           print('Data found in subCities key: ${items.length} items');
-//         } else if (data['subcities'] is List) {
-//           items = data['subcities'];
-//           print('Data found in subcities key: ${items.length} items');
-//         } else if (data['results'] is List) {
-//           items = data['results'];
-//           print('Data found in results key: ${items.length} items');
-//         } else {
-//           print('Warning: Could not find data array in response. Available keys: ${data.keys.toList()}');
-//         }
-//       }
+  //       final data = res.data;
+  //       List items = [];
+  //       if (data is List) {
+  //         items = data;
+  //         print('Data is a List with ${items.length} items');
+  //       } else if (data is Map) {
+  //         // Try multiple possible keys for the data array
+  //         if (data['data'] is List) {
+  //           items = data['data'];
+  //           print('Data found in data key: ${items.length} items');
+  //         } else if (data['subCities'] is List) {
+  //           items = data['subCities'];
+  //           print('Data found in subCities key: ${items.length} items');
+  //         } else if (data['subcities'] is List) {
+  //           items = data['subcities'];
+  //           print('Data found in subcities key: ${items.length} items');
+  //         } else if (data['results'] is List) {
+  //           items = data['results'];
+  //           print('Data found in results key: ${items.length} items');
+  //         } else {
+  //           print('Warning: Could not find data array in response. Available keys: ${data.keys.toList()}');
+  //         }
+  //       }
 
-//       subcities.clear();
-//       final mappedSubCities = items.map<Map<String, String>>((e) {
-//         // Prefer explicit sub-city keys, with safe fallbacks
-//         final id = (e is Map && (e['sub_city_id'] != null))
-//             ? e['sub_city_id']?.toString() ?? ''
-//             : (e['subcity_id']?.toString() ??
-//                e['subCityId']?.toString() ??
-//                e['id']?.toString() ?? '');
-//         final name = (e is Map && (e['sub_city_name'] != null))
-//             ? (e['sub_city_name']?.toString() ?? '')
-//             : (e['subcity_name']?.toString() ??
-//                e['subCityName']?.toString() ??
-//                e['name']?.toString() ??
-//                e['title']?.toString() ?? '');
-//         return {'id': id, 'name': name};
-//       }).where((m) => m['id']!.isNotEmpty && m['name']!.isNotEmpty).toList();
+  //       subcities.clear();
+  //       final mappedSubCities = items.map<Map<String, String>>((e) {
+  //         // Prefer explicit sub-city keys, with safe fallbacks
+  //         final id = (e is Map && (e['sub_city_id'] != null))
+  //             ? e['sub_city_id']?.toString() ?? ''
+  //             : (e['subcity_id']?.toString() ??
+  //                e['subCityId']?.toString() ??
+  //                e['id']?.toString() ?? '');
+  //         final name = (e is Map && (e['sub_city_name'] != null))
+  //             ? (e['sub_city_name']?.toString() ?? '')
+  //             : (e['subcity_name']?.toString() ??
+  //                e['subCityName']?.toString() ??
+  //                e['name']?.toString() ??
+  //                e['title']?.toString() ?? '');
+  //         return {'id': id, 'name': name};
+  //       }).where((m) => m['id']!.isNotEmpty && m['name']!.isNotEmpty).toList();
 
-//       subcities.addAll(mappedSubCities);
-//       // Debug: print mapped subcities so we can verify UI data
-//       print('Mapped subcities for UI: ${subcities.map((r) => r['name']).toList()}');
-//       print('Total subcities loaded: ${subcities.length}');
+  //       subcities.addAll(mappedSubCities);
+  //       // Debug: print mapped subcities so we can verify UI data
+  //       print('Mapped subcities for UI: ${subcities.map((r) => r['name']).toList()}');
+  //       print('Total subcities loaded: ${subcities.length}');
 
-//     } catch (e) {
-//       print('Error fetching subcities: $e');
-//       Get.snackbar(
-//         'Error',
-//         'Failed to load subcities: ${e.toString()}',
-//         snackPosition: SnackPosition.BOTTOM,
-//       );
-//     } finally {
-//       isLoadingRegions.value = false;
-//     }
-//   }
-
+  //     } catch (e) {
+  //       print('Error fetching subcities: $e');
+  //       Get.snackbar(
+  //         'Error',
+  //         'Failed to load subcities: ${e.toString()}',
+  //         snackPosition: SnackPosition.BOTTOM,
+  //       );
+  //     } finally {
+  //       isLoadingRegions.value = false;
+  //     }
+  //   }
 
   void _updateRegionsAndCities() {
     print('🔄 Updating combined regionsAndCities list...');
     regionsAndCities.clear();
     // Add regions with type marker
-    final mappedRegions = regions.map((r) => {
-      'id': r['id']!,
-      'name': r['name']!,
-      'type': 'region', // Mark as region
-    }).toList();
+    final mappedRegions = regions
+        .map(
+          (r) => {
+            'id': r['id']!,
+            'name': r['name']!,
+            'type': 'region', // Mark as region
+          },
+        )
+        .toList();
     regionsAndCities.addAll(mappedRegions);
     print('   Added ${mappedRegions.length} regions');
     // Add cities
     regionsAndCities.addAll(cities);
     print('   Added ${cities.length} cities');
     print('✅ Total regions and cities combined: ${regionsAndCities.length}');
-    print('   Combined list: ${regionsAndCities.map((e) => '${e['name']} (${e['type']})').toList()}');
+    print(
+      '   Combined list: ${regionsAndCities.map((e) => '${e['name']} (${e['type']})').toList()}',
+    );
   }
 
   Future<void> fetchZonesForRegion(String regionId) async {
@@ -885,14 +916,14 @@ class ReportController extends GetxController {
       final token = Get.find<GetStorage>().read('auth_token');
       final res = await httpClient.get(
         '${ApiConstants.zonesByRegionEndpoint}/$regionId',
-        options: dio.Options(headers: {
-          if (token != null) 'Authorization': 'Bearer $token',
-        }),
+        options: dio.Options(
+          headers: {if (token != null) 'Authorization': 'Bearer $token'},
+        ),
       );
 
       final data = res.data;
       print('Zones API Response for region $regionId: ${res.data}');
-      
+
       List items = [];
       if (data is List) {
         items = data;
@@ -909,7 +940,9 @@ class ReportController extends GetxController {
           items = data['results'];
           print('Data found in results key: ${items.length} items');
         } else {
-          print('Warning: Could not find data array in response. Available keys: ${data.keys.toList()}');
+          print(
+            'Warning: Could not find data array in response. Available keys: ${data.keys.toList()}',
+          );
         }
       }
 
@@ -918,17 +951,20 @@ class ReportController extends GetxController {
       selectedZone.value = 'Select Zone / Sub-City';
       woredas.clear();
       selectedWoreda.value = 'Select Woreda';
-      
-      final mappedZones = items.map<Map<String, String>>((e) {
-        final id = (e is Map && (e['zone_id'] != null))
-            ? e['zone_id']?.toString() ?? ''
-            : (e['id']?.toString() ?? '');
-        final name = (e is Map && (e['zone_name'] != null))
-            ? (e['zone_name']?.toString() ?? '')
-            : (e['name']?.toString() ?? '');
-        return {'id': id, 'name': name};
-      }).where((m) => m['id']!.isNotEmpty && m['name']!.isNotEmpty).toList();
-      
+
+      final mappedZones = items
+          .map<Map<String, String>>((e) {
+            final id = (e is Map && (e['zone_id'] != null))
+                ? e['zone_id']?.toString() ?? ''
+                : (e['id']?.toString() ?? '');
+            final name = (e is Map && (e['zone_name'] != null))
+                ? (e['zone_name']?.toString() ?? '')
+                : (e['name']?.toString() ?? '');
+            return {'id': id, 'name': name};
+          })
+          .where((m) => m['id']!.isNotEmpty && m['name']!.isNotEmpty)
+          .toList();
+
       zones.addAll(mappedZones);
       print('Mapped zones for UI: ${zones.map((r) => r['name']).toList()}');
       print('Total zones loaded: ${zones.length}');
@@ -952,14 +988,14 @@ class ReportController extends GetxController {
       final token = Get.find<GetStorage>().read('auth_token');
       final res = await httpClient.get(
         '${ApiConstants.woredasByLocationEndpoint}/$zoneId',
-        options: dio.Options(headers: {
-          if (token != null) 'Authorization': 'Bearer $token',
-        }),
+        options: dio.Options(
+          headers: {if (token != null) 'Authorization': 'Bearer $token'},
+        ),
       );
 
       final data = res.data;
       print('Woredas API Response for zone $zoneId: ${res.data}');
-      
+
       List items = [];
       if (data is List) {
         items = data;
@@ -976,24 +1012,29 @@ class ReportController extends GetxController {
           items = data['results'];
           print('Data found in results key: ${items.length} items');
         } else {
-          print('Warning: Could not find data array in response. Available keys: ${data.keys.toList()}');
+          print(
+            'Warning: Could not find data array in response. Available keys: ${data.keys.toList()}',
+          );
         }
       }
 
       woredas.clear();
       // Reset woreda selection when loading new woredas
       selectedWoreda.value = 'Select Woreda';
-      
-      final mappedWoredas = items.map<Map<String, String>>((e) {
-        final id = (e is Map && (e['woreda_id'] != null))
-            ? e['woreda_id']?.toString() ?? ''
-            : (e['id']?.toString() ?? '');
-        final name = (e is Map && (e['woreda_name'] != null))
-            ? (e['woreda_name']?.toString() ?? '')
-            : (e['name']?.toString() ?? e['title']?.toString() ?? '');
-        return {'id': id, 'name': name};
-      }).where((m) => m['id']!.isNotEmpty && m['name']!.isNotEmpty).toList();
-      
+
+      final mappedWoredas = items
+          .map<Map<String, String>>((e) {
+            final id = (e is Map && (e['woreda_id'] != null))
+                ? e['woreda_id']?.toString() ?? ''
+                : (e['id']?.toString() ?? '');
+            final name = (e is Map && (e['woreda_name'] != null))
+                ? (e['woreda_name']?.toString() ?? '')
+                : (e['name']?.toString() ?? e['title']?.toString() ?? '');
+            return {'id': id, 'name': name};
+          })
+          .where((m) => m['id']!.isNotEmpty && m['name']!.isNotEmpty)
+          .toList();
+
       woredas.addAll(mappedWoredas);
       print('Mapped woredas for UI: ${woredas.map((r) => r['name']).toList()}');
       print('Total woredas loaded: ${woredas.length}');
@@ -1012,15 +1053,17 @@ class ReportController extends GetxController {
   String? findIdByName(List<Map<String, String>> list, String name) {
     try {
       if (list.isEmpty) {
-        print('⚠️ findIdByName: List is empty for name: $name');
+        print('findIdByName: List is empty for name: $name');
         return null;
       }
       final found = list.firstWhere((e) => e['name'] == name);
       final id = found['id'];
-      print('✅ findIdByName: Found "$name" → ID: $id');
+      print('findIdByName: Found "$name" → ID: $id');
       return id;
     } catch (e) {
-      print('❌ findIdByName: Not found "$name" in list. Available names: ${list.map((e) => e['name']).toList()}');
+      print(
+        'findIdByName: Not found "$name" in list. Available names: ${list.map((e) => e['name']).toList()}',
+      );
       return null;
     }
   }
@@ -1045,7 +1088,7 @@ class ReportController extends GetxController {
     );
     if (img != null) addPickedImage(img);
   }
-  
+
   Future<void> pickVideoFromCamera() async {
     final XFile? video = await _picker.pickVideo(
       source: ImageSource.camera,
@@ -1053,7 +1096,7 @@ class ReportController extends GetxController {
     );
     if (video != null) addPickedImage(video);
   }
-  
+
   Future<void> pickVideoFromGallery() async {
     final XFile? video = await _picker.pickVideo(
       source: ImageSource.gallery,
@@ -1082,7 +1125,7 @@ class ReportController extends GetxController {
 
         // Check current permission status
         LocationPermission permission = await Geolocator.checkPermission();
-        
+
         // If permission is denied, request it (this shows native dialog)
         if (permission == LocationPermission.denied) {
           permission = await Geolocator.requestPermission();
@@ -1156,8 +1199,10 @@ class ReportController extends GetxController {
           detectedAddress.value =
               'Lat ${pos.latitude.toStringAsFixed(5)}, Lng ${pos.longitude.toStringAsFixed(5)}';
         } else {
-          final places =
-              await placemarkFromCoordinates(pos.latitude, pos.longitude);
+          final places = await placemarkFromCoordinates(
+            pos.latitude,
+            pos.longitude,
+          );
 
           if (places.isEmpty) {
             detectedAddress.value =
@@ -1169,7 +1214,7 @@ class ReportController extends GetxController {
               p.subLocality,
               p.locality,
               p.administrativeArea,
-              p.country
+              p.country,
             ].where((e) => e != null && e.isNotEmpty).toList();
 
             detectedAddress.value = parts.join(', ');
@@ -1257,7 +1302,8 @@ class ReportController extends GetxController {
         filePath = 'voice_note_${DateTime.now().millisecondsSinceEpoch}.m4a';
       } else {
         final directory = await getApplicationDocumentsDirectory();
-        final fileName = 'voice_note_${DateTime.now().millisecondsSinceEpoch}.m4a';
+        final fileName =
+            'voice_note_${DateTime.now().millisecondsSinceEpoch}.m4a';
         filePath = path.join(directory.path, fileName);
       }
 
@@ -1273,15 +1319,15 @@ class ReportController extends GetxController {
         path: filePath,
         recorderSettings: recorderSettings,
       );
-      
+
       print('✅ Recording started, waveform should be active');
-      
+
       audioFilePath.value = filePath;
       isRecording.value = true;
       isPaused.value = false;
       _pausedDuration = Duration.zero;
       _recordingStartTime = DateTime.now();
-      
+
       // Reset decibel readings
       currentDecibel.value = 0.0;
       maxDecibel.value = 0.0;
@@ -1291,8 +1337,12 @@ class ReportController extends GetxController {
 
       // Start timer to update duration
       _recordingTimer?.cancel();
-      _recordingTimer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
-        if (isRecording.value && !isPaused.value && _recordingStartTime != null) {
+      _recordingTimer = Timer.periodic(const Duration(milliseconds: 100), (
+        timer,
+      ) {
+        if (isRecording.value &&
+            !isPaused.value &&
+            _recordingStartTime != null) {
           final now = DateTime.now();
           final elapsed = now.difference(_recordingStartTime!);
           recordingDuration.value = elapsed + _pausedDuration;
@@ -1357,20 +1407,24 @@ class ReportController extends GetxController {
   Future<void> stopRecording() async {
     if (isStopping.value) return;
     if (!isRecording.value && !isPaused.value) {
-      Get.snackbar('Info', 'No active recording to stop', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Info',
+        'No active recording to stop',
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
 
     isStopping.value = true;
-    
+
     try {
       // Store path before stopping
       final savePath = audioFilePath.value;
-      
+
       // Stop timer and noise meter
       _recordingTimer?.cancel();
       _stopNoiseMeter();
-      
+
       // Stop the recorder - same pattern as camera/video (await the operation)
       String? finalPath = savePath;
       if (recorderController.isRecording) {
@@ -1390,27 +1444,31 @@ class ReportController extends GetxController {
           } catch (_) {}
         }
       }
-      
+
       // Wait for file to be finalized
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       // Add file immediately - EXACTLY like camera/video pattern
       if (finalPath != null && finalPath.isNotEmpty) {
         final file = File(finalPath);
-        
+
         // Check if file exists (with retry)
         bool exists = await file.exists();
         if (!exists) {
           await Future.delayed(const Duration(milliseconds: 500));
           exists = await file.exists();
         }
-        
+
         if (exists) {
           // Add file immediately - same as pickFromCamera/pickVideoFromCamera
           final xFile = XFile(finalPath);
           _removeExistingAudioAttachments();
           addPickedImage(xFile);
-          Get.snackbar('Upload', 'File added', snackPosition: SnackPosition.BOTTOM);
+          Get.snackbar(
+            'Upload',
+            'File added',
+            snackPosition: SnackPosition.BOTTOM,
+          );
         } else {
           // Try to find the file in directory
           try {
@@ -1421,31 +1479,45 @@ class ReportController extends GetxController {
                 final name = f.path.split('/').last.toLowerCase();
                 return name.endsWith('.m4a') && name.contains('voice_note');
               }).toList();
-              
+
               if (audioFiles.isNotEmpty) {
                 // Get most recent
                 audioFiles.sort((a, b) {
                   try {
-                    return File(b.path).statSync().modified.compareTo(File(a.path).statSync().modified);
+                    return File(b.path).statSync().modified.compareTo(
+                      File(a.path).statSync().modified,
+                    );
                   } catch (_) {
                     return 0;
                   }
                 });
-                
+
                 final xFile = XFile(audioFiles.first.path);
                 _removeExistingAudioAttachments();
                 addPickedImage(xFile);
-                Get.snackbar('Upload', 'File added', snackPosition: SnackPosition.BOTTOM);
+                Get.snackbar(
+                  'Upload',
+                  'File added',
+                  snackPosition: SnackPosition.BOTTOM,
+                );
               } else {
-                Get.snackbar('Error', 'Recording file not found', snackPosition: SnackPosition.BOTTOM);
+                Get.snackbar(
+                  'Error',
+                  'Recording file not found',
+                  snackPosition: SnackPosition.BOTTOM,
+                );
               }
             }
           } catch (e) {
-            Get.snackbar('Error', 'Failed to save recording', snackPosition: SnackPosition.BOTTOM);
+            Get.snackbar(
+              'Error',
+              'Failed to save recording',
+              snackPosition: SnackPosition.BOTTOM,
+            );
           }
         }
       }
-      
+
       // Reset UI state after file is added
       isRecording.value = false;
       isPaused.value = false;
@@ -1456,14 +1528,18 @@ class ReportController extends GetxController {
       _recordingStartTime = null;
       _pauseStartTime = null;
       audioFilePath.value = null;
-      
+
       // Reset recorder
       try {
         recorderController.reset();
       } catch (_) {}
     } catch (e) {
       print('❌ Error in stopRecording: $e');
-      Get.snackbar('Error', 'Failed to stop recording', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Error',
+        'Failed to stop recording',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } finally {
       isStopping.value = false;
     }
@@ -1472,12 +1548,16 @@ class ReportController extends GetxController {
   Future<void> cancelRecording() async {
     if (isCanceling.value) return;
     if (!isRecording.value && !isPaused.value) {
-      Get.snackbar('Info', 'No active recording to cancel', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Info',
+        'No active recording to cancel',
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
 
     isCanceling.value = true;
-    
+
     // INSTANTLY reset UI state - don't wait for anything
     _recordingTimer?.cancel();
     _stopNoiseMeter();
@@ -1491,34 +1571,38 @@ class ReportController extends GetxController {
     _pauseStartTime = null;
     _removeExistingAudioAttachments();
     pickedImagesX.refresh();
-    
+
     // Store path for cleanup
     final pathToDelete = audioFilePath.value;
     audioFilePath.value = null;
-    
+
     // Reset recorder UI immediately
     try {
       recorderController.reset();
     } catch (_) {}
-    
+
     // Show message immediately
-    Get.snackbar('Cancelled', 'Recording discarded', snackPosition: SnackPosition.BOTTOM);
-    
-      // Clean up recorder and file in background (don't wait)
-      Future.microtask(() async {
-        try {
-          // Stop recorder in background (non-blocking)
-          if (recorderController.isRecording) {
-            try {
-              await recorderController.stop(false).timeout(
-                const Duration(seconds: 2),
-              );
-            } catch (_) {
-              // Ignore errors - we don't care if it fails
-            }
+    Get.snackbar(
+      'Cancelled',
+      'Recording discarded',
+      snackPosition: SnackPosition.BOTTOM,
+    );
+
+    // Clean up recorder and file in background (don't wait)
+    Future.microtask(() async {
+      try {
+        // Stop recorder in background (non-blocking)
+        if (recorderController.isRecording) {
+          try {
+            await recorderController
+                .stop(false)
+                .timeout(const Duration(seconds: 2));
+          } catch (_) {
+            // Ignore errors - we don't care if it fails
           }
-        } catch (_) {}
-      
+        }
+      } catch (_) {}
+
       // Delete file in background
       if (pathToDelete != null && !kIsWeb) {
         try {
@@ -1529,7 +1613,7 @@ class ReportController extends GetxController {
         } catch (_) {}
       }
     });
-    
+
     isCanceling.value = false;
   }
 
@@ -1539,7 +1623,7 @@ class ReportController extends GetxController {
     final seconds = twoDigits(duration.inSeconds.remainder(60));
     return '$minutes:$seconds';
   }
-  
+
   // Noise meter helper methods
   Future<void> _startNoiseMeter() async {
     try {
@@ -1548,22 +1632,22 @@ class ReportController extends GetxController {
         print('Noise meter not supported on web platform');
         return;
       }
-      
+
       // Check microphone permission
       if (!(await Permission.microphone.isGranted)) {
         await Permission.microphone.request();
       }
-      
+
       if (await Permission.microphone.isGranted) {
         // Create noise meter if not already created
         _noiseMeter ??= noise_meter.NoiseMeter();
-        
+
         // Listen to noise readings
         _noiseSubscription = _noiseMeter!.noise.listen(
           (noise_meter.NoiseReading reading) {
             // Update current decibel (using meanDecibel)
             currentDecibel.value = reading.meanDecibel;
-            
+
             // Update max decibel if current is higher
             if (reading.meanDecibel > maxDecibel.value) {
               maxDecibel.value = reading.meanDecibel;
@@ -1580,12 +1664,12 @@ class ReportController extends GetxController {
       // Don't stop recording if noise meter fails
     }
   }
-  
+
   void _stopNoiseMeter() {
     _noiseSubscription?.cancel();
     _noiseSubscription = null;
   }
-  
+
   // ----------------------------
   // HELPERS
   // ----------------------------
@@ -1598,7 +1682,7 @@ class ReportController extends GetxController {
           name.contains('voice_note');
     });
   }
-  
+
   // ----------------------------
   // FORM SUBMISSION
   // ----------------------------
@@ -1609,11 +1693,11 @@ class ReportController extends GetxController {
       final token = Get.find<GetStorage>().read('auth_token');
       final res = await httpClient.get(
         ApiConstants.pollutionCategoriesEndpoint,
-        options: dio.Options(headers: {
-          if (token != null) 'Authorization': 'Bearer $token',
-        }),
+        options: dio.Options(
+          headers: {if (token != null) 'Authorization': 'Bearer $token'},
+        ),
       );
-      
+
       final data = res.data;
       List items = [];
       if (data is List) {
@@ -1625,7 +1709,7 @@ class ReportController extends GetxController {
           items = data['categories'];
         }
       }
-      
+
       // Try to find matching category
       String normalize(String v) => v.toLowerCase().trim();
       // Route uses "pollution", backend now returns "Air Pollution"
@@ -1634,18 +1718,26 @@ class ReportController extends GetxController {
       );
       for (var item in items) {
         if (item is Map) {
-          final id = item['pollution_category_id']?.toString() ?? item['id']?.toString() ?? '';
+          final id =
+              item['pollution_category_id']?.toString() ??
+              item['id']?.toString() ??
+              '';
           final name = normalize(
-            item['pollution_category']?.toString() ?? item['name']?.toString() ?? '',
+            item['pollution_category']?.toString() ??
+                item['name']?.toString() ??
+                '',
           );
-          final matches = name == normalizedType || name.contains(normalizedType) || normalizedType.contains(name);
+          final matches =
+              name == normalizedType ||
+              name.contains(normalizedType) ||
+              normalizedType.contains(name);
           if (id.isNotEmpty && matches) {
             print('Found pollution category ID for "$reportType": $id');
             return id;
           }
         }
       }
-      
+
       print('Warning: Could not find pollution category for "$reportType"');
       return null;
     } catch (e) {
@@ -1653,67 +1745,100 @@ class ReportController extends GetxController {
       return null;
     }
   }
-  
+
   Future<void> submitReport() async {
     // Validation
     if (descriptionController.text.trim().isEmpty) {
-      Get.snackbar('Error', 'Please provide a description', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Error',
+        'Please provide a description',
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
-    
+
     if (pickedImagesX.isEmpty) {
-      Get.snackbar('Error', 'Please add at least one photo or video', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Error',
+        'Please add at least one photo or video',
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
-    
+
     if (!termsAccepted.value) {
-      Get.snackbar('Error', 'Please accept the terms and conditions', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Error',
+        'Please accept the terms and conditions',
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
-    
+
     if (selectedDate.value == null || selectedTime.value == null) {
-      Get.snackbar('Error', 'Please select date and time', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Error',
+        'Please select date and time',
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
-    
+
     // Validate "Are you in the spot" is selected
     if (!hasSelectedLocationOption.value || isInTheSpot.value == null) {
-      Get.snackbar('Error', 'Please select "Are you in the spot"', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Error',
+        'Please select "Are you in the spot"',
+        snackPosition: SnackPosition.BOTTOM,
+      );
       return;
     }
-    
+
     // Validate location based on selection
     if (isInTheSpot.value == true) {
       // If "Yes", location should be detected or manually entered
       if (!autoDetectLocation.value && detectedPosition.value == null) {
-        Get.snackbar('Error', 'Please enable location detection or provide location details', snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar(
+          'Error',
+          'Please enable location detection or provide location details',
+          snackPosition: SnackPosition.BOTTOM,
+        );
         return;
       }
     } else {
       // If "No", region/zone/woreda should be selected
       if (selectedRegion.value == 'Select Region / City Administration') {
-        Get.snackbar('Error', 'Please select a region/city', snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar(
+          'Error',
+          'Please select a region/city',
+          snackPosition: SnackPosition.BOTTOM,
+        );
         return;
       }
     }
-    
+
     isSubmitting.value = true;
-    
+
     try {
       final httpClient = Get.find<DioClient>().dio;
       final token = Get.find<GetStorage>().read('auth_token');
-      
+
       if (token == null) {
-        Get.snackbar('Error', 'Please login to submit a report', snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar(
+          'Error',
+          'Please login to submit a report',
+          snackPosition: SnackPosition.BOTTOM,
+        );
         isSubmitting.value = false;
         return;
       }
-      
+
       // Get location IDs
-      final regionId = findIdByName(regionsAndCities, selectedRegion.value) ?? '';
+      final regionId =
+          findIdByName(regionsAndCities, selectedRegion.value) ?? '';
       final zoneId = findIdByName(zones, selectedZone.value) ?? '';
       final woredaId = findIdByName(woredas, selectedWoreda.value) ?? '';
-      
+
       // Debug logging for location IDs
       print('📍 Location IDs for submission:');
       print('   Selected Region: ${selectedRegion.value} → ID: $regionId');
@@ -1721,17 +1846,17 @@ class ReportController extends GetxController {
       print('   Selected Woreda: ${selectedWoreda.value} → ID: $woredaId');
       print('   Available zones: ${zones.map((z) => z['name']).toList()}');
       print('   Available woredas: ${woredas.map((w) => w['name']).toList()}');
-      
+
       // Get location coordinates
       String locationUrl = '';
       if (autoDetectLocation.value && detectedPosition.value != null) {
         final pos = detectedPosition.value!;
         locationUrl = '${pos.latitude},${pos.longitude}';
       }
-      
+
       // Create form data
       final formData = dio.FormData();
-      
+
       // Add text fields
       if (regionId.isNotEmpty) {
         formData.fields.add(MapEntry('region_id', regionId));
@@ -1739,44 +1864,55 @@ class ReportController extends GetxController {
       } else {
         print('⚠️ Region ID is empty');
       }
-      
+
       if (zoneId.isNotEmpty) {
         formData.fields.add(MapEntry('zone_id', zoneId));
         print('✅ Added zone_id: $zoneId');
       } else {
-        print('⚠️ Zone ID is empty - selectedZone: ${selectedZone.value}, zones count: ${zones.length}');
+        print(
+          '⚠️ Zone ID is empty - selectedZone: ${selectedZone.value}, zones count: ${zones.length}',
+        );
       }
-      
+
       if (woredaId.isNotEmpty) {
         formData.fields.add(MapEntry('Woreda_id', woredaId));
         print('✅ Added Woreda_id: $woredaId');
       } else {
         print('⚠️ Woreda ID is empty');
       }
-      if (locationUrl.isNotEmpty) formData.fields.add(MapEntry('location_url', locationUrl));
-      formData.fields.add(MapEntry('detail', descriptionController.text.trim()));
-      
+      if (locationUrl.isNotEmpty)
+        formData.fields.add(MapEntry('location_url', locationUrl));
+      formData.fields.add(
+        MapEntry('detail', descriptionController.text.trim()),
+      );
+
       // Add pollution category ID (use from route if available, otherwise fetch from API)
       String? categoryId = pollutionCategoryId;
       if (categoryId == null || categoryId.isEmpty) {
         print('Pollution category ID not in route, fetching from API...');
         categoryId = await _fetchPollutionCategoryId(reportType);
       }
-      
-      print('Using pollution category ID: $categoryId (from route: ${pollutionCategoryId != null})');
+
+      print(
+        'Using pollution category ID: $categoryId (from route: ${pollutionCategoryId != null})',
+      );
       if (categoryId != null && categoryId.isNotEmpty) {
         formData.fields.add(MapEntry('pollution_category_id', categoryId));
       } else {
-        Get.snackbar('Error', 'Could not find pollution category. Please try again.', snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar(
+          'Error',
+          'Could not find pollution category. Please try again.',
+          snackPosition: SnackPosition.BOTTOM,
+        );
         isSubmitting.value = false;
         return;
       }
-      
+
       // Add phone if opted in
       if (phoneOptIn.value && phoneController.text.trim().isNotEmpty) {
         formData.fields.add(MapEntry('phone_no', phoneController.text.trim()));
       }
-      
+
       // Add files
       print('Adding ${pickedImagesX.length} files to form data...');
       for (var xFile in pickedImagesX) {
@@ -1785,31 +1921,30 @@ class ReportController extends GetxController {
           print('Reading file: $fileName');
           final bytes = await xFile.readAsBytes();
           print('File size: ${bytes.length} bytes');
-          
-          formData.files.add(MapEntry(
-            'file',
-            dio.MultipartFile.fromBytes(
-              bytes,
-              filename: fileName,
+
+          formData.files.add(
+            MapEntry(
+              'file',
+              dio.MultipartFile.fromBytes(bytes, filename: fileName),
             ),
-          ));
+          );
           print('Added file: $fileName');
         } catch (e) {
           print('Error adding file ${xFile.name}: $e');
         }
       }
       print('Total files in form data: ${formData.files.length}');
-      
+
       // Debug: Print form data fields
       print('Form data fields:');
       for (var field in formData.fields) {
         print('  ${field.key}: ${field.value}');
       }
-      
+
       // Submit to API
       print('Submitting to: ${ApiConstants.complaintsEndpoint}');
       print('Total files: ${pickedImagesX.length}');
-      
+
       final response = await httpClient.post(
         ApiConstants.complaintsEndpoint,
         data: formData,
@@ -1818,81 +1953,103 @@ class ReportController extends GetxController {
             'Authorization': 'Bearer $token',
             // Don't set Content-Type for multipart/form-data - let Dio set it with boundary
           },
-          sendTimeout: const Duration(seconds: 60), // Increase timeout for file uploads
+          sendTimeout: const Duration(
+            seconds: 60,
+          ), // Increase timeout for file uploads
           receiveTimeout: const Duration(seconds: 60),
         ),
       );
-      
+
       isSubmitting.value = false;
-      
+
       if (response.statusCode == 200 || response.statusCode == 201) {
         // Check if user is logged in (has auth token)
         final isLoggedIn = token != null && token.isNotEmpty;
-        
+
         // Extract report ID from response
         String reportId = '';
         try {
           final responseData = response.data;
           print('Response data: $responseData');
-          
+
           if (responseData is Map) {
             // Check if data is nested
             final data = responseData['data'] ?? responseData;
             if (data is Map) {
-              reportId = data['report_id']?.toString() ?? 
-                        data['complaint_id']?.toString() ?? 
-                        data['id']?.toString() ?? '';
+              reportId =
+                  data['report_id']?.toString() ??
+                  data['complaint_id']?.toString() ??
+                  data['id']?.toString() ??
+                  '';
             }
-            
+
             // If still not found, check top level
             if (reportId.isEmpty) {
-              reportId = responseData['report_id']?.toString() ?? 
-                        responseData['complaint_id']?.toString() ?? 
-                        responseData['id']?.toString() ?? '';
+              reportId =
+                  responseData['report_id']?.toString() ??
+                  responseData['complaint_id']?.toString() ??
+                  responseData['id']?.toString() ??
+                  '';
             }
           }
-          
+
           print('Extracted report ID: $reportId');
         } catch (e) {
           print('Error extracting report ID: $e');
         }
-        
+
         // If no report ID found, generate a temporary one
         if (reportId.isEmpty) {
           reportId = 'REP-${DateTime.now().millisecondsSinceEpoch}';
         }
-        
+
         // Capture region/city before resetting the form
         final regionToPass = selectedRegion.value;
-        
+
         // Clear form data before navigating
         _resetForm();
-        
+
         if (isLoggedIn) {
           // User is logged in - go directly to success page
-          print('User is logged in, navigating to success page with report ID: $reportId');
-          Get.offNamed(Routes.Report_Success, arguments: {
-            'reportId': reportId,
-            'dateTime': DateTime.now(),
-            'region': regionToPass,
-          });
+          print(
+            'User is logged in, navigating to success page with report ID: $reportId',
+          );
+          Get.offNamed(
+            Routes.Report_Success,
+            arguments: {
+              'reportId': reportId,
+              'dateTime': DateTime.now(),
+              'region': regionToPass,
+            },
+          );
         } else {
           // User is a guest - go to OTP page
           print('User is a guest, navigating to OTP page');
           // Pass along report info so OTP can forward to success with context
-          Get.toNamed(Routes.Report_Otp, arguments: {
-            'reportId': reportId,
-            'dateTime': DateTime.now(),
-            'region': regionToPass,
-          });
+          Get.toNamed(
+            Routes.Report_Otp,
+            arguments: {
+              'reportId': reportId,
+              'dateTime': DateTime.now(),
+              'region': regionToPass,
+            },
+          );
         }
       } else {
-        Get.snackbar('Error', 'Failed to submit report', snackPosition: SnackPosition.BOTTOM);
+        Get.snackbar(
+          'Error',
+          'Failed to submit report',
+          snackPosition: SnackPosition.BOTTOM,
+        );
       }
     } catch (e) {
       isSubmitting.value = false;
       print('Error submitting report: $e');
-      Get.snackbar('Error', 'Failed to submit report: ${e.toString()}', snackPosition: SnackPosition.BOTTOM);
+      Get.snackbar(
+        'Error',
+        'Failed to submit report: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+      );
     }
   }
 }
