@@ -92,30 +92,28 @@ class _StatusDetailViewState extends State<StatusDetailView> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Title and badges row
+                    // Title (full width) and badges below to avoid cramped wrapping
+                    Text(
+                      report.reportType ?? 'N/A',
+                      style: TextStyle(
+                        fontFamily: AppFonts.primaryFont,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.black,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Title (left side)
-                        Expanded(
-                          child: Text(
-                            report.reportType ?? 'N/A',
-                            style: TextStyle(
-                              fontFamily: AppFonts.primaryFont,
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.black,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        
                         // ID Badge (Blue) - Use report_id
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                           decoration: BoxDecoration(
                             color: const Color(0xFF0047BA),
-                            // borderRadius: BorderRadius.circular(12),
+                            borderRadius: BorderRadius.circular(4),
                           ),
                           child: Text(
                             'ID: ${report.reportId ?? report.id ?? 'N/A'}',
