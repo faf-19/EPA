@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import '../../login/views/login_view.dart';
+import 'package:get/get.dart';
+import '../../../routes/app_pages.dart';
+import '../controllers/splash_controller.dart';
 
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
@@ -30,9 +32,11 @@ class _SplashViewState extends State<SplashView> {
     await Future.delayed(const Duration(milliseconds: 700));
 
     // Step 4: Navigate with custom transition
-    if (mounted) {
-      Navigator.of(context).pushReplacement(_createRoute());
-    }
+    if (!mounted) return;
+    final controller = Get.find<SplashController>();
+    final nextRoute = await controller.resolveNextRoute();
+    if (!mounted) return;
+    Get.offAllNamed(nextRoute);
   }
 
   @override
@@ -75,33 +79,4 @@ class _SplashViewState extends State<SplashView> {
       ),
     );
   }
-}
-
-// 🔹 Transition Route Builder
-Route _createRoute() {
-  return PageRouteBuilder(
-    transitionDuration: const Duration(milliseconds: 900),
-    reverseTransitionDuration: const Duration(milliseconds: 700),
-    pageBuilder: (context, animation, secondaryAnimation) => const LoginOverlay(),
-    transitionsBuilder: (context, animation, secondaryAnimation, child) {
-      const beginOffset = Offset(0.0, 1.0); // Slide from bottom
-      const endOffset = Offset.zero;
-      final curve = Curves.easeInOutCubic;
-
-      final tween = Tween(begin: beginOffset, end: endOffset)
-          .chain(CurveTween(curve: curve));
-
-      return FadeTransition(
-        opacity: animation,
-        child: SlideTransition(
-          position: animation.drive(tween),
-          child: ScaleTransition(
-            scale: Tween<double>(begin: 0.95, end: 1.0)
-                .animate(CurvedAnimation(parent: animation, curve: Curves.easeOutBack)),
-            child: child,
-          ),
-        ),
-      );
-    },
-  );
 }

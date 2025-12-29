@@ -68,7 +68,7 @@ class _LoginOverlayState extends State<LoginOverlay> {
                 // increase logo size to better match the design
                 final logoHeight = isSmall ? 160.0 : 240.0;
                 // more top padding on larger screens, a bit for small screens too
-                final topPadding = isSmall ? 20.0 : 40.0;
+                final topPadding = isSmall ? 5.0 : 10.0;
                 // slightly larger gaps between fields to match mock spacing
                 final betweenFields = isSmall ? 16.0 : 22.0;
                 // space between title and the inputs — larger to visually separate sections
@@ -96,18 +96,15 @@ class _LoginOverlayState extends State<LoginOverlay> {
                         ),
                       ),
 
-                      SizedBox(height: isSmall ? 28 : 40),
+                      // SizedBox(height: isSmall ? 5 : 10),
 
-                      // Logo
-                      SizedBox(
-                        height: logoHeight,
-                        child: Image.asset(
+                      Image.asset(
                           'assets/logo.png',
                           fit: BoxFit.contain,
                         ),
-                      ),
+                      
 
-                      SizedBox(height: isSmall ? 18 : 28),
+                      SizedBox(height: isSmall ? 5.0 : 10.0),
 
                       // Title
                       Text(
@@ -119,7 +116,7 @@ class _LoginOverlayState extends State<LoginOverlay> {
                         ),
                       ),
 
-                      SizedBox(height: largeSpacer),
+                      SizedBox(height: 40),
 
                       // Inputs and actions — simplified and safer nesting
                       ConstrainedBox(
@@ -282,7 +279,7 @@ class _LoginOverlayState extends State<LoginOverlay> {
                               ],
                             ),
 
-                            SizedBox(height: isSmall ? 36 : 56),
+                            SizedBox(height: isSmall ? 36 : 60),
 
                             // Buttons
                             Obx(() => SizedBox(
