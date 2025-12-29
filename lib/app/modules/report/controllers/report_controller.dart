@@ -375,7 +375,7 @@ class ReportController extends GetxController {
   // ----------------------------
   Future<void> pickDate(BuildContext context) async {
     final now = DateTime.now();
-    final first = DateTime(now.year - 5);
+    final first = DateTime(now.year, now.month, now.day - 10);
     final last = DateTime(now.year, now.month, now.day);
 
     DateTime initial = selectedDate.value ?? now;
