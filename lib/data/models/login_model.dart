@@ -51,7 +51,12 @@ class LoginResponseModel extends LoginResponseEntity {
     // Some APIs return { token: '...', customer: { ... } } without a
     // explicit `success` boolean. Detect token presence and customer
     // payloads to determine success and extract fields accordingly.
-    final token = json['token'] ?? json['data']?['token'] ?? json['customer']?['token'];
+    final token = json['token'] ??
+        json['access_token'] ??
+        json['data']?['token'] ??
+        json['data']?['access_token'] ??
+        json['customer']?['token'] ??
+        json['customer']?['access_token'];
     final customer = json['customer'] ?? json['data']?['customer'];
 
     String? userId;
