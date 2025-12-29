@@ -77,7 +77,8 @@ class HomeView extends GetView<HomeController> {
                         physics: const NeverScrollableScrollPhysics(),
                         mainAxisSpacing: 12,
                         crossAxisSpacing: 12,
-                        childAspectRatio: 1.6,
+                        // Lower aspect ratio -> taller & wider tiles (images scale with the tile)
+                        childAspectRatio: 1.4,
                         children: [
                           _ReportTile(image: "assets/pollution.png", url: Routes.REPORT, reportType: ReportTypeEnum.pollution.name),
                           // _ReportTile(image: "assets/waste.png", url: Routes.REPORT, reportType: ReportTypeEnum.waste.name),
@@ -139,7 +140,7 @@ class _ReportTile extends StatelessWidget {
           borderRadius: BorderRadius.circular(8),
           child: Image.asset(
             image,
-            fit: BoxFit.cover,
+            fit: BoxFit.contain, // avoid zooming in; keep full image visible
             width: double.infinity,
             height: double.infinity,
           ),
