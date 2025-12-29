@@ -76,7 +76,6 @@ String _monthName(int month) {
     super.onInit();
     _loadUserFromStorage();
     _listenToUserChanges();
-    fetchPollutionCategories();
     fetchNews();
   }
   
@@ -117,70 +116,7 @@ String _monthName(int month) {
   }
 }
 
-  // Fetch pollution categories from API
-  Future<void> fetchPollutionCategories() async {
-    print('🔄 Starting to fetch pollution categories...');
-    try {
-      final httpClient = Get.find<DioClient>().dio;
-      final token = box.read('auth_token');
-      final res = await httpClient.get(
-        ApiConstants.pollutionCategoriesEndpoint,
-        options: dio.Options(headers: {
-          if (token != null) 'Authorization': 'Bearer $token',
-        }),
-      );
-      
-      print('📡 Pollution Categories API Response: ${res.data}');
-      print('📡 Response Status Code: ${res.statusCode}');
-      
-      final data = res.data;
-      List items = [];
-      if (data is List) {
-        items = data;
-        print('✓ Categories data is a direct List with ${items.length} items');
-      } else if (data is Map) {
-        if (data['data'] is List) {
-          items = data['data'];
-          print('✓ Categories data found in "data" key with ${items.length} items');
-        } else if (data['categories'] is List) {
-          items = data['categories'];
-          print('✓ Categories data found in "categories" key with ${items.length} items');
-        } else {
-          print('⚠️ Could not find categories array. Available keys: ${data.keys.toList()}');
-        }
-      }
-      
-      pollutionCategories.clear();
-      for (var item in items) {
-        if (item is Map) {
-          final id = item['pollution_category_id']?.toString() ?? item['id']?.toString() ?? '';
-          final name = item['pollution_category']?.toString() ?? item['name']?.toString() ?? '';
-          if (id.isNotEmpty && name.isNotEmpty) {
-            // Store multiple variations for flexible lookup
-            final normalizedName = name.toLowerCase().trim();
-            pollutionCategories[normalizedName] = id; // lowercase: "pollution"
-            pollutionCategories[name.trim()] = id; // original case: "Pollution"
-            pollutionCategories[name.trim().toLowerCase()] = id; // lowercase original: "pollution"
-            
-            // Also handle common variations
-            if (normalizedName == 'pollution') {
-              pollutionCategories['air pollution'] = id;
-            }
-            
-            print('📋 Loaded category: "$name" (ID: $id)');
-            print('   - Stored as: "$normalizedName", "${name.trim()}"');
-          }
-        }
-      }
-      
-      print('✅ Loaded ${pollutionCategories.length} pollution category mappings');
-      print('   Available keys: ${pollutionCategories.keys.toList()}');
-    } catch (e, stackTrace) {
-      print('❌ Error fetching pollution categories: $e');
-      print('Stack trace: $stackTrace');
-    }
-  }
-  
+
   // Get pollution category ID by name (handles various formats)
   String? getPollutionCategoryId(String categoryName) {
     print('🔍 Looking up pollution category for: "$categoryName"');

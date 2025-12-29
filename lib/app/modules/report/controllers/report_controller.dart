@@ -52,6 +52,14 @@ class ReportController extends GetxController {
   final soundAreasError = RxnString();
   final selectedSoundAreaId = RxnString();
 
+// Polution category ID (for non-sound report types)
+final pollutionCategoriesError = RxnString();
+final isLoadingPollutionCategories = false.obs;
+
+// === Pollution Categories ===
+  final selectedPollutionCategoryId = RxnString();
+  final RxMap<String, String> pollutionCategories = <String, String>{}.obs;
+
   // API-backed location lists (each item: {'id': '...', 'name': '...'})
   final regions = <Map<String, String>>[].obs;
   final cities = <Map<String, String>>[].obs;
@@ -185,6 +193,7 @@ class ReportController extends GetxController {
     if (reportType == ReportTypeEnum.sound.name) {
       fetchSoundAreas();
     }
+    fetchPollutionCategories();
   }
 
   void loadAuthState() {
@@ -270,6 +279,7 @@ class ReportController extends GetxController {
 
     // Reset pollution category ID
     pollutionCategoryId = null;
+    selectedPollutionCategoryId.value = null;
 
     print('Form reset completed');
   }
@@ -292,11 +302,79 @@ class ReportController extends GetxController {
     }
   }
 
+  // Fetch pollution categories from API
+  Future<void> fetchPollutionCategories() async {
+    print('Starting to fetch pollution categories...');
+    try {
+      final httpClient = Get.find<DioClient>().dio;
+      final token = box.read('auth_token');
+      final res = await httpClient.get(
+        ApiConstants.pollutionCategoriesEndpoint,
+        options: dio.Options(headers: {
+          if (token != null) 'Authorization': 'Bearer $token',
+        }),
+      );
+      
+      print('📡 Pollution Categories API Response: ${res.data}');
+      print('📡 Response Status Code: ${res.statusCode}');
+      
+      final data = res.data;
+      List items = [];
+      if (data is List) {
+        items = data;
+        print('✓ Categories data is a direct List with ${items.length} items');
+      } else if (data is Map) {
+        if (data['data'] is List) {
+          items = data['data'];
+          print('✓ Categories data found in "data" key with ${items.length} items');
+        } else if (data['categories'] is List) {
+          items = data['categories'];
+          print('✓ Categories data found in "categories" key with ${items.length} items');
+        } else {
+          print('⚠️ Could not find categories array. Available keys: ${data.keys.toList()}');
+        }
+      }
+      
+      pollutionCategories.clear();
+      for (var item in items) {
+        if (item is Map) {
+          final id = item['pollution_category_id']?.toString() ?? item['id']?.toString() ?? '';
+          final name = item['pollution_category']?.toString() ?? item['name']?.toString() ?? '';
+          if (id.isNotEmpty && name.isNotEmpty) {
+            // Store multiple variations for flexible lookup
+            final normalizedName = name.toLowerCase().trim();
+            pollutionCategories[normalizedName] = id; // lowercase: "pollution"
+            pollutionCategories[name.trim()] = id; // original case: "Pollution"
+            pollutionCategories[name.trim().toLowerCase()] = id; // lowercase original: "pollution"
+            
+            // Also handle common variations
+            if (normalizedName == 'pollution') {
+              pollutionCategories['air pollution'] = id;
+            }
+            
+            print('📋 Loaded category: "$name" (ID: $id)');
+            print('   - Stored as: "$normalizedName", "${name.trim()}"');
+          }
+        }
+      }
+      
+      print('✅ Loaded ${pollutionCategories.length} pollution category mappings');
+      print('   Available keys: ${pollutionCategories.keys.toList()}');
+    } catch (e, stackTrace) {
+      print('❌ Error fetching pollution categories: $e');
+      print('Stack trace: $stackTrace');
+    }
+  }
+  
+
   /// Update selected sound area
   void selectSoundArea(String? id) {
     selectedSoundAreaId.value = id;
   }
 
+  void selectPollutionCategory(String? id) {
+    selectedPollutionCategoryId.value = id;
+  }
   // Private method for internal use (calls public resetForm)
   void _resetForm() => resetForm();
 
@@ -1746,7 +1824,7 @@ Future<void> pickTime(BuildContext context) async {
     }
   }
 
-  Future<void> submitReport() async {
+  Future<void> submitReport(bool isSound) async {
     // Validation
     if (descriptionController.text.trim().isEmpty) {
       Get.snackbar(
@@ -1757,13 +1835,32 @@ Future<void> pickTime(BuildContext context) async {
       return;
     }
 
-    if (pickedImagesX.isEmpty) {
+    if (pickedImagesX.isEmpty && !isSound) {
       Get.snackbar(
         'Error',
-        'Please add at least one photo or video',
+        'Please add at least one photo or video or audio',
         snackPosition: SnackPosition.BOTTOM,
       );
       return;
+    }
+
+    if (isSound) {
+      // Ensure at least one audio file is attached
+      final hasAudio = pickedImagesX.any((f) {
+        final name = f.name.toLowerCase();
+        return name.endsWith('.m4a') ||
+            name.endsWith('.mp3') ||
+            name.endsWith('.aac') ||
+            name.contains('voice_note');
+      });
+      if (!hasAudio) {
+        Get.snackbar(
+          'Error',
+          'Please add an audio recording',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
     }
 
     if (!termsAccepted.value) {
@@ -1887,7 +1984,7 @@ Future<void> pickTime(BuildContext context) async {
       );
 
       // Add pollution category ID (use from route if available, otherwise fetch from API)
-      String? categoryId = pollutionCategoryId;
+      String? categoryId = selectedPollutionCategoryId.value;
       if (categoryId == null || categoryId.isEmpty) {
         print('Pollution category ID not in route, fetching from API...');
         categoryId = await _fetchPollutionCategoryId(reportType);
