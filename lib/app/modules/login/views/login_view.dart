@@ -1,7 +1,9 @@
 import 'package:eprs/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/gestures.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:eprs/app/modules/status/controllers/status_controller.dart';
 import '../controllers/login_controller.dart';
 import 'package:eprs/core/theme/app_colors.dart';
 import 'package:eprs/domain/usecases/login_usecase.dart';
@@ -16,21 +18,24 @@ class LoginOverlay extends StatefulWidget {
 class _LoginOverlayState extends State<LoginOverlay> {
   final _emailCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
+  final _reportIdCtrl = TextEditingController();
   bool _remember = false;
+  bool _isSearching = false;
 
   @override
   void dispose() {
     _emailCtrl.dispose();
     _passCtrl.dispose();
+    _reportIdCtrl.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    // Get controller from GetX (it should be registered via binding)
     final controller = Get.isRegistered<LoginController>()
         ? Get.find<LoginController>()
         : Get.put(LoginController(loginUseCase: Get.find<LoginUseCase>()));
+
     // MediaQuery size was previously used for logo sizing; layout is now
     // responsive via LayoutBuilder so `size` is unused.
 
@@ -322,44 +327,142 @@ class _LoginOverlayState extends State<LoginOverlay> {
 
                             SizedBox(height: isSmall ? 14 : 20),
 
-                            SizedBox(
+                            // Track Report Status card
+                            Container(
                               width: double.infinity,
-                              height: isSmall ? 52 : 56,
-                              child: OutlinedButton(
-                                onPressed: () => Get.toNamed(Routes.SIGNUP),
-                                style: OutlinedButton.styleFrom(
-                                  side: const BorderSide(
-                                    color: greenColor,
-                                    width: 1.6,
+                              padding: EdgeInsets.all(isSmall ? 14 : 18),
+                              margin: EdgeInsets.only(top: isSmall ? 8 : 12),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.06),
+                                    blurRadius: 16,
+                                    offset: const Offset(0, 6),
                                   ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                child: Text(
-                                  'Create Account',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: isSmall ? 16 : 18,
-                                    fontWeight: FontWeight.w600,
-                                    color: greenColor,
-                                  ),
-                                ),
+                                ],
+                                border: Border.all(color: borderColor, width: 1),
                               ),
-                            ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Track Report Status',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: isSmall ? 15 : 17,
+                                      fontWeight: FontWeight.w600,
+                                      color: darkText,
+                                    ),
+                                  ),
+                                  SizedBox(height: isSmall ? 10 : 14),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: TextField(
+                                          controller: _reportIdCtrl,
+                                          decoration: InputDecoration(
+                                            hintText: 'Enter Report ID (e.g. REP-988780)',
+                                            hintStyle: GoogleFonts.poppins(
+                                              fontSize: isSmall ? 13 : 14,
+                                              color: hintText,
+                                            ),
+                                            contentPadding: EdgeInsets.symmetric(
+                                              vertical: isSmall ? 14 : 16,
+                                              horizontal: 14,
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(10),
+                                              borderSide: BorderSide(color: borderColor, width: 1.2),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(10),
+                                              borderSide: BorderSide(color: greenColor, width: 1.4),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(width: isSmall ? 8 : 12),
+                                      SizedBox(
+                                        height: isSmall ? 46 : 50,
+                                        child: ElevatedButton(
+                                          onPressed: _isSearching
+                                              ? null
+                                              : () async {
+                                                  final id = _reportIdCtrl.text.trim();
+                                                  if (id.isEmpty) {
+                                                    Get.snackbar(
+                                                      'Report ID',
+                                                      'Please enter a Report ID',
+                                                      snackPosition: SnackPosition.BOTTOM,
+                                                    );
+                                                    return;
+                                                  }
+                                                  setState(() => _isSearching = true);
+                                                  final statusController = Get.isRegistered<StatusController>()
+                                                      ? Get.find<StatusController>()
+                                                      : Get.put(StatusController());
+                                                  final result = await statusController.fetchComplaintByReportId(id);
+                                                  setState(() => _isSearching = false);
+                                                  print("here is the result $result");
+                                                  if (result == null) {
+                                                    Get.snackbar(
+                                                      'Not found',
+                                                      'No complaint found for $id',
+                                                      snackPosition: SnackPosition.BOTTOM,
+                                                    );
+                                                    return;
+                                                  }
 
-                            SizedBox(height: isSmall ? 14 : 22),
+                                                  _showStatusDialog(context, result);
+                                                },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: greenColor,
+                                            foregroundColor: Colors.white,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(10),
+                                            ),
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: isSmall ? 16 : 18,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            _isSearching ? '...' : 'Search',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: isSmall ? 14 : 15,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                          ),
 
-                            TextButton(
-                              onPressed: () {
-                                Get.toNamed(Routes.HOME);
-                              },
-                              child: Text(
-                                'Continue as Guest',
+                            SizedBox(height: isSmall ? 14 : 18),
+
+                            RichText(
+                              text: TextSpan(
+                                text: 'Don\'t have an account? ',
                                 style: GoogleFonts.poppins(
                                   fontSize: isSmall ? 14 : 15,
                                   color: hintText,
                                   fontWeight: FontWeight.w500,
                                 ),
+                                children: [
+                                  TextSpan(
+                                    text: 'Sign up',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: isSmall ? 14 : 15,
+                                      color: AppColors.primary,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    recognizer: (TapGestureRecognizer()
+                                      ..onTap = () => Get.toNamed(Routes.SIGNUP)),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
@@ -375,4 +478,217 @@ class _LoginOverlayState extends State<LoginOverlay> {
       ),
     );
   }
+  
+  void _showStatusDialog(BuildContext context, ReportItem item) {
+    final currentStatus = item.status;
+    final currentTime = (item.time ?? '').trim();
+    final currentLine = currentTime.isNotEmpty ? '$currentStatus • $currentTime' : currentStatus;
+
+    final logs = item.activityLogs ?? [];
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (_) {
+        return Dialog(
+          insetPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Complaint Status',
+                        style: GoogleFonts.poppins(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: const Color(0xFF103B52),
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close, color: Colors.grey),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Status history timeline',
+                    style: GoogleFonts.poppins(
+                      fontSize: 13,
+                      color: const Color(0xFF5C6B7A),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(
+                        'Current: ',
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          color: const Color(0xFF5C6B7A),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      Text(
+                        currentLine,
+                        style: GoogleFonts.poppins(
+                          fontSize: 13,
+                          color: const Color(0xFF1EAD3D),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 18),
+                  ..._buildStatusCards(item, logs),
+                  const SizedBox(height: 18),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2F8A4E),
+                        foregroundColor: Colors.white,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      child: Text(
+                        'Close',
+                        style: GoogleFonts.poppins(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  List<Widget> _buildStatusCards(ReportItem item, List<ActivityLog> logs) {
+    final entries = <_StatusEntry>[];
+
+    entries.add(_StatusEntry(
+      title: item.status,
+      date: item.date,
+      time: item.time ?? '',
+      isCurrent: true,
+    ));
+
+    for (final log in logs) {
+      entries.add(_StatusEntry(
+        title: log.newStatus ?? log.description ?? 'Status Update',
+        date: _formatLogDate(log.createdAt),
+        time: _formatLogTime(log.createdAt),
+        isCurrent: false,
+      ));
+    }
+
+    return entries.map((e) {
+      final bg = e.isCurrent ? const Color(0xFFE8F8EE) : const Color(0xFFE9F0FF);
+      final iconBg = e.isCurrent ? const Color(0xFF2F8A4E) : const Color(0xFF3F79E0);
+      return Container(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: bg,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white, width: 1),
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: 26,
+              height: 26,
+              decoration: BoxDecoration(
+                color: iconBg,
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                e.isCurrent ? Icons.check : Icons.radio_button_unchecked,
+                color: Colors.white,
+                size: 16,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    e.title,
+                    style: GoogleFonts.poppins(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF103B52),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${e.date}${e.time.isNotEmpty ? ' • ${e.time}' : ''}',
+                    style: GoogleFonts.poppins(
+                      fontSize: 12,
+                      color: const Color(0xFF5C6B7A),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }).toList();
+  }
+
+  String _formatLogDate(String? raw) {
+    if (raw == null || raw.isEmpty) return '';
+    final parsed = DateTime.tryParse(raw);
+    if (parsed != null) {
+      return '${_month(parsed.month)} ${parsed.day}, ${parsed.year}';
+    }
+    return raw;
+  }
+
+  String _formatLogTime(String? raw) {
+    if (raw == null || raw.isEmpty) return '';
+    final parsed = DateTime.tryParse(raw);
+    if (parsed != null) {
+      final hh = parsed.hour % 12 == 0 ? 12 : parsed.hour % 12;
+      final mm = parsed.minute.toString().padLeft(2, '0');
+      final ss = parsed.second.toString().padLeft(2, '0');
+      final ampm = parsed.hour >= 12 ? 'PM' : 'AM';
+      return '$hh:$mm:$ss $ampm';
+    }
+    return '';
+  }
+
+  String _month(int m) {
+    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    return months[(m - 1).clamp(0, 11)];
+  }
+}
+
+class _StatusEntry {
+  final String title;
+  final String date;
+  final String time;
+  final bool isCurrent;
+
+  _StatusEntry({required this.title, required this.date, required this.time, required this.isCurrent});
 }
