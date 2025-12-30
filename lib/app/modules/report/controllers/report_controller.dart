@@ -59,6 +59,9 @@ final isLoadingPollutionCategories = false.obs;
 // === Pollution Categories ===
   final selectedPollutionCategoryId = RxnString();
   final RxMap<String, String> pollutionCategories = <String, String>{}.obs;
+  final RxMap<String, bool> pollutionCategoryIsSound = <String, bool>{}.obs;
+  final RxList<Map<String, String>> pollutionCategoriesSound = <Map<String, String>>[].obs;
+  final RxList<Map<String, String>> pollutionCategoriesNormal = <Map<String, String>>[].obs;
 
   // API-backed location lists (each item: {'id': '...', 'name': '...'})
   final regions = <Map<String, String>>[].obs;
@@ -242,6 +245,12 @@ final isLoadingPollutionCategories = false.obs;
     // Clear picked images
     pickedImagesX.clear();
 
+    // Clear cached pollution categories
+    pollutionCategories.clear();
+    pollutionCategoryIsSound.clear();
+    pollutionCategoriesSound.clear();
+    pollutionCategoriesNormal.clear();
+
     // Set date and time to current date and time
     final now = DateTime.now();
     selectedDate.value = now;
@@ -305,6 +314,8 @@ final isLoadingPollutionCategories = false.obs;
   // Fetch pollution categories from API
   Future<void> fetchPollutionCategories() async {
     print('Starting to fetch pollution categories...');
+    isLoadingPollutionCategories.value = true;
+    pollutionCategoriesError.value = null;
     try {
       final httpClient = Get.find<DioClient>().dio;
       final token = box.read('auth_token');
@@ -336,16 +347,40 @@ final isLoadingPollutionCategories = false.obs;
       }
       
       pollutionCategories.clear();
+      pollutionCategoryIsSound.clear();
+      pollutionCategoriesSound.clear();
+      pollutionCategoriesNormal.clear();
+
+      final seenSoundIds = <String>{};
+      final seenNormalIds = <String>{};
       for (var item in items) {
         if (item is Map) {
           final id = item['pollution_category_id']?.toString() ?? item['id']?.toString() ?? '';
           final name = item['pollution_category']?.toString() ?? item['name']?.toString() ?? '';
+          final isSound = _parseIsSoundFlag(item['is_sound']);
           if (id.isNotEmpty && name.isNotEmpty) {
             // Store multiple variations for flexible lookup
             final normalizedName = name.toLowerCase().trim();
             pollutionCategories[normalizedName] = id; // lowercase: "pollution"
             pollutionCategories[name.trim()] = id; // original case: "Pollution"
             pollutionCategories[name.trim().toLowerCase()] = id; // lowercase original: "pollution"
+
+            // Track if category is for sound-only reports
+            pollutionCategoryIsSound[id] = isSound;
+
+            // Store categorized lists (dedup by id)
+            final displayName = name.trim();
+            if (isSound) {
+              if (!seenSoundIds.contains(id)) {
+                pollutionCategoriesSound.add({'id': id, 'name': displayName});
+                seenSoundIds.add(id);
+              }
+            } else {
+              if (!seenNormalIds.contains(id)) {
+                pollutionCategoriesNormal.add({'id': id, 'name': displayName});
+                seenNormalIds.add(id);
+              }
+            }
             
             // Also handle common variations
             if (normalizedName == 'pollution') {
@@ -363,7 +398,9 @@ final isLoadingPollutionCategories = false.obs;
     } catch (e, stackTrace) {
       print('❌ Error fetching pollution categories: $e');
       print('Stack trace: $stackTrace');
+      pollutionCategoriesError.value = 'Failed to load pollution categories';
     }
+    isLoadingPollutionCategories.value = false;
   }
   
 
@@ -1763,6 +1800,18 @@ Future<void> pickTime(BuildContext context) async {
     });
   }
 
+  // Normalize various API shapes (bool, int, string) into a bool flag
+  bool _parseIsSoundFlag(dynamic value) {
+    if (value is bool) return value;
+    if (value is num) return value != 0;
+    if (value is String) {
+      final v = value.trim().toLowerCase();
+      if (v == 'true' || v == 'yes' || v == '1') return true;
+      if (v == 'false' || v == 'no' || v == '0') return false;
+    }
+    return false;
+  }
+
   // ----------------------------
   // FORM SUBMISSION
   // ----------------------------
@@ -1796,12 +1845,18 @@ Future<void> pickTime(BuildContext context) async {
       final normalizedType = normalize(
         reportType == 'pollution' ? 'air pollution' : reportType,
       );
+      final isSoundReportType = reportType == ReportTypeEnum.sound.name;
       for (var item in items) {
         if (item is Map) {
           final id =
               item['pollution_category_id']?.toString() ??
               item['id']?.toString() ??
               '';
+          final isSoundCategory = _parseIsSoundFlag(item['is_sound']);
+          if (isSoundCategory != isSoundReportType) {
+            continue; // enforce sound-only categories visibility rule
+          }
+          
           final name = normalize(
             item['pollution_category']?.toString() ??
                 item['name']?.toString() ??
@@ -1817,7 +1872,7 @@ Future<void> pickTime(BuildContext context) async {
           }
         }
       }
-
+      print('Sound pollution category search: isSoundReportType=$isSoundReportType');
       print('Warning: Could not find pollution category for "$reportType"');
       return null;
     } catch (e) {
