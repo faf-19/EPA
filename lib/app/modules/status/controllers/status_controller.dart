@@ -385,4 +385,59 @@ class StatusController extends GetxController {
       return null;
     }
   }
+  
+  Future<ReportItem?> fetchComplaintByReportId(String reportId) async {
+    try {
+      final storage = Get.find<GetStorage>();
+      final token = storage.read('auth_token');
+
+      final httpClient = Get.find<DioClient>().dio;
+
+      final response = await httpClient.get(
+        ApiConstants.complaintByReportId(reportId),
+        options: Options(
+          headers: {
+            if (token != null) 'Authorization': 'Bearer $token',
+            'accept': '*/*',
+          },
+        ),
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = response.data;
+        print('Complaint by reportId response: $data');
+
+        // Normalize possible shapes: {data: {...}}, {complaint: {...}}, list, or direct object
+        Map<String, dynamic>? complaint;
+
+        if (data is Map) {
+          if (data['data'] is Map) {
+            complaint = Map<String, dynamic>.from(data['data']);
+          } else if (data['complaint'] is Map) {
+            complaint = Map<String, dynamic>.from(data['complaint']);
+          } else if (data.isNotEmpty) {
+            complaint = Map<String, dynamic>.from(data);
+          }
+        } else if (data is List && data.isNotEmpty) {
+          final first = data.first;
+          if (first is Map<String, dynamic>) {
+            complaint = first;
+          } else if (first is Map) {
+            complaint = Map<String, dynamic>.from(first);
+          }
+        }
+
+        if (complaint == null || complaint.isEmpty) return null;
+        return ReportItem.fromJson(complaint);
+      }
+      return null;
+    } on DioException catch (e) {
+      print('Error fetching complaint by Report ID: ${e.response?.statusCode} ${e.message}');
+      return null;
+    } catch (e) {
+      print('Error fetching complaint by Report ID: ${e.toString()}');
+      return null;
+    }
+  }
+
 }
