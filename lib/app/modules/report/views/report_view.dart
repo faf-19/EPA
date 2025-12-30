@@ -34,6 +34,7 @@ class _ReportViewState extends State<ReportView> {
       // Reload necessary data after reset
       controller.loadAuthState(); // Restore phone number if user is logged in
       controller.fetchRegions();
+      controller.fetchPollutionCategories();
       if (controller.autoDetectLocation.value) {
         controller.detectLocation();
       }
@@ -128,8 +129,6 @@ class _ReportViewState extends State<ReportView> {
 
               const SizedBox(height: 12),
               // Pollution Category Card
-
-               if (widget.reportType != ReportTypeEnum.sound.name)
                 Card(
                   color: const Color(0xFFFFFFFF),
                   shape: RoundedRectangleBorder(
@@ -175,30 +174,26 @@ class _ReportViewState extends State<ReportView> {
                             );
                           }
 
-                          if (controller.pollutionCategories.isEmpty) {
-                            return const Text(
-                              'No pollution categories available',
-                              style: TextStyle(color: Colors.black54),
-                            );
-                          }
-
-                          // Deduplicate by value to avoid dropdown assertion when IDs repeat
-                          final Map<String, String> uniqueById = {};
-                          for (final entry in controller.pollutionCategories.entries) {
-                            uniqueById.putIfAbsent(entry.value, () => entry.key);
-                          }
-                          final items = uniqueById.entries
-                              .map((e) => MapEntry(e.value, e.key)) // key: label, value: id
-                              .toList();
+                          final relevantItems = isSoundReport
+                              ? controller.pollutionCategoriesSound
+                              : controller.pollutionCategoriesNormal;
 
                           String? value = controller.selectedPollutionCategoryId.value;
-                          final validValues = uniqueById.keys.toSet();
+                          final validValues =
+                              relevantItems.map((entry) => entry['id']).whereType<String>().toSet();
                           if (value != null && !validValues.contains(value)) {
                             // Clear stale selection after rebuild to satisfy dropdown constraint
                             WidgetsBinding.instance.addPostFrameCallback((_) {
                               controller.selectPollutionCategory(null);
                             });
                             value = null;
+                          }
+
+                          if (relevantItems.isEmpty) {
+                            return const Text(
+                              'No pollution categories available for this report type',
+                              style: TextStyle(color: Colors.black54),
+                            );
                           }
 
                           return DropdownButtonFormField<String?>(
@@ -210,6 +205,7 @@ class _ReportViewState extends State<ReportView> {
                             menuMaxHeight: 260,
                             borderRadius: BorderRadius.circular(8),
                             items: [
+                              
                               const DropdownMenuItem<String?>(
                                 value: null,
                                 child: Text(
@@ -218,18 +214,20 @@ class _ReportViewState extends State<ReportView> {
                                   style: TextStyle(color: Colors.black54),
                                 ),
                               ),
-                              ...items.map(
-                                (category) => DropdownMenuItem<String?>(
-                                  value: category.value, // id
+                              ...relevantItems.map((category) {
+                                final id = category['id'];
+                                final name = category['name'] ?? '';
+                                return DropdownMenuItem<String?>(
+                                  value: id,
                                   child: Text(
-                                    category.key, // label
+                                    name,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
                                       color: Colors.black87,
                                     ),
                                   ),
-                                ),
-                              ),
+                                );
+                              }),
                             ],
                             onChanged: controller.selectPollutionCategory,
                             decoration: InputDecoration(
@@ -406,6 +404,7 @@ class _ReportViewState extends State<ReportView> {
                   ),
                 ),
 
+                if (isSoundReport)
               const SizedBox(height: 12),
 
               //time of the day card for sound report
