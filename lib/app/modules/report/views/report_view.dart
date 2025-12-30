@@ -202,7 +202,7 @@ class _ReportViewState extends State<ReportView> {
                           }
 
                           return DropdownButtonFormField<String?>(
-                            value: value,
+                            initialValue: value,
                             isExpanded: true,
                             dropdownColor: Colors.white,
                             alignment: AlignmentDirectional.centerStart,
