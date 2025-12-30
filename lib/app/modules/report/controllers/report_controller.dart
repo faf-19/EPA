@@ -647,7 +647,9 @@ Future<void> pickTime(BuildContext context) async {
                             ),
                             onSelectedItemChanged: (index) {
                               if (isFutureTime(
-                                  selectedHour, index, isAM)) return;
+                                  selectedHour, index, isAM)) {
+                                return;
+                              }
 
                               setState(() => selectedMinute = index);
                             },
@@ -1977,8 +1979,9 @@ Future<void> pickTime(BuildContext context) async {
       } else {
         print('⚠️ Woreda ID is empty');
       }
-      if (locationUrl.isNotEmpty)
+      if (locationUrl.isNotEmpty) {
         formData.fields.add(MapEntry('location_url', locationUrl));
+      }
       formData.fields.add(
         MapEntry('detail', descriptionController.text.trim()),
       );

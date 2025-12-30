@@ -269,7 +269,7 @@ class StatusController extends GetxController {
       print('Complaints API Response: ${response.data}');
       if (response.statusCode == 200 || response.statusCode == 201) {
         final data = response.data;
-        
+        print('Complaints Data: $data');
         // Handle different response formats
         List<dynamic> complaintsList = [];
         

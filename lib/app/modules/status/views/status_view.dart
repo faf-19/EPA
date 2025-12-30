@@ -152,6 +152,7 @@ class StatusView extends GetView<StatusController> {
                           itemBuilder: (context, index) {
                             if (index == reports.length) return const SizedBox(height: 80);
                             final r = reports[index];
+                            print(r.activityLogs);
                             return _complaintCard(
                               report: r,
                             );
@@ -195,16 +196,53 @@ class StatusView extends GetView<StatusController> {
   Widget _complaintCard({
   required ReportItem report,
 }) {
-  final status = report.status;
   final description = report.description;
   final date = report.date;
   final time = report.time ?? '';
   final reportType = report.reportType ?? 'N/A';
-  // STATUS COLORS
+
+  // ─────────────────────────────────────────────
+  // STRICT STATUS LOGIC
+  // ─────────────────────────────────────────────
+  // Normalize helper
+  String normalize(String s) {
+    final n = s.toLowerCase().replaceAll('_', ' ').trim();
+    if (n.contains('under review') || n.contains('in review') || n.contains('progress')) return 'Under Review';
+    if (n.contains('investigation')) return 'Under Investigation'; // covers under_investigation, investigation_submitted
+    if (n.contains('verified')) return 'Verified';
+    if (n.contains('complete') || n.contains('closed')) return 'Complete';
+    if (n.contains('rejected')) return 'Rejected';
+    if (n.contains('pending')) return 'Pending';
+    return s;
+  }
+
+  final logs = report.activityLogs;
+  String statusLabel;
+  if (logs != null && logs.isNotEmpty) {
+    // Choose the newest log by createdAt; ignore unparsable dates
+    ActivityLog? newest;
+    int newestTs = -1;
+    for (final log in logs) {
+      final ts = DateTime.tryParse(log.createdAt ?? '')?.millisecondsSinceEpoch;
+      if (ts != null && ts > newestTs) {
+        newestTs = ts;
+        newest = log;
+      }
+    }
+    final chosen = newest ?? logs.last; // fallback to list order
+    statusLabel = normalize((chosen.newStatus ?? report.status).trim());
+  } else {
+    // No activity logs → fall back to report.status (normalize)
+    statusLabel = normalize(report.status.trim());
+  }
+
+  // ─────────────────────────────────────────────
+  // STATUS COLORS (unchanged)
+  // ─────────────────────────────────────────────
   Color pillBg;
   Color pillText;
 
-  switch (status.toLowerCase()) {
+  switch (statusLabel.toLowerCase()) {
     case "under review":
       pillBg = const Color(0xFF3F8ECF);
       pillText = AppColors.onPrimary;
@@ -236,8 +274,9 @@ class StatusView extends GetView<StatusController> {
       pillBg = const Color.fromRGBO(245, 46, 50, 1);
       pillText = AppColors.onPrimary;
       break;
-    default: // Pending
-      pillBg = const Color.fromRGBO(255, 174, 65, 1) ;
+    default:
+      // 🔹 Pending
+      pillBg = const Color.fromRGBO(255, 174, 65, 1);
       pillText = AppColors.onPrimary;
   }
 
@@ -263,107 +302,106 @@ class StatusView extends GetView<StatusController> {
         ],
       ),
       child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // TITLE + STATUS BADGE
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(
-              child: Text(
-                reportType,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.black,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // TITLE + STATUS BADGE
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  reportType,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.black,
+                  ),
                 ),
               ),
-            ),
-            Container(
-              // height: 20,
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: pillBg,
-                borderRadius: BorderRadius.circular(4),
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                decoration: BoxDecoration(
+                  color: pillBg,
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  statusLabel,
+                  style: TextStyle(
+                    color: pillText,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
               ),
-              child: Text(
-                status,
-                style: TextStyle(
-                  color: pillText,
-                  fontSize: 10,
+            ],
+          ),
+
+          const SizedBox(height: 5),
+
+          // DATE + TIME ROW
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF8EF),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.calendar_today,
+                    color: Color(0xFF1E9B47), size: 16),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                date,
+                style: const TextStyle(
+                  color: Color(0xFF5A5F66),
+                  fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 5),
-
-        // DATE + TIME ROW
-        Row(
-          children: [
-            // DATE BOX
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEFF8EF),
-                borderRadius: BorderRadius.circular(8),
+              const SizedBox(width: 14),
+              Container(
+                padding: const EdgeInsets.all(6),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF8EF),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.access_time,
+                    color: Color(0xFF1E9B47), size: 16),
               ),
-              child: const Icon(Icons.calendar_today,
-                  color: Color(0xFF1E9B47), size: 16),
-            ),
-            const SizedBox(width: 10),
-
-            // DATE TEXT
-            Text(
-              date,
-              style: const TextStyle(
-                color: Color(0xFF5A5F66),
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
+              const SizedBox(width: 10),
+              Text(
+                time.isNotEmpty ? time : '--',
+                style: const TextStyle(
+                  color: Color(0xFF5A5F66),
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-            const SizedBox(width: 14),
-            // TIME BOX
-            Container(
-              padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(
-                color: const Color(0xFFEFF8EF),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: const Icon(Icons.access_time,
-                  color: Color(0xFF1E9B47), size: 16),
-            ),
-            const SizedBox(width: 10),
-            // TIME TEXT
-            Text(
-              time.isNotEmpty ? time : '--',
-              style: const TextStyle(
-                color: Color(0xFF5A5F66),
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
-        ),
-
-        const SizedBox(height: 12),
-
-        // DESCRIPTION
-        Text(
-          description,
-          maxLines: 3,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(
-            color: Color(0xFF8A8F95),
-            fontSize: 12,
-            height: 1.4,
+            ],
           ),
-        ),
-      ],
-    ),
+
+          const SizedBox(height: 12),
+
+          // DESCRIPTION
+          Text(
+            description,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Color(0xFF8A8F95),
+              fontSize: 12,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
     ),
   );
 }
+
+
+
+
 }
