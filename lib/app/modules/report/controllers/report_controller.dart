@@ -2041,6 +2041,29 @@ Future<void> pickTime(BuildContext context) async {
         MapEntry('detail', descriptionController.text.trim()),
       );
 
+      // Activity date & time (from user selection)
+      final pickedDate = selectedDate.value;
+      final pickedTime = selectedTime.value;
+      if (pickedDate != null && pickedTime != null) {
+        // Date as YYYY-MM-DD
+        final dateStr =
+            '${pickedDate.year.toString().padLeft(4, '0')}-${pickedDate.month.toString().padLeft(2, '0')}-${pickedDate.day.toString().padLeft(2, '0')}';
+
+        // Time as HH:mm:ss.SSSZ (UTC) using combined DateTime
+        final combined = DateTime(
+          pickedDate.year,
+          pickedDate.month,
+          pickedDate.day,
+          pickedTime.hour,
+          pickedTime.minute,
+        ).toUtc();
+        final timeStr = combined.toIso8601String().split('T')[1]; // e.g. 12:50:34.137Z
+
+        formData.fields.add(MapEntry('actDate', dateStr));
+        formData.fields.add(MapEntry('actTime', timeStr));
+        print('✅ Added actDate: $dateStr, actTime: $timeStr');
+      }
+
       // Add pollution category ID (use from route if available, otherwise fetch from API)
       String? categoryId = selectedPollutionCategoryId.value;
       if (categoryId == null || categoryId.isEmpty) {
