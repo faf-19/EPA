@@ -226,7 +226,7 @@ class _ReportTile extends StatelessWidget {
       children: [
         // "Check Your Status" title
         Text(
-          'Check Report Status',
+          'Track Report Status',
 
           style: TextStyle(
             fontFamily: 'Montserrat',
