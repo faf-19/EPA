@@ -101,21 +101,6 @@ class CarouselBanner extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(height: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Text(
-                                city,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
                           ],
                         ),
                       ),
