@@ -108,6 +108,127 @@ class _LoginOverlayState extends State<LoginOverlay> {
                           fit: BoxFit.contain,
                         ),
                       
+                      //  SizedBox(height: isSmall ? 14 : 20),
+
+                            // Track Report Status card
+                            Container(
+                              width: double.infinity,
+                              padding: EdgeInsets.all(isSmall ? 10 : 12),
+                              margin: EdgeInsets.only(top: isSmall ? 6 : 8),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 12,
+                                    offset: const Offset(0, 4),
+                                  ),
+                                ],
+                                border: Border.all(color: borderColor, width: 1),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Track Report Status',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: isSmall ? 10 : 12,
+                                      fontWeight: FontWeight.w600,
+                                      color: darkText,
+                                    ),
+                                  ),
+                                  SizedBox(height: isSmall ? 8 : 10),
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: SizedBox(
+                                          height: isSmall ? 28 : 32,
+                                          child: TextField(
+                                            controller: _reportIdCtrl,
+                                            textAlignVertical: TextAlignVertical.center,
+                                            decoration: InputDecoration(
+                                              isDense: true,
+                                              hintText: 'Enter Report ID (e.g. REP-988780)',
+                                              hintStyle: TextStyle(
+                                                fontSize: isSmall ? 9 : 10,
+                                                color: hintText,
+                                              ),
+                                              contentPadding: EdgeInsets.symmetric(
+                                                vertical: isSmall ? 3 : 4,
+                                                horizontal: 8,
+                                              ),
+                                              enabledBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(10),
+                                                borderSide: BorderSide(color: borderColor, width: 1.1),
+                                              ),
+                                              focusedBorder: OutlineInputBorder(
+                                                borderRadius: BorderRadius.circular(10),
+                                                borderSide: BorderSide(color: greenColor, width: 1.3),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                      SizedBox(width: isSmall ? 6 : 8),
+                                      SizedBox(
+                                        height: isSmall ? 28 : 32,
+                                        child: ElevatedButton(
+                                          onPressed: _isSearching
+                                              ? null
+                                              : () async {
+                                                  final id = _reportIdCtrl.text.trim();
+                                                  if (id.isEmpty) {
+                                                    Get.snackbar(
+                                                      'Report ID',
+                                                      'Please enter a Report ID',
+                                                      snackPosition: SnackPosition.BOTTOM,
+                                                    );
+                                                    return;
+                                                  }
+                                                  setState(() => _isSearching = true);
+                                                  final statusController = Get.isRegistered<StatusController>()
+                                                      ? Get.find<StatusController>()
+                                                      : Get.put(StatusController());
+                                                  final result = await statusController.fetchComplaintByReportId(id);
+                                                  setState(() => _isSearching = false);
+                                                  print("here is the result $result");
+                                                  if (result == null) {
+                                                    Get.snackbar(
+                                                      'Not found',
+                                                      'No complaint found for $id',
+                                                      snackPosition: SnackPosition.BOTTOM,
+                                                    );
+                                                    return;
+                                                  }
+
+                                                  _showStatusDialog(context, result);
+                                                },
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: greenColor,
+                                            foregroundColor: Colors.white,
+                                            shape: RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.circular(10),
+                                            ),
+                                            padding: EdgeInsets.symmetric(
+                                              horizontal: isSmall ? 14 : 16,
+                                            ),
+                                          ),
+                                          child: Text(
+                                            _isSearching ? '...' : 'Search',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: isSmall ? 12 : 13,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                          ),
+
 
                       SizedBox(height: isSmall ? 5.0 : 10.0),
 
@@ -325,122 +446,7 @@ class _LoginOverlayState extends State<LoginOverlay> {
                               ),
                             )),
 
-                            SizedBox(height: isSmall ? 14 : 20),
-
-                            // Track Report Status card
-                            Container(
-                              width: double.infinity,
-                              padding: EdgeInsets.all(isSmall ? 14 : 18),
-                              margin: EdgeInsets.only(top: isSmall ? 8 : 12),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.06),
-                                    blurRadius: 16,
-                                    offset: const Offset(0, 6),
-                                  ),
-                                ],
-                                border: Border.all(color: borderColor, width: 1),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Track Report Status',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: isSmall ? 15 : 17,
-                                      fontWeight: FontWeight.w600,
-                                      color: darkText,
-                                    ),
-                                  ),
-                                  SizedBox(height: isSmall ? 10 : 14),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: TextField(
-                                          controller: _reportIdCtrl,
-                                          decoration: InputDecoration(
-                                            hintText: 'Enter Report ID (e.g. REP-988780)',
-                                            hintStyle: GoogleFonts.poppins(
-                                              fontSize: isSmall ? 13 : 14,
-                                              color: hintText,
-                                            ),
-                                            contentPadding: EdgeInsets.symmetric(
-                                              vertical: isSmall ? 14 : 16,
-                                              horizontal: 14,
-                                            ),
-                                            enabledBorder: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(10),
-                                              borderSide: BorderSide(color: borderColor, width: 1.2),
-                                            ),
-                                            focusedBorder: OutlineInputBorder(
-                                              borderRadius: BorderRadius.circular(10),
-                                              borderSide: BorderSide(color: greenColor, width: 1.4),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(width: isSmall ? 8 : 12),
-                                      SizedBox(
-                                        height: isSmall ? 46 : 50,
-                                        child: ElevatedButton(
-                                          onPressed: _isSearching
-                                              ? null
-                                              : () async {
-                                                  final id = _reportIdCtrl.text.trim();
-                                                  if (id.isEmpty) {
-                                                    Get.snackbar(
-                                                      'Report ID',
-                                                      'Please enter a Report ID',
-                                                      snackPosition: SnackPosition.BOTTOM,
-                                                    );
-                                                    return;
-                                                  }
-                                                  setState(() => _isSearching = true);
-                                                  final statusController = Get.isRegistered<StatusController>()
-                                                      ? Get.find<StatusController>()
-                                                      : Get.put(StatusController());
-                                                  final result = await statusController.fetchComplaintByReportId(id);
-                                                  setState(() => _isSearching = false);
-                                                  print("here is the result $result");
-                                                  if (result == null) {
-                                                    Get.snackbar(
-                                                      'Not found',
-                                                      'No complaint found for $id',
-                                                      snackPosition: SnackPosition.BOTTOM,
-                                                    );
-                                                    return;
-                                                  }
-
-                                                  _showStatusDialog(context, result);
-                                                },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: greenColor,
-                                            foregroundColor: Colors.white,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(10),
-                                            ),
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: isSmall ? 16 : 18,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            _isSearching ? '...' : 'Search',
-                                            style: GoogleFonts.poppins(
-                                              fontSize: isSmall ? 14 : 15,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
-                          ),
-
+                           
                             SizedBox(height: isSmall ? 14 : 18),
 
                             RichText(
