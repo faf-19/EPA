@@ -4,6 +4,7 @@ import 'package:flutter/gestures.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:eprs/app/modules/status/controllers/status_controller.dart';
+import 'package:get_storage/get_storage.dart';
 import '../controllers/login_controller.dart';
 import 'package:eprs/core/theme/app_colors.dart';
 import 'package:eprs/domain/usecases/login_usecase.dart';
@@ -70,10 +71,9 @@ class _LoginOverlayState extends State<LoginOverlay> {
                 // reducing spacing and image sizes on small screens.
                 final height = constraints.maxHeight;
                 final isSmall = height < 700;
-                // increase logo size to better match the design
+                // keep logo size but tighten surrounding spacing
                 final logoHeight = isSmall ? 160.0 : 240.0;
-                // more top padding on larger screens, a bit for small screens too
-                final topPadding = isSmall ? 5.0 : 10.0;
+                final topPadding = isSmall ? 4.0 : 6.0;
                 // slightly larger gaps between fields to match mock spacing
                 final betweenFields = isSmall ? 16.0 : 22.0;
                 // space between title and the inputs — larger to visually separate sections
@@ -104,9 +104,11 @@ class _LoginOverlayState extends State<LoginOverlay> {
                       // SizedBox(height: isSmall ? 5 : 10),
 
                       Image.asset(
-                          'assets/logo.png',
-                          fit: BoxFit.contain,
-                        ),
+                        'assets/logo.png',
+                        fit: BoxFit.contain,
+                        height: logoHeight,
+                      ),
+                      SizedBox(height: isSmall ? 6 : 8),
                       
                       //  SizedBox(height: isSmall ? 14 : 20),
 
@@ -409,45 +411,79 @@ class _LoginOverlayState extends State<LoginOverlay> {
 
                             // Buttons
                             Obx(() => SizedBox(
-                              width: double.infinity,
-                              height: isSmall ? 56 : 64,
-                              child: ElevatedButton(
-                                onPressed: controller.isLoading.value
-                                    ? null
-                                    : controller.submitLogin,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: AppColors.primary,
-                                  foregroundColor: Colors.white,
-                                  disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
-                                  disabledForegroundColor: Colors.white,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  elevation: 0,
-                                ),
-                                child: controller.isLoading.value
-                                    ? SizedBox(
-                                        height: 20,
-                                        width: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor: AlwaysStoppedAnimation<Color>(
-                                            Colors.white,
-                                          ),
-                                        ),
-                                      )
-                                    : Text(
-                                        'Sign In',
-                                        style: GoogleFonts.poppins(
-                                          fontSize: isSmall ? 16 : 18,
-                                          fontWeight: FontWeight.w600,
-                                        ),
+                                  width: double.infinity,
+                                  height: isSmall ? 56 : 64,
+                                  child: ElevatedButton(
+                                    onPressed: controller.isLoading.value
+                                        ? null
+                                        : controller.submitLogin,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: AppColors.primary,
+                                      foregroundColor: Colors.white,
+                                      disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
+                                      disabledForegroundColor: Colors.white,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(12),
                                       ),
-                              ),
-                            )),
+                                      elevation: 0,
+                                    ),
+                                    child: controller.isLoading.value
+                                        ? SizedBox(
+                                            height: 20,
+                                            width: 20,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                              valueColor: AlwaysStoppedAnimation<Color>(
+                                                Colors.white,
+                                              ),
+                                            ),
+                                          )
+                                        : Text(
+                                            'Sign In',
+                                            style: GoogleFonts.poppins(
+                                              fontSize: isSmall ? 16 : 18,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                  ),
+                                )),
 
-                           
-                            SizedBox(height: isSmall ? 14 : 18),
+                            SizedBox(height: isSmall ? 10 : 12),
+
+                            Center(
+                              child: TextButton(
+                                onPressed: () {
+                                  final box = Get.find<GetStorage>();
+                                  box.write('username', 'Guest');
+                                  box.remove('userId');
+                                  box.remove('phone');
+
+                                  Get.offNamed(
+                                    Routes.HOME,
+                                    arguments: {
+                                      'username': 'Guest',
+                                      'phone': '',
+                                      'email': '',
+                                    },
+                                  );
+                                },
+                                style: TextButton.styleFrom(
+                                  padding: EdgeInsets.symmetric(vertical: isSmall ? 6 : 8, horizontal: 8),
+                                  minimumSize: Size.zero,
+                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                ),
+                                child: Text(
+                                  'Continue as Guest',
+                                  style: GoogleFonts.poppins(
+                                    fontSize: isSmall ? 14 : 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: hintText,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            SizedBox(height: isSmall ? 12 : 16),
 
                             RichText(
                               text: TextSpan(
