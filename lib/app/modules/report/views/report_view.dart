@@ -11,6 +11,7 @@ import 'package:flutter/foundation.dart';
 import 'package:eprs/app/routes/app_pages.dart';
 
 import '../controllers/report_controller.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class ReportView extends StatefulWidget {
   final String reportType;
@@ -1285,7 +1286,6 @@ class _ReportViewState extends State<ReportView> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      // elevation: 6,
                       child: Padding(
                         padding: const EdgeInsets.all(12.0),
                         child: Column(
@@ -1299,61 +1299,119 @@ class _ReportViewState extends State<ReportView> {
                               ),
                             ),
                             const SizedBox(height: 8),
-                            // Place the phone field and the ON/OFF toggle side-by-side
                             Row(
                               children: [
                                 Expanded(
-                                  child: TextFormField(
-                                    controller: controller.phoneController,
-                                    keyboardType: TextInputType.phone,
-                                    decoration: InputDecoration(
-                                      hintText: 'Enter Your Phone Number',
-                                      hintStyle: TextStyle(fontSize: 13),
-                                      filled: true,
-                                      fillColor: Colors.white,
-                                      contentPadding: const EdgeInsets.symmetric(
-                                        horizontal: 12,
-                                        vertical: 14,
-                                      ),
-                                      border: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: const BorderSide(
-                                          color: Color.fromRGBO(212, 212, 212, 1),
-                                          width: 0.5,
-                                        ),
-                                      ),
+                                  child: Stack(
+                                    alignment: Alignment.centerLeft,
+                                    children: [
+                                      // 1. The actual input field
+                                      Obx(() {
+                                        final isHidden = controller.obscurePhoneNumber.value;
+                                        return TextFormField(
+                                          controller: controller.phoneController,
+                                          keyboardType: TextInputType.phone,
+                                          // When hidden, make text transparent so overlay can show
+                                          style: isHidden
+                                              ? GoogleFonts.robotoMono(color: Colors.transparent, fontSize: 16)
+                                              : GoogleFonts.robotoMono(color: Colors.black87, fontSize: 16),
+                                          cursorColor: Colors.black,
+                                          showCursor: true,
+                                          decoration: InputDecoration(
+                                            hintText: 'Enter Your Phone Number (e.g. 091XXXXXXX)',
+                                            hintStyle: const TextStyle(fontSize: 13, color: Colors.black54),
+                                            filled: true,
+                                            fillColor: Colors.white,
+                                            contentPadding: const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 14,
+                                            ),
+                                            border: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                              borderSide: const BorderSide(
+                                                color: Color.fromRGBO(212, 212, 212, 1),
+                                                width: 0.5,
+                                              ),
+                                            ),
+                                            enabledBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                              borderSide: const BorderSide(
+                                                color: Color.fromRGBO(212, 212, 212, 1),
+                                                width: 0.4,
+                                              ),
+                                            ),
+                                            focusedBorder: OutlineInputBorder(
+                                              borderRadius: BorderRadius.circular(8),
+                                              borderSide: const BorderSide(
+                                                color: Color.fromRGBO(212, 212, 212, 1),
+                                                width: 0.8,
+                                              ),
+                                            ),
+                                          ),
+                                        );
+                                      }),
+                                      
+                                      // 2. The Masked Overlay
+                                      // Listens to controller changes to update mask in real-time
+                                      Positioned.fill(
+                                        child: IgnorePointer(
+                                          ignoring: true,
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 12,
+                                              vertical: 14,
+                                            ),
+                                            child: Align(
+                                              alignment: Alignment.centerLeft,
+                                              child: Obx(() {
+                                                final isHidden = controller.obscurePhoneNumber.value;
+                                                return ValueListenableBuilder<TextEditingValue>(
+                                                  valueListenable: controller.phoneController,
+                                                  builder: (context, value, child) {
+                                                    // Only show overlay if hidden AND not empty
+                                                    if (!isHidden || value.text.isEmpty) {
+                                                      return const SizedBox.shrink();
+                                                    }
+                                                    
+                                                    final text = value.text;
+                                                    String maskedText;
+                                                    if (text.length <= 2) {
+                                                      maskedText = text;
+                                                    } else {
+                                                      maskedText = text.substring(0, 2) + '*' * (text.length - 2);
+                                                    }
 
-                                      enabledBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: BorderSide(
-                                          color: Color.fromRGBO(212, 212, 212, 1),
-                                          width: 0.4,
+                                                    return Text(
+                                                      maskedText,
+                                                      style: GoogleFonts.robotoMono(
+                                                        color: Colors.black87,
+                                                        fontSize: 16, // Must match TextFormField default
+                                                      ),
+                                                    );
+                                                  },
+                                                );
+                                              }),
+                                            ),
+                                          ),
                                         ),
                                       ),
-
-                                      // Focused border
-                                      focusedBorder: OutlineInputBorder(
-                                        borderRadius: BorderRadius.circular(8),
-                                        borderSide: BorderSide(
-                                          color: Color.fromRGBO(212, 212, 212, 1),
-                                          width: 0.8,
-                                        ),
-                                      ),
-                                    ),
+                                    ],
                                   ),
                                 ),
                                 const SizedBox(width: 12),
-                                // Keep the toggle compact and vertically centered
+                                // Toggle Button
                                 Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    // Bind the phone toggle to a separate observable so it
-                                    // doesn't trigger location auto-detect when toggled.
                                     _onOffToggle(
                                       bound: controller.phoneOptIn,
                                       isPhoneNumber: true,
-                                      onChanged: (v) =>
-                                          controller.togglePhoneOptIn(v),
+                                      onChanged: (v) {
+                                        // v=true (ON) -> obscure=true (Masked)
+                                        // v=false (OFF) -> obscure=false (Visible)
+                                        controller.obscurePhoneNumber.value = v;
+                                        controller.togglePhoneOptIn(v);
+                                      },
                                     ),
                                   ],
                                 ),
@@ -1957,7 +2015,7 @@ class _ReportViewState extends State<ReportView> {
                       : const EdgeInsets.only(right: 8.0),
                   child: isPhoneNumber
                       ? Text(
-                          isOn ? 'SHOW' : 'HIDE',
+                          isOn ? 'HIDE' : 'SHOW',
                           style: const TextStyle(
                             color: Colors.white,
                             fontWeight: FontWeight.bold,

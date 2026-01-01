@@ -105,10 +105,8 @@ class _LoginOverlayState extends State<LoginOverlay> {
 
                       Image.asset(
                         'assets/logo.png',
-                        fit: BoxFit.contain,
-                        height: logoHeight,
+                        height: isSmall ? 100 : 170,
                       ),
-                      SizedBox(height: isSmall ? 6 : 8),
                       
                       //  SizedBox(height: isSmall ? 14 : 20),
 

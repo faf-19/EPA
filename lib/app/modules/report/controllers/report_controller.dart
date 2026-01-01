@@ -74,7 +74,6 @@ final isLoadingPollutionCategories = false.obs;
   final isLoadingCities = false.obs;
   final isLoadingZones = false.obs;
   final isLoadingWoredas = false.obs;
-
   // Store XFile for web compatibility
   // Renamed from pickedImages to force new instance (fixes hot reload type issues)
   final pickedImagesX = <XFile>[].obs;
@@ -118,6 +117,8 @@ final isLoadingPollutionCategories = false.obs;
   // Form controllers
   final descriptionController = TextEditingController();
   final phoneController = TextEditingController();
+  final obscurePhoneNumber = true.obs;
+
   final termsAccepted = false.obs;
 
   // Report type and pollution category ID
@@ -126,6 +127,10 @@ final isLoadingPollutionCategories = false.obs;
 
   // Loading state for submission
   final isSubmitting = false.obs;
+
+
+
+  // Public wrapper to keep existing calls working
 
   // Audio recording state
   late final RecorderController recorderController;
@@ -160,6 +165,8 @@ final isLoadingPollutionCategories = false.obs;
     super.onInit();
     // Initialize recorder controller
     recorderController = RecorderController();
+
+
 
     // Reset form to ensure clean state when entering the page
     _resetForm();
