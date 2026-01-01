@@ -555,6 +555,7 @@ class SettingView extends GetView<SettingController> {
                       _buildDivider(),
                       _buildOptionTile(Icons.star_rate_outlined, 'Rate Us', () {}),
                       _buildDivider(),
+                      
                       _buildOptionTile(Icons.logout, "Logout", () {
                         // Confirm logout
                         Get.defaultDialog(
