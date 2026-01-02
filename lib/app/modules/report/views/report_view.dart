@@ -1340,7 +1340,10 @@ class _ReportViewState extends State<ReportView> {
                                           keyboardType: TextInputType.phone,
                                           maxLength: 10,
                                           maxLengthEnforcement: MaxLengthEnforcement.enforced,
-                                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                          inputFormatters:  [
+                                            FilteringTextInputFormatter.digitsOnly,
+                                            LengthLimitingTextInputFormatter(10),
+                                          ],
                                           // When hidden, make text transparent so overlay can show
                                           style: isHidden
                                               ? GoogleFonts.robotoMono(color: Colors.transparent, fontSize: 16)
@@ -1351,6 +1354,8 @@ class _ReportViewState extends State<ReportView> {
                                             hintText: 'Enter Your Phone Number (e.g. 091XXXXXXX)',
                                             hintStyle: const TextStyle(fontSize: 13, color: Colors.black54),
                                             counterText: '',
+                                            errorText: null,
+                                            errorStyle: const TextStyle(height: 0, fontSize: 0),
                                             filled: true,
                                             fillColor: Colors.white,
                                             contentPadding: const EdgeInsets.symmetric(
@@ -1448,6 +1453,21 @@ class _ReportViewState extends State<ReportView> {
                                 ),
                               ],
                             ),
+                            Obx(() {
+                              final err = controller.phoneError.value;
+                              return SizedBox(
+                                height: 18,
+                                child: err.isEmpty
+                                    ? const SizedBox.shrink()
+                                    : Align(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          err,
+                                          style: const TextStyle(color: Colors.red, fontSize: 12),
+                                        ),
+                                      ),
+                              );
+                            }),
                           ],
                         ),
                       ),
