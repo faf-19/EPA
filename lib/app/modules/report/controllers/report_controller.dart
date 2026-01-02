@@ -117,7 +117,8 @@ final isLoadingPollutionCategories = false.obs;
   // Form controllers
   final descriptionController = TextEditingController();
   final phoneController = TextEditingController();
-  final obscurePhoneNumber = true.obs;
+  final obscurePhoneNumber = false.obs;
+  final phoneError = ''.obs;
 
   final termsAccepted = false.obs;
 
@@ -177,6 +178,19 @@ final isLoadingPollutionCategories = false.obs;
           selection: TextSelection.collapsed(offset: truncated.length),
           composing: TextRange.empty,
         );
+      }
+
+      // Simple prefix validation: must start with 09 or 07
+      final current = phoneController.text;
+      if (current.isEmpty) {
+        phoneError.value = '';
+      } else if (current[0] != '0') {
+        phoneError.value = 'Phone number must start with 09 or 07';
+      } else if (current.length >= 2 &&
+          !(current.startsWith('09') || current.startsWith('07'))) {
+        phoneError.value = 'Phone number must start with 09 or 07';
+      } else {
+        phoneError.value = '';
       }
     });
 
@@ -250,6 +264,7 @@ final isLoadingPollutionCategories = false.obs;
     // Clear text fields
     descriptionController.clear();
     phoneController.clear();
+    phoneError.value = '';
 
     // Clear selected values
     selectedRegion.value = 'Select Region / City Administration';
@@ -289,6 +304,7 @@ final isLoadingPollutionCategories = false.obs;
     // Clear terms acceptance
     termsAccepted.value = false;
     phoneOptIn.value = false;
+    obscurePhoneNumber.value = false;
 
     // Clear audio recording
     audioFilePath.value = null;
