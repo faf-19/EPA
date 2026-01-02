@@ -4,6 +4,7 @@ import 'package:eprs/core/enums/report_type_enum.dart';
 import 'package:eprs/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/gestures.dart';
+import 'package:flutter/services.dart';
 import 'dart:math' as math;
 
 import 'package:get/get.dart';
@@ -1159,13 +1160,26 @@ class _ReportViewState extends State<ReportView> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Specific Location',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
-                      ),
+                        Row(
+                        children: const [
+                          Text(
+                            'Specific Location',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            '*',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+
+                       ),
                       const SizedBox(height: 12),
                       TextFormField(
                         // controller: controller.descriptionController,
@@ -1291,13 +1305,26 @@ class _ReportViewState extends State<ReportView> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Phone Number',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 16,
-                              ),
+                            Row(
+                        children: const [
+                          Text(
+                            'Phone Number',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
                             ),
+                          ),
+                          SizedBox(width: 6),
+                          Text(
+                            '*',
+                            style: TextStyle(
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+
+                       ),
                             const SizedBox(height: 8),
                             Row(
                               children: [
@@ -1311,6 +1338,9 @@ class _ReportViewState extends State<ReportView> {
                                         return TextFormField(
                                           controller: controller.phoneController,
                                           keyboardType: TextInputType.phone,
+                                          maxLength: 10,
+                                          maxLengthEnforcement: MaxLengthEnforcement.enforced,
+                                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                                           // When hidden, make text transparent so overlay can show
                                           style: isHidden
                                               ? GoogleFonts.robotoMono(color: Colors.transparent, fontSize: 16)
@@ -1320,6 +1350,7 @@ class _ReportViewState extends State<ReportView> {
                                           decoration: InputDecoration(
                                             hintText: 'Enter Your Phone Number (e.g. 091XXXXXXX)',
                                             hintStyle: const TextStyle(fontSize: 13, color: Colors.black54),
+                                            counterText: '',
                                             filled: true,
                                             fillColor: Colors.white,
                                             contentPadding: const EdgeInsets.symmetric(

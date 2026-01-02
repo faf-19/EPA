@@ -166,6 +166,20 @@ final isLoadingPollutionCategories = false.obs;
     // Initialize recorder controller
     recorderController = RecorderController();
 
+    // Enforce max 10 digits on phone input even if pasted
+    phoneController.addListener(() {
+      const maxLen = 10;
+      final text = phoneController.text;
+      if (text.length > maxLen) {
+        final truncated = text.substring(0, maxLen);
+        phoneController.value = phoneController.value.copyWith(
+          text: truncated,
+          selection: TextSelection.collapsed(offset: truncated.length),
+          composing: TextRange.empty,
+        );
+      }
+    });
+
 
 
     // Reset form to ensure clean state when entering the page
