@@ -10,17 +10,19 @@ class AwarenessView extends GetView<AwarenessController> {
   const AwarenessView({super.key});
   
   /// Build network image with fallback URL patterns
-  Widget _buildNetworkImageWithFallback(String primaryUrl, AwarenessModel awareness) {
+  Widget _buildNetworkImageWithFallback(String primaryUrl, AwarenessModel awareness, double size) {
     // For now, just use the primary URL
     // If it fails, we'll need to check with backend team about the correct route
     return Image.network(
       primaryUrl,
-      width: 80,
-      height: 80,
+      width: size,
+      height: size,
       fit: BoxFit.cover,
       loadingBuilder: (context, child, loadingProgress) {
         if (loadingProgress == null) return child;
         return Container(
+          width: size,
+          height: size,
           color: Colors.grey[200],
           child: const Center(
             child: CircularProgressIndicator(
@@ -30,16 +32,14 @@ class AwarenessView extends GetView<AwarenessController> {
         );
       },
       errorBuilder: (c, e, s) {
-        print('Image load error for URL: $primaryUrl');
-        print('Error: $e');
-        print('Note: If images are not loading, the server might serve files from a different route.');
-        print('Please check with backend team about the correct static file serving route.');
         return Container(
+          width: size,
+          height: size,
           color: Colors.grey[200],
-          child: const Icon(
+          child: Icon(
             Icons.image_not_supported,
             color: Colors.grey,
-            size: 32,
+            size: size * 0.4,
           ),
         );
       },
@@ -48,6 +48,19 @@ class AwarenessView extends GetView<AwarenessController> {
 
   @override
   Widget build(BuildContext context) {
+    final size = MediaQuery.of(context).size;
+    final isTablet = size.width > 600;
+    
+    // Responsive dimensions
+    final bannerHeight = isTablet ? size.height * 0.4 : 420.0;
+    final imageSize = isTablet ? 110.0 : 72.0;
+    final horizontalPadding = isTablet ? 32.0 : 16.0;
+    final titleFontSize = isTablet ? 16.0 : 11.0;
+    final descFontSize = isTablet ? 13.0 : 10.0;
+    final headerTitleSize = isTablet ? 20.0 : 14.0;
+    final headerSubSize = isTablet ? 16.0 : 13.0;
+    final backIconSize = isTablet ? 28.0 : 23.0;
+
     // Non-overlapping layout: banner then card below it
     return Scaffold(
       backgroundColor: AppColors.onPrimary,
@@ -63,7 +76,7 @@ class AwarenessView extends GetView<AwarenessController> {
             children: [
               // Banner (no overlap)
               SizedBox(
-                height: 420,
+                height: bannerHeight,
                 width: double.infinity,
                 child: Stack(
                   children: [
@@ -81,7 +94,7 @@ class AwarenessView extends GetView<AwarenessController> {
                       left: 0,
                       right: 0,
                       bottom: 0,
-                      height: 120,
+                      height: bannerHeight * 0.3, // Dynamic gradient height
                       child: Container(
                         decoration: const BoxDecoration(
                           gradient: LinearGradient(
@@ -94,38 +107,38 @@ class AwarenessView extends GetView<AwarenessController> {
                     ),
                     // back arrow + title at bottom-left of banner
                     Positioned(
-                      left: 12,
-                      bottom: 20,
+                      left: isTablet ? 24 : 12,
+                      bottom: isTablet ? 32 : 20,
                       child: Row(
                         children: [
                           GestureDetector(
                             onTap: () { 
                               Get.find<BottomNavController>().resetToHome();
                               },
-                            child: const Icon(
+                            child: Icon(
                               Icons.arrow_back,
                               color: AppColors.onPrimary,
-                              size: 23,
+                              size: backIconSize,
                             ),
                           ),
-                          const SizedBox(width: 12),
+                          SizedBox(width: isTablet ? 16 : 12),
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
+                            children: [
                               Text(
                                 'Awareness',
                                 style: TextStyle(
                                   color: AppColors.onPrimary,
-                                  fontSize: 14,
+                                  fontSize: headerTitleSize,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
-                              SizedBox(height: 4),
+                              const SizedBox(height: 4),
                               Text(
                                 'Help improve your community',
                                 style: TextStyle(
                                   color: AppColors.onPrimary,
-                                  fontSize: 13,
+                                  fontSize: headerSubSize,
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -137,10 +150,6 @@ class AwarenessView extends GetView<AwarenessController> {
                   ],
                 ),
               ),
-
-              
-
-              
 
               // List of awareness items recreated as a Column so it participates in
               // the outer SingleChildScrollView (avoids nested scrollables).
@@ -198,7 +207,7 @@ class AwarenessView extends GetView<AwarenessController> {
                 }
 
                 return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding, vertical: 8.0),
                   child: Column(
                     children: List.generate(controller.awarenessList.length, (i) {
                       final awareness = controller.awarenessList[i];
@@ -211,8 +220,8 @@ class AwarenessView extends GetView<AwarenessController> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
-                              width: 72,
-                              height: 72,
+                              width: imageSize,
+                              height: imageSize,
                               decoration: BoxDecoration(
                                 color: Colors.grey[200],
                                 borderRadius: BorderRadius.circular(12),
@@ -220,37 +229,37 @@ class AwarenessView extends GetView<AwarenessController> {
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(10),
                                 child: imageUrl.isNotEmpty
-                                    ? _buildNetworkImageWithFallback(imageUrl, awareness)
+                                    ? _buildNetworkImageWithFallback(imageUrl, awareness, imageSize)
                                     : Container(
                                         color: Colors.grey[200],
-                                        child: const Icon(
+                                        child: Icon(
                                           Icons.image_not_supported,
                                           color: Colors.grey,
-                                          size: 32,
+                                          size: imageSize * 0.4,
                                         ),
                                       ),
                               ),
                             ),
-                            const SizedBox(width: 14),
+                            SizedBox(width: isTablet ? 20 : 14),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     awareness.title,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontWeight: FontWeight.w800,
-                                      fontSize: 11,
-                                      color: Color.fromRGBO(0, 0, 0, 1),
+                                      fontSize: titleFontSize,
+                                      color: const Color.fromRGBO(0, 0, 0, 1),
                                     ),
                                   ),
                                   const SizedBox(height: 6),
                                   Text(
                                     awareness.awarenessDescription,
-                                    style: const TextStyle(
-                                      color: Color.fromRGBO(99, 85, 127, 1),
+                                    style: TextStyle(
+                                      color: const Color.fromRGBO(99, 85, 127, 1),
                                       height: 1.45,
-                                      fontSize: 10,
+                                      fontSize: descFontSize,
                                     ),
                                     maxLines: 3,
                                     overflow: TextOverflow.ellipsis,
