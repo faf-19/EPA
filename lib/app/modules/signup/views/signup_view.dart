@@ -1,10 +1,11 @@
 import 'package:eprs/app/routes/app_pages.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../controllers/signup_controller.dart';
 import 'package:eprs/core/theme/app_colors.dart';
-import 'package:eprs/core/theme/app_fonts.dart';
 import 'package:eprs/domain/usecases/signup_usecase.dart';
+
 class SignUpOverlay extends StatefulWidget {
   const SignUpOverlay({super.key});
 
@@ -35,7 +36,15 @@ class _SignUpOverlayState extends State<SignUpOverlay> {
     final controller = Get.isRegistered<SignUpController>()
         ? Get.find<SignUpController>()
         : Get.put(SignUpController(signupUseCase: Get.find<SignupUseCase>()));
+    
     final size = MediaQuery.of(context).size;
+    final height = size.height;
+    final width = size.width;
+
+    // Responsive calculations
+    final isSmall = height < 700;
+    final logoHeight = height * 0.15; // Smaller than login due to more fields
+    final betweenFields = height * 0.015; // Slightly tighter spacing
 
     const greenColor = AppColors.primary;
     const darkText = Color(0xFF0F3B52);
@@ -62,7 +71,10 @@ class _SignUpOverlayState extends State<SignUpOverlay> {
           ),
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 26, vertical: 20),
+              padding: EdgeInsets.symmetric(
+                horizontal: width * 0.05,
+                vertical: 10,
+              ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -70,268 +82,227 @@ class _SignUpOverlayState extends State<SignUpOverlay> {
                     alignment: Alignment.topRight,
                     child: Text(
                       'Eng',
-                      style: TextStyle(
-                        fontFamily: AppFonts.primaryFont,
-                        fontSize: 13,
+                      style: GoogleFonts.poppins(
+                        fontSize: isSmall ? 12 : 13,
                         color: Colors.grey.shade700,
                         fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 60),
+                  SizedBox(height: height * 0.02),
                   Image.asset(
                     'assets/logo.png',
-                    width: size.width * 0.9,
+                    height: logoHeight,
                     fit: BoxFit.contain,
                   ),
-                  const SizedBox(height: 33),
+                  SizedBox(height: height * 0.03),
                   Text(
                     'Create EPA PASS Account',
-                    style: TextStyle(
-                      fontFamily: AppFonts.primaryFont,
-                      fontSize: 24,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.poppins(
+                      fontSize: isSmall ? 20 : 24,
                       fontWeight: FontWeight.w600,
                       color: AppColors.secondary,
                     ),
                   ),
-                  const SizedBox(height: 26),
+                  SizedBox(height: height * 0.03),
 
-
-                  // Full Name Input
-                  TextField(
-                    controller: _nameCtrl,
-                    keyboardType: TextInputType.name,
-                    style: TextStyle(fontFamily: AppFonts.primaryFont, fontSize: 15),
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      prefixIcon: const Icon(Icons.person_outline, color: darkText),
-                      hintText: 'Full Name',
-                      hintStyle: TextStyle(fontFamily: AppFonts.primaryFont, color: hintText, fontSize: 15),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: borderColor, width: 1.2),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: borderColor, width: 1.2),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: greenColor, width: 1.4),
-                      ),
-                    ),
-                    onChanged: (v) => controller.fullName.value = v,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Email Input
-                  TextField(
-                    controller: _emailCtrl,
-                    keyboardType: TextInputType.emailAddress,
-                    style: TextStyle(fontFamily: AppFonts.primaryFont, fontSize: 15),
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      prefixIcon: const Icon(Icons.email_outlined, color: darkText),
-                      hintText: 'Email',
-                      hintStyle: TextStyle(fontFamily: AppFonts.primaryFont, color: hintText, fontSize: 15),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: borderColor, width: 1.2),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: borderColor, width: 1.2),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: greenColor, width: 1.4),
-                      ),
-                    ),
-                    onChanged: (v) => controller.email.value = v,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Phone Number Input
-                  TextField(
-                    controller: _phoneCtrl,
-                    keyboardType: TextInputType.phone,
-                    style: TextStyle(fontFamily: AppFonts.primaryFont, fontSize: 15),
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      prefixIcon: const Icon(Icons.phone_outlined, color: darkText),
-                      hintText: 'Phone number',
-                      hintStyle: TextStyle(fontFamily: AppFonts.primaryFont, color: hintText, fontSize: 15),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: borderColor, width: 1.2),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: borderColor, width: 1.2),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: greenColor, width: 1.4),
-                      ),
-                    ),
-                    onChanged: (v) => controller.phoneNumber.value = v,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Password Input
-                  Obx(() => TextField(
-                    controller: _passCtrl,
-                    obscureText: controller.obscurePassword.value,
-                    style: TextStyle(fontFamily: AppFonts.primaryFont, fontSize: 15),
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      prefixIcon: const Icon(Icons.lock_outline, color: darkText),
-                      hintText: 'Password',
-                      hintStyle: TextStyle(fontFamily: AppFonts.primaryFont, color: hintText, fontSize: 15),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          controller.obscurePassword.value ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                          color: hintText,
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 600),
+                    child: Column(
+                      children: [
+                        // Full Name Input
+                        _buildTextField(
+                          controller: _nameCtrl,
+                          hint: 'Full Name',
+                          icon: Icons.person_outline,
+                          isSmall: isSmall,
+                          onChanged: (v) => controller.fullName.value = v,
                         ),
-                        onPressed: controller.togglePasswordVisibility,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: borderColor, width: 1.2),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: borderColor, width: 1.2),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: greenColor, width: 1.4),
-                      ),
-                    ),
-                    onChanged: (v) => controller.password.value = v,
-                  )),
-                  const SizedBox(height: 16),
+                        SizedBox(height: betweenFields),
 
-                  Obx(() => TextField(
-                    controller: _confirmPassCtrl,
-                    obscureText: controller.obscureConfirmPassword.value,
-                    style: TextStyle(fontFamily: AppFonts.primaryFont, fontSize: 15),
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: Colors.white,
-                      prefixIcon: const Icon(Icons.lock_outline, color: darkText),
-                      hintText: 'Password Confirmation',
-                      hintStyle: TextStyle(fontFamily: AppFonts.primaryFont, color: hintText, fontSize: 15),
-                      contentPadding: const EdgeInsets.symmetric(vertical: 18, horizontal: 10),
-                      suffixIcon: IconButton(
-                        icon: Icon(
-                          controller.obscureConfirmPassword.value ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                          color: hintText,
+                        // Email Input
+                        _buildTextField(
+                          controller: _emailCtrl,
+                          hint: 'Email',
+                          icon: Icons.email_outlined,
+                          isSmall: isSmall,
+                          inputType: TextInputType.emailAddress,
+                          onChanged: (v) => controller.email.value = v,
                         ),
-                        onPressed: controller.toggleConfirmPasswordVisibility,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: borderColor, width: 1.2),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: borderColor, width: 1.2),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(14),
-                        borderSide: const BorderSide(color: greenColor, width: 1.4),
-                      ),
-                    ),
-                    onChanged: (v) => controller.confirmPassword.value = v,
-                  )),
-                  
-                  const SizedBox(height: 80),
+                        SizedBox(height: betweenFields),
 
-                  // Buttons
-                  Obx(() => SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: ElevatedButton(
-                      onPressed: controller.isLoading.value
-                          ? null
-                          : controller.signUp,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: greenColor,
-                        foregroundColor: Colors.white,
-                        disabledBackgroundColor: greenColor.withOpacity(0.6),
-                        disabledForegroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                        // Phone Number Input
+                        _buildTextField(
+                          controller: _phoneCtrl,
+                          hint: 'Phone number',
+                          icon: Icons.phone_outlined,
+                          isSmall: isSmall,
+                          inputType: TextInputType.phone,
+                          onChanged: (v) => controller.phoneNumber.value = v,
                         ),
-                        elevation: 0,
-                      ),
-                      child: controller.isLoading.value
-                          ? const SizedBox(
-                              height: 20,
-                              width: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white,
-                                ),
+                        SizedBox(height: betweenFields),
+
+                        // Password Input
+                        Obx(() => _buildTextField(
+                          controller: _passCtrl,
+                          hint: 'Password',
+                          icon: Icons.lock_outline,
+                          isSmall: isSmall,
+                          isPassword: true,
+                          obscureText: controller.obscurePassword.value,
+                          onToggleVisibility: controller.togglePasswordVisibility,
+                          onChanged: (v) => controller.password.value = v,
+                        )),
+                        SizedBox(height: betweenFields),
+
+                        // Confirm Password Input
+                        Obx(() => _buildTextField(
+                          controller: _confirmPassCtrl,
+                          hint: 'Password Confirmation',
+                          icon: Icons.lock_outline,
+                          isSmall: isSmall,
+                          isPassword: true,
+                          obscureText: controller.obscureConfirmPassword.value,
+                          onToggleVisibility: controller.toggleConfirmPasswordVisibility,
+                          onChanged: (v) => controller.confirmPassword.value = v,
+                        )),
+                        
+                        SizedBox(height: height * 0.05),
+
+                        // Buttons
+                        Obx(() => SizedBox(
+                          width: double.infinity,
+                          height: isSmall ? 50 : 56,
+                          child: ElevatedButton(
+                            onPressed: controller.isLoading.value
+                                ? null
+                                : controller.signUp,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: greenColor,
+                              foregroundColor: Colors.white,
+                              disabledBackgroundColor: greenColor.withOpacity(0.6),
+                              disabledForegroundColor: Colors.white,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
                               ),
-                            )
-                          : Text(
-                              'Continue',
-                              style: TextStyle(
-                                fontFamily: AppFonts.primaryFont,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
+                              elevation: 0,
+                            ),
+                            child: controller.isLoading.value
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor: AlwaysStoppedAnimation<Color>(
+                                        Colors.white,
+                                      ),
+                                    ),
+                                  )
+                                : Text(
+                                    'Continue',
+                                    style: GoogleFonts.poppins(
+                                      fontSize: isSmall ? 16 : 18,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                          ),
+                        )),
+                        
+                        const SizedBox(height: 20),
+                        
+                        // Sign In link
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(
+                              'Already have an account? ',
+                              style: GoogleFonts.poppins(
+                                fontSize: isSmall ? 13 : 14,
+                                color: hintText,
+                                fontWeight: FontWeight.w400,
                               ),
                             ),
+                            GestureDetector(
+                              onTap: () => Get.toNamed(Routes.LOGIN),
+                              child: Text(
+                                'Sign In',
+                                style: GoogleFonts.poppins(
+                                  fontSize: isSmall ? 13 : 14,
+                                  color: greenColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        
+                        const SizedBox(height: 40),
+                      ],
                     ),
-                  )),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Sign In link
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Already have an account? ',
-                        style: TextStyle(
-                          fontFamily: AppFonts.primaryFont,
-                          fontSize: 14,
-                          color: hintText,
-                          fontWeight: FontWeight.w400,
-                        ),
-                      ),
-                      GestureDetector(
-                        onTap: () => Get.toNamed(Routes.LOGIN),
-                        child: Text(
-                          'Sign In',
-                          style: TextStyle(
-                            fontFamily: AppFonts.primaryFont,
-                            fontSize: 14,
-                            color: greenColor,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
                   ),
-                  
-                  const SizedBox(height: 40),
                 ],
               ),
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hint,
+    required IconData icon,
+    required bool isSmall,
+    required Function(String) onChanged,
+    TextInputType inputType = TextInputType.text,
+    bool isPassword = false,
+    bool obscureText = false,
+    VoidCallback? onToggleVisibility,
+  }) {
+    const darkText = Color(0xFF0F3B52);
+    const hintText = Color(0xFF9BA5B1);
+    const borderColor = Color(0xFFE0E6ED);
+    const greenColor = AppColors.primary;
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        color: Colors.white,
+        border: Border.all(
+          color: borderColor,
+          width: 1.2,
+        ),
+      ),
+      child: TextField(
+        controller: controller,
+        keyboardType: inputType,
+        obscureText: obscureText,
+        style: GoogleFonts.poppins(fontSize: isSmall ? 14 : 15),
+        decoration: InputDecoration(
+          border: InputBorder.none,
+          prefixIcon: Icon(icon, color: darkText),
+          hintText: hint,
+          hintStyle: GoogleFonts.poppins(
+            color: hintText,
+            fontSize: isSmall ? 13 : 15,
+          ),
+          contentPadding: EdgeInsets.symmetric(
+            vertical: isSmall ? 14 : 18,
+            horizontal: 20,
+          ),
+          suffixIcon: isPassword
+              ? IconButton(
+                  icon: Icon(
+                    obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                    color: hintText,
+                  ),
+                  onPressed: onToggleVisibility,
+                )
+              : null,
+        ),
+        onChanged: onChanged,
       ),
     );
   }
