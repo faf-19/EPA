@@ -37,9 +37,16 @@ class _LoginOverlayState extends State<LoginOverlay> {
         ? Get.find<LoginController>()
         : Get.put(LoginController(loginUseCase: Get.find<LoginUseCase>()));
 
-    // MediaQuery size was previously used for logo sizing; layout is now
-    // responsive via LayoutBuilder so `size` is unused.
-
+    final size = MediaQuery.of(context).size;
+    final height = size.height;
+    final width = size.width;
+    
+    // Responsive calculations
+    final isSmall = height < 700;
+    final logoHeight = height * 0.22; // 22% of screen height
+    final topPadding = MediaQuery.of(context).padding.top + (height * 0.01);
+    final betweenFields = height * 0.02; // 2% of screen height
+    
     const greenColor = AppColors.primary;
     const blueColor = Color(0xFF0047BA);
     const darkText = Color(0xFF0F3B52);
@@ -65,453 +72,433 @@ class _LoginOverlayState extends State<LoginOverlay> {
             ),
           ),
           SafeArea(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                // Adapt sizes based on available height — avoid scrolling by
-                // reducing spacing and image sizes on small screens.
-                final height = constraints.maxHeight;
-                final isSmall = height < 700;
-                // keep logo size but tighten surrounding spacing
-                final logoHeight = isSmall ? 160.0 : 240.0;
-                final topPadding = isSmall ? 4.0 : 6.0;
-                // slightly larger gaps between fields to match mock spacing
-                final betweenFields = isSmall ? 16.0 : 22.0;
-                // space between title and the inputs — larger to visually separate sections
-                final largeSpacer = isSmall ? 36.0 : 56.0;
-
-                return SingleChildScrollView(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: topPadding,
+            child: SingleChildScrollView(
+              padding: EdgeInsets.symmetric(
+                horizontal: width * 0.05, // 5% horizontal padding
+                vertical: 10,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Top right language
+                  Align(
+                    alignment: Alignment.topRight,
+                    child: Text(
+                      'Eng',
+                      style: GoogleFonts.poppins(
+                        fontSize: isSmall ? 12 : 13,
+                        color: Colors.grey.shade700,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // Top right language
-                      Align(
-                        alignment: Alignment.topRight,
-                        child: Text(
-                          'Eng',
-                          style: GoogleFonts.poppins(
-                            fontSize: isSmall ? 12 : 13,
-                            color: Colors.grey.shade700,
-                            fontWeight: FontWeight.w500,
+
+                  Image.asset(
+                    'assets/logo.png',
+                    height: logoHeight,
+                  ),
+                  
+                  // Track Report Status card
+                  ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 600),
+                    child: Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.all(isSmall ? 10 : 12),
+                      margin: EdgeInsets.only(top: height * 0.01),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
                           ),
-                        ),
+                        ],
+                        border: Border.all(color: borderColor, width: 1),
                       ),
-
-                      // SizedBox(height: isSmall ? 5 : 10),
-
-                      Image.asset(
-                        'assets/logo.png',
-                        height: isSmall ? 100 : 170,
-                      ),
-                      
-                      //  SizedBox(height: isSmall ? 14 : 20),
-
-                            // Track Report Status card
-                            Container(
-                              width: double.infinity,
-                              padding: EdgeInsets.all(isSmall ? 10 : 12),
-                              margin: EdgeInsets.only(top: isSmall ? 6 : 8),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.05),
-                                    blurRadius: 12,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                                border: Border.all(color: borderColor, width: 1),
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Track Report Status',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: isSmall ? 10 : 12,
-                                      fontWeight: FontWeight.w600,
-                                      color: darkText,
-                                    ),
-                                  ),
-                                  SizedBox(height: isSmall ? 8 : 10),
-                                  Row(
-                                    children: [
-                                      Expanded(
-                                        child: SizedBox(
-                                          height: isSmall ? 28 : 32,
-                                          child: TextField(
-                                            controller: _reportIdCtrl,
-                                            textAlignVertical: TextAlignVertical.center,
-                                            decoration: InputDecoration(
-                                              isDense: true,
-                                              hintText: 'Enter Report ID (e.g. REP-988780)',
-                                              hintStyle: TextStyle(
-                                                fontSize: isSmall ? 9 : 10,
-                                                color: hintText,
-                                              ),
-                                              contentPadding: EdgeInsets.symmetric(
-                                                vertical: isSmall ? 3 : 4,
-                                                horizontal: 8,
-                                              ),
-                                              enabledBorder: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(10),
-                                                borderSide: BorderSide(color: borderColor, width: 1.1),
-                                              ),
-                                              focusedBorder: OutlineInputBorder(
-                                                borderRadius: BorderRadius.circular(10),
-                                                borderSide: BorderSide(color: greenColor, width: 1.3),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                      SizedBox(width: isSmall ? 6 : 8),
-                                      SizedBox(
-                                        height: isSmall ? 28 : 32,
-                                        child: ElevatedButton(
-                                          onPressed: _isSearching
-                                              ? null
-                                              : () async {
-                                                  final id = _reportIdCtrl.text.trim();
-                                                  if (id.isEmpty) {
-                                                    Get.snackbar(
-                                                      'Report ID',
-                                                      'Please enter a Report ID',
-                                                      snackPosition: SnackPosition.BOTTOM,
-                                                    );
-                                                    return;
-                                                  }
-                                                  setState(() => _isSearching = true);
-                                                  final statusController = Get.isRegistered<StatusController>()
-                                                      ? Get.find<StatusController>()
-                                                      : Get.put(StatusController());
-                                                  final result = await statusController.fetchComplaintByReportId(id);
-                                                  setState(() => _isSearching = false);
-                                                  print("here is the result $result");
-                                                  if (result == null) {
-                                                    Get.snackbar(
-                                                      'Not found',
-                                                      'No complaint found for $id',
-                                                      snackPosition: SnackPosition.BOTTOM,
-                                                    );
-                                                    return;
-                                                  }
-
-                                                  _showStatusDialog(context, result);
-                                                },
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: greenColor,
-                                            foregroundColor: Colors.white,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.circular(10),
-                                            ),
-                                            padding: EdgeInsets.symmetric(
-                                              horizontal: isSmall ? 14 : 16,
-                                            ),
-                                          ),
-                                          child: Text(
-                                            _isSearching ? '...' : 'Search',
-                                            style: GoogleFonts.poppins(
-                                              fontSize: isSmall ? 12 : 13,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
-                              ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Track Report Status',
+                            style: GoogleFonts.poppins(
+                              fontSize: isSmall ? 10 : 12,
+                              fontWeight: FontWeight.w600,
+                              color: darkText,
+                            ),
                           ),
-
-
-                      SizedBox(height: isSmall ? 5.0 : 10.0),
-
-                      // Title
-                      Text(
-                        'Welcome Back!',
-                        style: GoogleFonts.poppins(
-                          fontSize: isSmall ? 18 : 24,
-                          fontWeight: FontWeight.w600,
-                          color: AppColors.secondary,
-                        ),
-                      ),
-
-                      SizedBox(height: 40),
-
-                      // Inputs and actions — simplified and safer nesting
-                      ConstrainedBox(
-                        constraints: BoxConstraints(maxWidth: 700),
-                        child: Column(
-                          children: [
-                            // Phone field
-                            Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(14),
-                                color: Colors.white,
-                                border: Border.all(
-                                  color: borderColor,
-                                  width: 1.2,
-                                ),
-                              ),
-                              child: TextField(
-                                controller: _emailCtrl,
-                                keyboardType: TextInputType.emailAddress,
-                                style: GoogleFonts.poppins(
-                                  fontSize: isSmall ? 14 : 15,
-                                ),
-                                decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  prefixIcon: const Icon(
-                                    Icons.email_outlined,
-                                    color: darkText,
-                                  ),
-                                  hintText: 'Email',
-                                  hintStyle: GoogleFonts.poppins(
-                                    color: hintText,
-                                    fontSize: isSmall ? 13 : 15,
-                                  ),
-                                  contentPadding: EdgeInsets.symmetric(
-                                    vertical: isSmall ? 16 : 20,
-                                    horizontal: 20,
-                                  ),
-                                ),
-                                onChanged: (v) =>
-                                    controller.email.value = v,
-                              ),
-                            ),
-
-                            SizedBox(height: betweenFields),
-
-                            // Password
-                            Container(
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(14),
-                                color: Colors.white,
-                                border: Border.all(
-                                  color: borderColor,
-                                  width: 1.2,
-                                ),
-                              ),
-                              child: Obx(() => TextField(
-                                controller: _passCtrl,
-                                obscureText: controller.obscurePassword.value,
-                                style: GoogleFonts.poppins(
-                                  fontSize: isSmall ? 14 : 15,
-                                ),
-                                decoration: InputDecoration(
-                                  border: InputBorder.none,
-                                  prefixIcon: const Icon(
-                                    Icons.lock_outline,
-                                    color: darkText,
-                                  ),
-                                  hintText: 'Password',
-                                  hintStyle: GoogleFonts.poppins(
-                                    color: hintText,
-                                    fontSize: isSmall ? 13 : 15,
-                                  ),
-                                  contentPadding: EdgeInsets.symmetric(
-                                    vertical: isSmall ? 16 : 20,
-                                    horizontal: 20,
-                                  ),
-                                  suffixIcon: IconButton(
-                                    icon: Icon(
-                                      controller.obscurePassword.value
-                                          ? Icons.visibility_off_outlined
-                                          : Icons.visibility_outlined,
-                                      color: hintText,
-                                    ),
-                                    onPressed: controller.togglePasswordVisibility,
-                                  ),
-                                ),
-                                onChanged: (v) => controller.password.value = v,
-                              )),
-                            ),
-
-                            SizedBox(height: betweenFields),
-
-                            // Remember + Forgot
-                            Row(
+                          SizedBox(height: isSmall ? 8 : 10),
+                          IntrinsicHeight(
+                            child: Row(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
                               children: [
                                 Expanded(
-                                  child: GestureDetector(
-                                    onTap: () =>
-                                        setState(() => _remember = !_remember),
-                                    child: Row(
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Container(
-                                          width: isSmall ? 18 : 20,
-                                          height: isSmall ? 18 : 20,
-                                          decoration: BoxDecoration(
-                                            border: Border.all(
-                                              color: hintText,
-                                              width: 1.2,
-                                            ),
-                                            borderRadius: BorderRadius.circular(
-                                              4,
-                                            ),
-                                            color: _remember
-                                                ? greenColor
-                                                : Colors.transparent,
-                                          ),
-                                          child: _remember
-                                              ? const Icon(
-                                                  Icons.check,
-                                                  size: 14,
-                                                  color: Colors.white,
-                                                )
-                                              : null,
-                                        ),
-                                        SizedBox(width: isSmall ? 8 : 10),
-                                        Flexible(
-                                          child: Text(
-                                            'Remember Me',
-                                            overflow: TextOverflow.ellipsis,
-                                            style: GoogleFonts.poppins(
-                                              fontSize: isSmall ? 13 : 14,
-                                              color: darkText,
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                  child: TextField(
+                                    controller: _reportIdCtrl,
+                                    style: GoogleFonts.poppins(fontSize: isSmall ? 12 : 13),
+                                    decoration: InputDecoration(
+                                      isDense: true,
+                                      hintText: 'Enter Report ID',
+                                      hintStyle: TextStyle(
+                                        fontSize: isSmall ? 10 : 11,
+                                        color: hintText,
+                                      ),
+                                      contentPadding: EdgeInsets.symmetric(
+                                        vertical: isSmall ? 5 : 9,
+                                        horizontal: 12,
+                                      ),
+                                      enabledBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        borderSide: BorderSide(color: borderColor, width: 1.1),
+                                      ),
+                                      focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        borderSide: BorderSide(color: greenColor, width: 1.3),
+                                      ),
                                     ),
                                   ),
                                 ),
-                                TextButton(
-                                  onPressed: () {},
-                                  style: TextButton.styleFrom(
-                                    padding: EdgeInsets.zero,
-                                    minimumSize: Size.zero,
-                                    tapTargetSize:
-                                        MaterialTapTargetSize.shrinkWrap,
+                                SizedBox(width: 8),
+                                ElevatedButton(
+                                  onPressed: _isSearching
+                                      ? null
+                                      : () async {
+                                          final id = _reportIdCtrl.text.trim();
+                                          if (id.isEmpty) {
+                                            Get.snackbar(
+                                              'Report ID',
+                                              'Please enter a Report ID',
+                                              snackPosition: SnackPosition.BOTTOM,
+                                            );
+                                            return;
+                                          }
+                                          setState(() => _isSearching = true);
+                                          final statusController = Get.isRegistered<StatusController>()
+                                              ? Get.find<StatusController>()
+                                              : Get.put(StatusController());
+                                          final result = await statusController.fetchComplaintByReportId(id);
+                                          setState(() => _isSearching = false);
+                                          if (result == null) {
+                                            Get.snackbar(
+                                              'Not found',
+                                              'No complaint found for $id',
+                                              snackPosition: SnackPosition.BOTTOM,
+                                            );
+                                            return;
+                                          }
+
+                                          _showStatusDialog(context, result);
+                                        },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: greenColor,
+                                    foregroundColor: Colors.white,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: isSmall ? 12 : 16,
+                                    ),
+                                    minimumSize: Size.zero, // Remove default minimum size constraints
+                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap, // Remove extra margins
                                   ),
                                   child: Text(
-                                    'Forget Password?',
-                                    overflow: TextOverflow.ellipsis,
+                                    _isSearching ? '...' : 'Search',
                                     style: GoogleFonts.poppins(
-                                      fontSize: isSmall ? 13 : 14,
-                                      color: blueColor,
-                                      fontWeight: FontWeight.w500,
+                                      fontSize: isSmall ? 11 : 13,
+                                      fontWeight: FontWeight.w600,
                                     ),
                                   ),
                                 ),
                               ],
                             ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
 
-                            SizedBox(height: isSmall ? 36 : 60),
+                  SizedBox(height: height * 0.02),
 
-                            // Buttons
-                            Obx(() => SizedBox(
-                                  width: double.infinity,
-                                  height: isSmall ? 56 : 64,
-                                  child: ElevatedButton(
-                                    onPressed: controller.isLoading.value
-                                        ? null
-                                        : controller.submitLogin,
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: AppColors.primary,
-                                      foregroundColor: Colors.white,
-                                      disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
-                                      disabledForegroundColor: Colors.white,
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      elevation: 0,
-                                    ),
-                                    child: controller.isLoading.value
-                                        ? SizedBox(
-                                            height: 20,
-                                            width: 20,
-                                            child: CircularProgressIndicator(
-                                              strokeWidth: 2,
-                                              valueColor: AlwaysStoppedAnimation<Color>(
-                                                Colors.white,
-                                              ),
-                                            ),
-                                          )
-                                        : Text(
-                                            'Sign In',
-                                            style: GoogleFonts.poppins(
-                                              fontSize: isSmall ? 16 : 18,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                  ),
-                                )),
+                  // Title
+                  Text(
+                    'Welcome Back!',
+                    style: GoogleFonts.poppins(
+                      fontSize: isSmall ? 20 : 24,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.secondary,
+                    ),
+                  ),
 
-                            SizedBox(height: isSmall ? 10 : 12),
+                  SizedBox(height: height * 0.04),
 
-                            Center(
-                              child: TextButton(
-                                onPressed: () {
-                                  final box = Get.find<GetStorage>();
-                                  box.write('username', 'Guest');
-                                  box.remove('userId');
-                                  box.remove('phone');
+                  // Inputs and actions
+                  ConstrainedBox(
+                    constraints: BoxConstraints(maxWidth: 600),
+                    child: Column(
+                      children: [
+                        // Phone field
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14),
+                            color: Colors.white,
+                            border: Border.all(
+                              color: borderColor,
+                              width: 1.2,
+                            ),
+                          ),
+                          child: TextField(
+                            controller: _emailCtrl,
+                            keyboardType: TextInputType.emailAddress,
+                            style: GoogleFonts.poppins(
+                              fontSize: isSmall ? 14 : 15,
+                            ),
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              prefixIcon: const Icon(
+                                Icons.email_outlined,
+                                color: darkText,
+                              ),
+                              hintText: 'Email',
+                              hintStyle: GoogleFonts.poppins(
+                                color: hintText,
+                                fontSize: isSmall ? 13 : 15,
+                              ),
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: isSmall ? 14 : 18,
+                                horizontal: 20,
+                              ),
+                            ),
+                            onChanged: (v) =>
+                                controller.email.value = v,
+                          ),
+                        ),
 
-                                  Get.offNamed(
-                                    Routes.HOME,
-                                    arguments: {
-                                      'username': 'Guest',
-                                      'phone': '',
-                                      'email': '',
-                                    },
-                                  );
-                                },
-                                style: TextButton.styleFrom(
-                                  padding: EdgeInsets.symmetric(vertical: isSmall ? 6 : 8, horizontal: 8),
-                                  minimumSize: Size.zero,
-                                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        SizedBox(height: betweenFields),
+
+                        // Password
+                        Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(14),
+                            color: Colors.white,
+                            border: Border.all(
+                              color: borderColor,
+                              width: 1.2,
+                            ),
+                          ),
+                          child: Obx(() => TextField(
+                            controller: _passCtrl,
+                            obscureText: controller.obscurePassword.value,
+                            style: GoogleFonts.poppins(
+                              fontSize: isSmall ? 14 : 15,
+                            ),
+                            decoration: InputDecoration(
+                              border: InputBorder.none,
+                              prefixIcon: const Icon(
+                                Icons.lock_outline,
+                                color: darkText,
+                              ),
+                              hintText: 'Password',
+                              hintStyle: GoogleFonts.poppins(
+                                color: hintText,
+                                fontSize: isSmall ? 13 : 15,
+                              ),
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: isSmall ? 14 : 18,
+                                horizontal: 20,
+                              ),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  controller.obscurePassword.value
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
+                                  color: hintText,
                                 ),
-                                child: Text(
-                                  'Continue as Guest',
-                                  style: GoogleFonts.poppins(
-                                    fontSize: isSmall ? 14 : 15,
-                                    fontWeight: FontWeight.w600,
-                                    color: hintText,
-                                  ),
+                                onPressed: controller.togglePasswordVisibility,
+                              ),
+                            ),
+                            onChanged: (v) => controller.password.value = v,
+                          )),
+                        ),
+
+                        SizedBox(height: betweenFields),
+
+                        // Remember + Forgot
+                        Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () =>
+                                    setState(() => _remember = !_remember),
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Container(
+                                      width: isSmall ? 18 : 20,
+                                      height: isSmall ? 18 : 20,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                          color: hintText,
+                                          width: 1.2,
+                                        ),
+                                        borderRadius: BorderRadius.circular(
+                                          4,
+                                        ),
+                                        color: _remember
+                                            ? greenColor
+                                            : Colors.transparent,
+                                      ),
+                                      child: _remember
+                                          ? const Icon(
+                                              Icons.check,
+                                              size: 14,
+                                              color: Colors.white,
+                                            )
+                                          : null,
+                                    ),
+                                    SizedBox(width: 8),
+                                    Flexible(
+                                      child: Text(
+                                        'Remember Me',
+                                        overflow: TextOverflow.ellipsis,
+                                        style: GoogleFonts.poppins(
+                                          fontSize: isSmall ? 13 : 14,
+                                          color: darkText,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
-
-                            SizedBox(height: isSmall ? 12 : 16),
-
-                            RichText(
-                              text: TextSpan(
-                                text: 'Don\'t have an account? ',
+                            TextButton(
+                              onPressed: () {},
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                minimumSize: Size.zero,
+                                tapTargetSize:
+                                    MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: Text(
+                                'Forget Password?',
+                                overflow: TextOverflow.ellipsis,
                                 style: GoogleFonts.poppins(
-                                  fontSize: isSmall ? 14 : 15,
-                                  color: hintText,
+                                  fontSize: isSmall ? 13 : 14,
+                                  color: blueColor,
                                   fontWeight: FontWeight.w500,
                                 ),
-                                children: [
-                                  TextSpan(
-                                    text: 'Sign up',
-                                    style: GoogleFonts.poppins(
-                                      fontSize: isSmall ? 14 : 15,
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    recognizer: (TapGestureRecognizer()
-                                      ..onTap = () => Get.toNamed(Routes.SIGNUP)),
-                                  ),
-                                ],
                               ),
                             ),
                           ],
                         ),
-                      ),
-                    ],
+
+                        SizedBox(height: height * 0.05),
+
+                        // Buttons
+                        Obx(() => SizedBox(
+                              width: double.infinity,
+                              height: isSmall ? 50 : 56,
+                              child: ElevatedButton(
+                                onPressed: controller.isLoading.value
+                                    ? null
+                                    : controller.submitLogin,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  foregroundColor: Colors.white,
+                                  disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
+                                  disabledForegroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  elevation: 0,
+                                ),
+                                child: controller.isLoading.value
+                                    ? SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          valueColor: AlwaysStoppedAnimation<Color>(
+                                            Colors.white,
+                                          ),
+                                        ),
+                                      )
+                                    : Text(
+                                        'Sign In',
+                                        style: GoogleFonts.poppins(
+                                          fontSize: isSmall ? 16 : 18,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                              ),
+                            )),
+
+                        SizedBox(height: 12),
+
+                        Center(
+                          child: TextButton(
+                            onPressed: () {
+                              final box = Get.find<GetStorage>();
+                              box.write('username', 'Guest');
+                              box.remove('userId');
+                              box.remove('phone');
+
+                              Get.offNamed(
+                                Routes.HOME,
+                                arguments: {
+                                  'username': 'Guest',
+                                  'phone': '',
+                                  'email': '',
+                                },
+                              );
+                            },
+                            style: TextButton.styleFrom(
+                              padding: EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                              minimumSize: Size.zero,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                            ),
+                            child: Text(
+                              'Continue as Guest',
+                              style: GoogleFonts.poppins(
+                                fontSize: isSmall ? 14 : 15,
+                                fontWeight: FontWeight.w600,
+                                color: hintText,
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(height: height * 0.02),
+
+                        RichText(
+                          text: TextSpan(
+                            text: 'Don\'t have an account? ',
+                            style: GoogleFonts.poppins(
+                              fontSize: isSmall ? 14 : 15,
+                              color: hintText,
+                              fontWeight: FontWeight.w500,
+                            ),
+                            children: [
+                              TextSpan(
+                                text: 'Sign up',
+                                style: GoogleFonts.poppins(
+                                  fontSize: isSmall ? 14 : 15,
+                                  color: AppColors.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                recognizer: (TapGestureRecognizer()
+                                  ..onTap = () => Get.toNamed(Routes.SIGNUP)),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                );
-              },
+                ],
+              ),
             ),
           ),
         ],
