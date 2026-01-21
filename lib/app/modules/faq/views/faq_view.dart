@@ -31,40 +31,44 @@ class FaqView extends GetView<FaqController> {
 
     return Scaffold(
       appBar: const CustomAppBar(title: 'FAQ'),
-      body: SafeArea(// padding: const EdgeInsets.symmetric(vertical: 12.0),
-          child: Column(
-            children: [
-              Material(
-                color: Colors.white,
-                elevation: 2,
-                // borderRadius: BorderRadius.circular(12),
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: ListView.separated(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: faqs.length,
-                    separatorBuilder: (_, __) => const Divider(height: 1),
-                    itemBuilder: (context, index) {
-                      final item = faqs[index];
-                      return ExpansionTile(
-                        tilePadding: const EdgeInsets.symmetric(horizontal: 16.0),
-                        childrenPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                        title: Text(item['q'] ?? ''),
-                        trailing: const Icon(Icons.keyboard_arrow_down),
-                        children: [
-                          Text(item['a'] ?? '', style: const TextStyle(color: Colors.black87)),
-                        ],
-                      );
-                    },
+      body: SafeArea(
+        child: RefreshIndicator(
+          onRefresh: () async {},
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            slivers: [
+              const SliverToBoxAdapter(child: SizedBox(height: 8)),
+              SliverToBoxAdapter(
+                child: Material(
+                  color: Colors.white,
+                  elevation: 2,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: ListView.separated(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      itemCount: faqs.length,
+                      separatorBuilder: (_, __) => const Divider(height: 1),
+                      itemBuilder: (context, index) {
+                        final item = faqs[index];
+                        return ExpansionTile(
+                          tilePadding: const EdgeInsets.symmetric(horizontal: 16.0),
+                          childrenPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                          title: Text(item['q'] ?? ''),
+                          trailing: const Icon(Icons.keyboard_arrow_down),
+                          children: [
+                            Text(item['a'] ?? '', style: const TextStyle(color: Colors.black87)),
+                          ],
+                        );
+                      },
+                    ),
                   ),
                 ),
               ),
-
-              // spacer so bottom content doesn't collide with bottom nav
-              const SizedBox(height: 24),
+              const SliverToBoxAdapter(child: SizedBox(height: 24)),
             ],
           ),
+        ),
       ),
       bottomNavigationBar: const BottomNavBarFooter(),
     );
