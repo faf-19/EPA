@@ -49,17 +49,63 @@ class AwarenessView extends GetView<AwarenessController> {
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
-    final isTablet = size.width > 600;
+    final width = size.width;
+    final height = size.height;
+    final isTablet = width > 600;
+    final isLandscape = width > height;
+    final shortestSide = size.shortestSide;
+
+    double clampDouble(double value, double min, double max) {
+      if (value < min) return min;
+      if (value > max) return max;
+      return value;
+    }
+
+    // Scale factors driven by media query for smoother responsiveness across phones
+    final scale = clampDouble(shortestSide / 400, 0.85, 1.3);
     
     // Responsive dimensions
-    final bannerHeight = isTablet ? size.height * 0.4 : 420.0;
-    final imageSize = isTablet ? 110.0 : 72.0;
-    final horizontalPadding = isTablet ? 32.0 : 16.0;
-    final titleFontSize = isTablet ? 16.0 : 11.0;
-    final descFontSize = isTablet ? 13.0 : 10.0;
-    final headerTitleSize = isTablet ? 20.0 : 14.0;
-    final headerSubSize = isTablet ? 16.0 : 13.0;
-    final backIconSize = isTablet ? 28.0 : 23.0;
+    // Banner height tuned to match 16:9-ish imagery so cover fit doesn't over-zoom or letterbox
+    final bannerHeight = clampDouble(
+      width / (16 / 9),
+      isLandscape ? 240 : 280,
+      isLandscape ? 460 : 540,
+    );
+    final imageSize = clampDouble(
+      (isTablet ? 110 : 78) * scale,
+      66,
+      isTablet ? 140 : 110,
+    );
+    final horizontalPadding = clampDouble(
+      (isTablet ? 28 : 18) * scale,
+      14,
+      32,
+    );
+    final titleFontSize = clampDouble(
+      (isTablet ? 16 : 12) * scale,
+      11,
+      18,
+    );
+    final descFontSize = clampDouble(
+      (isTablet ? 13 : 11) * scale,
+      10,
+      16,
+    );
+    final headerTitleSize = clampDouble(
+      (isTablet ? 22 : 16) * scale,
+      14,
+      26,
+    );
+    final headerSubSize = clampDouble(
+      (isTablet ? 17 : 14) * scale,
+      12,
+      22,
+    );
+    final backIconSize = clampDouble(
+      (isTablet ? 28 : 23) * scale,
+      20,
+      34,
+    );
 
     // Non-overlapping layout: banner then card below it
     return Scaffold(
@@ -83,8 +129,10 @@ class AwarenessView extends GetView<AwarenessController> {
                     Positioned.fill(
                       child: Image.asset(
                         'assets/awareness.png',
-                        fit: BoxFit.fill,
-                        alignment: Alignment.topCenter,
+                        // Cover fills width/height while minimizing letterbox; small crop possible if ratios differ
+                        fit: BoxFit.cover,
+                        alignment: Alignment.center,
+                        filterQuality: FilterQuality.medium,
                         errorBuilder: (c, e, s) =>
                             Container(color: Colors.grey[300]),
                       ),
