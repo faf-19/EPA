@@ -12,157 +12,180 @@ class StatusView extends GetView<StatusController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        backgroundColor: const Color(0xFFF5F5F5),
-        appBar: const CustomAppBar(
-          title: 'Report Status',
-          showBack: true,
-          forceHomeOnBack: true,
-        ),
+      backgroundColor: const Color(0xFFF5F5F5),
+      appBar: const CustomAppBar(
+        title: 'Report Status',
+        showBack: true,
+        forceHomeOnBack: true,
+      ),
       body: SafeArea(
-        child: Column(
-          children: [
-            const SizedBox(height: 10),
+        child: Obx(() {
+          final sel = controller.selectedFilter.value;
 
-            // Filter Tabs (compact pill chips matching screenshot)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Obx(() {
-                final sel = controller.selectedFilter.value;
-                return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(12),
+          // Build scrollable content to avoid overflow in landscape
+          Widget buildScrollable(List<Widget> sliverContent) {
+            return RefreshIndicator(
+              onRefresh: () => controller.refreshComplaints(),
+              child: CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                slivers: [
+                  const SliverToBoxAdapter(child: SizedBox(height: 10)),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 6),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: [
+                              const SizedBox(width: 6),
+                              _filterChip('All', sel == 'All'),
+                              const SizedBox(width: 10),
+                              _filterChip('Pending', sel == 'Pending'),
+                              const SizedBox(width: 10),
+                              _filterChip('Under Review', sel == 'Under Review'),
+                              const SizedBox(width: 10),
+                              _filterChip('Verified', sel == 'Verified'),
+                              const SizedBox(width: 10),
+                              _filterChip('Under Investigation', sel == 'Under Investigation'),
+                              const SizedBox(width: 10),
+                              _filterChip('Closed', sel == 'Closed'),
+                              const SizedBox(width: 10),
+                              _filterChip('Rejected', sel == 'Rejected'),
+                              const SizedBox(width: 6),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
-                  child: SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
+                  const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                  ...sliverContent,
+                ],
+              ),
+            );
+          }
+
+          // Loading state
+          if (controller.isLoading.value) {
+            return buildScrollable([
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                  child: Container(
+                    width: 36,
+                    height: 36,
+                    margin: const EdgeInsets.only(bottom: 24),
+                    child: const CircularProgressIndicator(),
+                  ),
+                ),
+              ),
+            ]);
+          }
+
+          // Error state
+          if (controller.errorMessage.value != null) {
+            return buildScrollable([
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        const SizedBox(width: 6),
-                        _filterChip('All', sel == 'All'),
-                        const SizedBox(width: 10),
-                        _filterChip('Pending', sel == 'Pending'),
-                        const SizedBox(width: 10),
-                        _filterChip('Under Review', sel == 'Under Review'),
-                        const SizedBox(width: 10),
-                        _filterChip('Verified', sel == 'Verified'),
-                        const SizedBox(width: 10),
-                        _filterChip('Under Investigation', sel == 'Under Investigation'),
-                        const SizedBox(width: 10),
-                        _filterChip('Closed', sel == 'Closed'),
-                        const SizedBox(width: 10),
-                        _filterChip('Rejected', sel == 'Rejected'),
-                        const SizedBox(width: 6),
+                        Icon(
+                          Icons.error_outline,
+                          size: 64,
+                          color: Colors.grey[400],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          controller.errorMessage.value!,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.grey[600],
+                            fontSize: 14,
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton(
+                          onPressed: () => controller.refreshComplaints(),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                          ),
+                          child: const Text('Retry'),
+                        ),
                       ],
                     ),
                   ),
-                );
-              }),
-            ),
+                ),
+              ),
+            ]);
+          }
 
-            const SizedBox(height: 16),
+          final reports = controller.filteredReports;
 
-            // List of Complaints (reactive: shows filteredReports from controller)
-            Expanded(
-              child: Obx(() {
-                // Show loading indicator
-                if (controller.isLoading.value) {
-                  return const Center(
-                    child: CircularProgressIndicator(),
-                  );
-                }
-
-                // Show error message
-                if (controller.errorMessage.value != null) {
-                  return Center(
-                    child: Padding(
-                      padding: const EdgeInsets.all(24.0),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.error_outline,
-                            size: 64,
-                            color: Colors.grey[400],
-                          ),
-                          const SizedBox(height: 16),
-                          Text(
-                            controller.errorMessage.value!,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              color: Colors.grey[600],
-                              fontSize: 14,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          ElevatedButton(
-                            onPressed: () => controller.refreshComplaints(),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: Colors.white,
-                            ),
-                            child: const Text('Retry'),
-                          ),
-                        ],
+          // Empty state
+          if (reports.isEmpty) {
+            return buildScrollable([
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.inbox_outlined,
+                        size: 64,
+                        color: Colors.grey[400],
                       ),
-                    ),
-                  );
-                }
-
-                final reports = controller.filteredReports;
-                return RefreshIndicator(
-                  onRefresh: () => controller.refreshComplaints(),
-                  child: reports.isEmpty
-                      ? ListView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          padding: const EdgeInsets.all(24.0),
-                          children: [
-                            SizedBox(
-                              height: MediaQuery.of(context).size.height * 0.3,
-                            ),
-                            Icon(
-                              Icons.inbox_outlined,
-                              size: 64,
-                              color: Colors.grey[400],
-                            ),
-                            const SizedBox(height: 16),
-                            Text(
-                              'No reports found',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Colors.grey[600],
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Pull down to refresh',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                color: Colors.grey[500],
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        )
-                      : ListView.separated(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                          itemCount: reports.length + 1, // extra spacer at end
-                          separatorBuilder: (_, __) => const SizedBox(height: 0),
-                          itemBuilder: (context, index) {
-                            if (index == reports.length) return const SizedBox(height: 80);
-                            final r = reports[index];
-                            print(r.activityLogs);
-                            return _complaintCard(
-                              report: r,
-                            );
-                          },
+                      const SizedBox(height: 16),
+                      Text(
+                        'No reports found',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.grey[600],
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
                         ),
-                );
-              }),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Pull down to refresh',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Colors.grey[500],
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ]);
+          }
+
+          // List state
+          return buildScrollable([
+            SliverList.builder(
+              itemCount: reports.length + 1,
+              itemBuilder: (context, index) {
+                if (index == reports.length) {
+                  return const SizedBox(height: 80);
+                }
+                final r = reports[index];
+                return _complaintCard(report: r);
+              },
             ),
-          ],
-        ),
+          ]);
+        }),
       ),
     );
   }
