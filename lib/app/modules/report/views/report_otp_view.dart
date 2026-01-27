@@ -2,7 +2,6 @@ import 'package:eprs/core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:eprs/app/widgets/custom_app_bar.dart';
-import 'package:eprs/app/modules/report/views/report_success_view.dart';
 import '../controllers/report_otp_controller.dart';
 
 class ReportOtpView extends GetView<ReportOtpController> {
@@ -14,6 +13,10 @@ class ReportOtpView extends GetView<ReportOtpController> {
     if (!Get.isRegistered<ReportOtpController>()) {
       Get.lazyPut<ReportOtpController>(() => ReportOtpController());
     }
+
+    final emailText = controller.email.isNotEmpty
+        ? controller.email
+        : 'your email';
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6FA),
@@ -39,9 +42,9 @@ class ReportOtpView extends GetView<ReportOtpController> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
                       const SizedBox(height: 8),
-                      const Text(
-                        'We have sent the OTP verification code to your Phone number. Check your Phone and enter the code below.',
-                        style: TextStyle(
+                      Text(
+                        'We sent a one-time code to $emailText. Check your email and enter the code below.',
+                        style: const TextStyle(
                           fontSize: 16,
                           height: 1.5,
                           color: Color(0xFF222222),
@@ -54,11 +57,11 @@ class ReportOtpView extends GetView<ReportOtpController> {
                       Obx(
                         () => Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: List.generate(4, (i) {
+                          children: List.generate(6, (i) {
                             final code = controller.code.value;
                             final digit = (i < code.length) ? code[i] : '';
                             final isFocused =
-                                i == code.length && code.length < 4;
+                                i == code.length && code.length < 6;
                             return _otpBox(digit, isFocused);
                           }),
                         ),
@@ -94,13 +97,29 @@ class ReportOtpView extends GetView<ReportOtpController> {
                                       ),
                                     )
                                   : TextButton(
-                                      onPressed: controller.startTimer,
-                                      child: const Text(
-                                        'Resend code',
-                                        style: TextStyle(
-                                          color: Color(0xFF3B82F6),
-                                        ),
-                                      ),
+                                      onPressed:
+                                          (controller.isResending.value ||
+                                                  controller.isLoading.value)
+                                              ? null
+                                              : controller.resendOtp,
+                                      child: controller.isResending.value
+                                          ? const SizedBox(
+                                              height: 16,
+                                              width: 16,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 2,
+                                                valueColor:
+                                                    AlwaysStoppedAnimation<Color>(
+                                                  Color(0xFF3B82F6),
+                                                ),
+                                              ),
+                                            )
+                                          : const Text(
+                                              'Resend code',
+                                              style: TextStyle(
+                                                color: Color(0xFF3B82F6),
+                                              ),
+                                            ),
                                     ),
                             ],
                           ),
@@ -113,45 +132,37 @@ class ReportOtpView extends GetView<ReportOtpController> {
                         () => SizedBox(
                           height: 52,
                           child: ElevatedButton(
-                            onPressed: controller.code.value.length == 4
-                                ? () {
-                                    // Prefer using provided args from controller
-                                    final args = Get.arguments;
-                                    String? region;
-                                    String? reportIdArg;
-                                    DateTime? dateTimeArg;
-                                    if (args is Map) {
-                                      reportIdArg = args['reportId']?.toString();
-                                      dateTimeArg = args['dateTime'] as DateTime?;
-                                      region = args['region']?.toString();
-                                    }
-                                    final reportId = reportIdArg ?? 'REP-${DateTime.now().millisecondsSinceEpoch}';
-                                    final dt = dateTimeArg ?? DateTime.now();
-
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (_) => ReportSuccessView(
-                                          reportId: reportId,
-                                          dateTime: dt,
-                                          region: region,
-                                        ),
-                                      ),
-                                    );
-                                  }
-                                : null,
+                            onPressed:
+                                (controller.code.value.length == 6 &&
+                                        !controller.isLoading.value)
+                                    ? controller.verifyOtp
+                                    : null,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.primary,
+                              disabledBackgroundColor:
+                                  AppColors.primary.withOpacity(0.6),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
                               ),
                             ),
-                            child: const Text(
-                              'CONFIRM',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
+                            child: controller.isLoading.value
+                                ? const SizedBox(
+                                    height: 20,
+                                    width: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      valueColor:
+                                          AlwaysStoppedAnimation<Color>(
+                                              Colors.white),
+                                    ),
+                                  )
+                                : const Text(
+                                    'CONFIRM',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
                           ),
                         ),
                       ),

@@ -11,6 +11,11 @@ class ApiConstants {
   static const String registerEndpoint = '/customer-accounts';
   static const String verifyOtpEndpoint = '/customer-accounts/verify-otp';
   static const String resendOtpEndpoint = '/customer-accounts/resend-otp';
+    // Guest report OTP endpoints (full URLs; bypass baseUrl prefix)
+    static const String requestReportOtpEndpoint =
+      'http://196.188.240.103:4032/api/guest/request-otp';
+    static const String verifyReportOtpEndpoint =
+      'http://196.188.240.103:4032/api/guest/verify-otp';
   
   // Location endpoints (full URLs using baseUrl)
   static const String regionsEndpoint = '${baseUrl}regions';

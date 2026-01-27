@@ -91,6 +91,41 @@ final isLoadingPollutionCategories = false.obs;
     );
   }
 
+  /// Submit any pending guest report after OTP verification.
+  Future<void> submitPendingReportAfterOtp({
+    required String email,
+    String? token,
+  }) async {
+    if (_pendingFormData == null) {
+      Get.snackbar(
+        'No pending report',
+        'Please fill out the report again.',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    // Ensure email is attached once
+    final hasEmail = _pendingFormData!.fields.any((f) => f.key == 'email');
+    if (!hasEmail) {
+      _pendingFormData!.fields.add(MapEntry('email', email));
+    }
+
+    isSubmitting.value = true;
+    try {
+      await _submitFormData(
+        httpClient: Get.find<DioClient>().dio,
+        formData: _pendingFormData!,
+        token: token,
+        regionToPass: _pendingRegionForSuccess ?? selectedRegion.value,
+        isLoggedIn: false,
+      );
+    } finally {
+      _pendingFormData = null;
+      _pendingRegionForSuccess = null;
+    }
+  }
+
   // Helper to remove a file
   void removePickedImageAt(int index) {
     if (index >= 0 && index < pickedImagesX.length) {
@@ -128,6 +163,12 @@ final isLoadingPollutionCategories = false.obs;
 
   // Loading state for submission
   final isSubmitting = false.obs;
+
+  // Pending data for guest flow (submit after OTP verification)
+  dio.FormData? _pendingFormData;
+  String? _pendingRegionForSuccess;
+
+  bool get hasPendingReport => _pendingFormData != null;
 
 
 
@@ -2024,15 +2065,15 @@ Future<void> pickTime(BuildContext context) async {
       final httpClient = Get.find<DioClient>().dio;
       final token = Get.find<GetStorage>().read('auth_token');
 
-      if (token == null) {
-        Get.snackbar(
-          'Error',
-          'Please login to submit a report',
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        isSubmitting.value = false;
-        return;
-      }
+      // if (token == null) {
+      //   Get.snackbar(
+      //     'Error',
+      //     'Please login to submit a report',
+      //     snackPosition: SnackPosition.BOTTOM,
+      //   );
+      //   isSubmitting.value = false;
+      //   return;
+      // }
 
       // Get location IDs
       final regionId =
@@ -2166,21 +2207,59 @@ Future<void> pickTime(BuildContext context) async {
         print('  ${field.key}: ${field.value}');
       }
 
-      // Submit to API
+      // If user is a guest, store form data and route to email/OTP before submission
+      final isLoggedIn = token != null && token.toString().isNotEmpty;
+      if (!isLoggedIn) {
+        _pendingFormData = formData;
+        _pendingRegionForSuccess = selectedRegion.value;
+        isSubmitting.value = false;
+        Get.toNamed(
+          Routes.Report_Email,
+          arguments: {
+            'region': selectedRegion.value,
+          },
+        );
+        return;
+      }
+
+      await _submitFormData(
+        httpClient: httpClient,
+        formData: formData,
+        token: token?.toString(),
+        regionToPass: selectedRegion.value,
+        isLoggedIn: true,
+      );
+    } catch (e) {
+      isSubmitting.value = false;
+      print('Error submitting report: $e');
+      Get.snackbar(
+        'Error',
+        'Failed to submit report: ${e.toString()}',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+    }
+  }
+
+  Future<void> _submitFormData({
+    required dio.Dio httpClient,
+    required dio.FormData formData,
+    required String regionToPass,
+    String? token,
+    required bool isLoggedIn,
+  }) async {
+    try {
       print('Submitting to: ${ApiConstants.complaintsEndpoint}');
-      print('Total files: ${pickedImagesX.length}');
+      print('Total files: ${formData.files.length}');
 
       final response = await httpClient.post(
         ApiConstants.complaintsEndpoint,
         data: formData,
         options: dio.Options(
           headers: {
-            'Authorization': 'Bearer $token',
+            if (token != null && token.isNotEmpty) 'Authorization': 'Bearer $token',
             // Don't set Content-Type for multipart/form-data - let Dio set it with boundary
           },
-          sendTimeout: const Duration(
-            seconds: 60,
-          ), // Increase timeout for file uploads
+          sendTimeout: const Duration(seconds: 60),
           receiveTimeout: const Duration(seconds: 60),
         ),
       );
@@ -2188,9 +2267,6 @@ Future<void> pickTime(BuildContext context) async {
       isSubmitting.value = false;
 
       if (response.statusCode == 200 || response.statusCode == 201) {
-        // Check if user is logged in (has auth token)
-        final isLoggedIn = token != null && token.isNotEmpty;
-
         // Extract report ID from response
         String reportId = '';
         try {
@@ -2228,38 +2304,20 @@ Future<void> pickTime(BuildContext context) async {
           reportId = 'REP-${DateTime.now().millisecondsSinceEpoch}';
         }
 
-        // Capture region/city before resetting the form
-        final regionToPass = selectedRegion.value;
-
         // Clear form data before navigating
         _resetForm();
 
-        if (isLoggedIn) {
-          // User is logged in - go directly to success page
-          print(
-            'User is logged in, navigating to success page with report ID: $reportId',
-          );
-          Get.offNamed(
-            Routes.Report_Success,
-            arguments: {
-              'reportId': reportId,
-              'dateTime': DateTime.now(),
-              'region': regionToPass,
-            },
-          );
-        } else {
-          // User is a guest - go to OTP page
-          print('User is a guest, navigating to OTP page');
-          // Pass along report info so OTP can forward to success with context
-          Get.toNamed(
-            Routes.Report_Otp,
-            arguments: {
-              'reportId': reportId,
-              'dateTime': DateTime.now(),
-              'region': regionToPass,
-            },
-          );
-        }
+        print(
+          'Navigating to success page with report ID: $reportId (logged in: $isLoggedIn)',
+        );
+        Get.offNamed(
+          Routes.Report_Success,
+          arguments: {
+            'reportId': reportId,
+            'dateTime': DateTime.now(),
+            'region': regionToPass,
+          },
+        );
       } else {
         Get.snackbar(
           'Error',
