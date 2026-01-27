@@ -32,9 +32,18 @@ class SettingController extends GetxController {
       userName.value = storage.read('username') ?? 
                        storage.read('full_name') ?? 
                        'User';
-      phoneNumber.value = storage.read('phone') ?? 
-                          storage.read('phone_number') ?? 
-                          '';
+
+      final storedPhone = storage.read('phone');
+      final storedPhoneNumber = storage.read('phone_number');
+      print("Stored phone: $storedPhone");
+      print("Stored phone_number: $storedPhoneNumber");
+      // Prefer the first non-empty value
+      phoneNumber.value = (storedPhone is String && storedPhone.trim().isNotEmpty)
+          ? storedPhone.trim()
+          : (storedPhoneNumber is String && storedPhoneNumber.trim().isNotEmpty)
+              ? storedPhoneNumber.trim()
+              : '';
+
       userId.value = storage.read('userId') ?? storage.read('user_id') ?? '';
     }
   }

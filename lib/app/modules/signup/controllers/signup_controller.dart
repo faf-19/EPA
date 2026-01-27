@@ -125,7 +125,10 @@ class SignUpController extends GetxController {
       // Navigate to OTP verification page
       Get.toNamed(
         Routes.SIGNUP_OTP,
-        arguments: {'email': email.value},
+        arguments: {
+          'email': email.value,
+          'phone': phoneNumber.value,
+        },
       );
 
       // Show success message

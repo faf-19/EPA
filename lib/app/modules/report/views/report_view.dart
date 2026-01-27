@@ -1,18 +1,20 @@
 
+import 'dart:math' as math;
+import 'dart:typed_data';
+
+import 'package:eprs/app/routes/app_pages.dart';
 import 'package:eprs/app/widgets/custom_app_bar.dart';
 import 'package:eprs/core/enums/report_type_enum.dart';
 import 'package:eprs/core/theme/app_colors.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/services.dart';
-import 'dart:math' as math;
-
-import 'package:get/get.dart';
 import 'package:flutter/foundation.dart';
-import 'package:eprs/app/routes/app_pages.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../controllers/report_controller.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class ReportView extends StatefulWidget {
   final String reportType;
@@ -716,58 +718,66 @@ class _ReportViewState extends State<ReportView> {
                                       fileName.endsWith('.webp');
                                   return Stack(
                                     children: [
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(8),
-                                        child: Container(
-                                          width: 120,
-                                          height: 84,
-                                          decoration: BoxDecoration(
-                                            color: isAudio 
-                                                ? const Color(0xFFEFF7F0)
-                                                : Colors.transparent,
-                                            borderRadius: BorderRadius.circular(8),
-                                          ),
-                                          child: isAudio
-                                              ? const Center(
-                                                  child: Icon(
-                                                    Icons.audiotrack,
-                                                    size: 40,
-                                                    color: Color(0xFF63557F),
-                                                  ),
-                                                )
-                                              : isVideo
-                                                  ? const Center(
-                                                      child: Icon(
-                                                        Icons.videocam,
-                                                        size: 40,
-                                                        color: Color(0xFF63557F),
-                                                      ),
-                                                    )
-                                                  : isImage
-                                                      ? FutureBuilder<Uint8List>(
-                                                          future: xFile.readAsBytes(),
-                                                          builder: (context, snapshot) {
-                                                            if (snapshot.hasData) {
-                                                              return Image.memory(
-                                                                snapshot.data!,
-                                                                fit: BoxFit.cover,
-                                                              );
-                                                            } else if (snapshot.hasError) {
-                                                              return const Icon(Icons.image);
-                                                            } else {
-                                                              return const Center(
-                                                                child: CircularProgressIndicator(strokeWidth: 2),
-                                                              );
-                                                            }
-                                                          },
-                                                        )
-                                                      : const Center(
-                                                          child: Icon(
-                                                            Icons.insert_drive_file,
-                                                            size: 32,
-                                                            color: Color(0xFF63557F),
-                                                          ),
+                                      GestureDetector(
+                                        onTap: () => _openAttachment(
+                                          xFile,
+                                          isImage: isImage,
+                                          isVideo: isVideo,
+                                          isAudio: isAudio,
+                                        ),
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(8),
+                                          child: Container(
+                                            width: 120,
+                                            height: 84,
+                                            decoration: BoxDecoration(
+                                              color: isAudio 
+                                                  ? const Color(0xFFEFF7F0)
+                                                  : Colors.transparent,
+                                              borderRadius: BorderRadius.circular(8),
+                                            ),
+                                            child: isAudio
+                                                ? const Center(
+                                                    child: Icon(
+                                                      Icons.audiotrack,
+                                                      size: 40,
+                                                      color: Color(0xFF63557F),
+                                                    ),
+                                                  )
+                                                : isVideo
+                                                    ? const Center(
+                                                        child: Icon(
+                                                          Icons.videocam,
+                                                          size: 40,
+                                                          color: Color(0xFF63557F),
                                                         ),
+                                                      )
+                                                    : isImage
+                                                        ? FutureBuilder<Uint8List>(
+                                                            future: xFile.readAsBytes(),
+                                                            builder: (context, snapshot) {
+                                                              if (snapshot.hasData) {
+                                                                return Image.memory(
+                                                                  snapshot.data!,
+                                                                  fit: BoxFit.cover,
+                                                                );
+                                                              } else if (snapshot.hasError) {
+                                                                return const Icon(Icons.image);
+                                                              } else {
+                                                                return const Center(
+                                                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                                                );
+                                                              }
+                                                            },
+                                                          )
+                                                        : const Center(
+                                                            child: Icon(
+                                                              Icons.insert_drive_file,
+                                                              size: 32,
+                                                              color: Color(0xFF63557F),
+                                                            ),
+                                                          ),
+                                          ),
                                         ),
                                       ),
                                       Positioned(
@@ -2102,6 +2112,74 @@ class _ReportViewState extends State<ReportView> {
         ),
       );
     });
+  }
+
+  Future<void> _openAttachment(
+    XFile file, {
+    required bool isImage,
+    required bool isVideo,
+    required bool isAudio,
+  }) async {
+    if (isImage) {
+      try {
+        final bytes = await file.readAsBytes();
+        if (!mounted) return;
+        await showDialog(
+          context: context,
+          builder: (_) {
+            return Dialog(
+              insetPadding: const EdgeInsets.all(16),
+              child: InteractiveViewer(
+                child: Image.memory(bytes, fit: BoxFit.contain),
+              ),
+            );
+          },
+        );
+        return;
+      } catch (e) {
+        if (!mounted) return;
+        Get.snackbar(
+          'Preview failed',
+          'Could not open image: $e',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+    }
+
+    final typeLabel = isVideo
+        ? 'video'
+        : isAudio
+            ? 'audio'
+            : 'file';
+
+    if (!mounted) return;
+    await showDialog(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          title: Text(file.name.isNotEmpty ? file.name : 'Attached $typeLabel'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Preview for this $typeLabel is not available in-app.'),
+              const SizedBox(height: 8),
+              Text(
+                'Path: ${file.path}',
+                style: const TextStyle(fontSize: 12, color: Colors.black54),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 

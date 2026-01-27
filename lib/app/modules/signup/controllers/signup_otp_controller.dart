@@ -11,11 +11,13 @@ class SignupOtpController extends GetxController {
   final VerifyOtpUseCase verifyOtpUseCase;
   final ResendOtpUseCase resendOtpUseCase;
   final String email;
+  final String phone;
 
   SignupOtpController({
     required this.verifyOtpUseCase,
     required this.resendOtpUseCase,
     required this.email,
+    this.phone = '',
   });
 
   var code = ''.obs;
@@ -91,6 +93,10 @@ class SignupOtpController extends GetxController {
       }
       if (response.email != null) {
         storage.write('email', response.email);
+      }
+      if (phone.isNotEmpty) {
+        storage.write('phone', phone);
+        storage.write('phone_number', phone);
       }
       if (response.userId != null) {
         storage.write('userId', response.userId);

@@ -131,21 +131,25 @@ class AppPages {
       name: _Paths.SIGNUP_OTP,
       page: () {
         final arg = Get.arguments;
-        final email = (arg is Map && arg['email'] is String) 
-            ? arg['email'] as String 
+        final email = (arg is Map && arg['email'] is String)
+            ? arg['email'] as String
             : '';
         return SignupOtpView();
       },
       binding: BindingsBuilder(() {
         final arg = Get.arguments;
-        final email = (arg is Map && arg['email'] is String) 
-            ? arg['email'] as String 
+        final email = (arg is Map && arg['email'] is String)
+            ? arg['email'] as String
+            : '';
+        final phone = (arg is Map && arg['phone'] is String)
+            ? arg['phone'] as String
             : '';
         Get.lazyPut<SignupOtpController>(
           () => SignupOtpController(
             verifyOtpUseCase: Get.find<VerifyOtpUseCase>(),
             resendOtpUseCase: Get.find<ResendOtpUseCase>(),
             email: email,
+            phone: phone,
           ),
         );
       }),

@@ -52,12 +52,17 @@ class LoginController extends GetxController {
       // Check if login was successful
       if (response.success) {
         // Save user data to GetStorage for easy access
+        
+
         final storage = Get.find<GetStorage>();
         if (response.username != null) {
           storage.write('username', response.username);
         }
-        if (response.phoneNumber != null) {
-          storage.write('phone', response.phoneNumber);
+        final phoneResp = response.phoneNumber;
+        print("Phoneee $phoneResp");
+        if (phoneResp != null && phoneResp.trim().isNotEmpty) {
+          storage.write('phone', phoneResp.trim());
+          storage.write('phone_number', phoneResp.trim());
         }
         if (response.userId != null) {
           storage.write('userId', response.userId);
