@@ -1920,10 +1920,20 @@ Future<void> pickTime(BuildContext context) async {
 
   Future<void> submitReport(bool isSound) async {
     // Validation
-    if (descriptionController.text.trim().isEmpty) {
+    final desc = descriptionController.text.trim();
+    if (desc.isEmpty) {
       Get.snackbar(
         'Error',
         'Please provide a description',
+        snackPosition: SnackPosition.BOTTOM,
+      );
+      return;
+    }
+
+    if (desc.length < 30) {
+      Get.snackbar(
+        'Error',
+        'Description must be at least 30 characters',
         snackPosition: SnackPosition.BOTTOM,
       );
       return;
