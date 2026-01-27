@@ -248,15 +248,7 @@ class _ReportTile extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // "Enter Code" label
-              Text(
-                'Enter Code',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w400,
-                  color: AppColors.accentBlue,
-                ),
-              ),
+              
               const SizedBox(height: 12),
               
               // Text field with trailing icon
