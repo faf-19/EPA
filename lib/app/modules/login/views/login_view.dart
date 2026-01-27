@@ -40,6 +40,10 @@ class _LoginOverlayState extends State<LoginOverlay> {
     final size = MediaQuery.of(context).size;
     final height = size.height;
     final width = size.width;
+
+    final args = Get.arguments;
+    final isFirstLogin = args is Map && args['firstTimeLogin'] == true;
+    final welcomeTitle = isFirstLogin ? 'Welcome!' : 'Welcome Back!';
     
     // Responsive calculations
     final isSmall = height < 700;
@@ -222,8 +226,9 @@ class _LoginOverlayState extends State<LoginOverlay> {
                   SizedBox(height: height * 0.02),
 
                   // Title
+                  
                   Text(
-                    'Welcome Back!',
+                    welcomeTitle,
                     style: GoogleFonts.poppins(
                       fontSize: isSmall ? 20 : 24,
                       fontWeight: FontWeight.w600,

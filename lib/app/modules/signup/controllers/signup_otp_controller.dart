@@ -108,7 +108,12 @@ class SignupOtpController extends GetxController {
 
       // Navigate to login page after a short delay
       Future.delayed(const Duration(milliseconds: 500), () {
-        Get.offAllNamed(Routes.LOGIN);
+        Get.offAllNamed(
+          Routes.LOGIN,
+          arguments: {
+            'firstTimeLogin': true,
+          },
+        );
       });
     } catch (e) {
       // Handle errors
