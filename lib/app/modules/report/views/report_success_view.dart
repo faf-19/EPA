@@ -94,184 +94,207 @@ class ReportSuccessView extends StatelessWidget {
     final formatted = DateFormat('dd MMM yyyy, hh:mm a').format(dt);
     final resolvedRegion = _resolveRegion(context);
     final resolvedName = _resolveName();
+    final size = MediaQuery.of(context).size;
+    final imageWidth = (size.width * 0.7).clamp(180.0, 360.0);
+    final imageHeight = imageWidth * 0.6;
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-
-            children: [
-
-              Image(image:  AssetImage('assets/logo.png'), height: 300, width: 500,),
-
-              const SizedBox(height: 40),
-              // large check icon with circular background
-              Container(
-                width: 120,
-                height: 120,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFEFFAF3),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Container(
-                    width: 84,
-                    height: 84,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: size.height - 48),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Image(
+                    image: const AssetImage('assets/logo.png'),
+                    height: imageHeight,
+                    width: imageWidth,
+                    fit: BoxFit.contain,
+                  ),
+                  const SizedBox(height: 32),
+                  // large check icon with circular background
+                  Container(
+                    width: 110,
+                    height: 110,
                     decoration: BoxDecoration(
-                      color: AppColors.primary,
+                      color: const Color(0xFFEFFAF3),
                       shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.08),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
                     ),
-                    child: const Icon(
-                      Icons.check,
-                      color: Colors.white,
-                      size: 44,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Successfully Sent',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF0B2035),
-                ),
-              ),
-              const SizedBox(height: 28),
-
-              // info card
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 18,
-                  ),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFFFFF),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: const Color(0xFFE8EEF3)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.02),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children:  [
-                            Text(
-                              'Report ID:',
-                              style: TextStyle(color: Color(0xFF6B7280)),
+                    child: Center(
+                      child: Container(
+                        width: 78,
+                        height: 78,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.08),
+                              blurRadius: 8,
+                              offset: const Offset(0, 4),
                             ),
-                            SizedBox(height: 14),
-                            if (resolvedName != null) Text('Name', style: TextStyle(color: Color(0xFF6B7280))),
-                            SizedBox(height: 14),
-                            Text(
-                              'Date & Time:',
-                              style: TextStyle(color: Color(0xFF6B7280)),
-                            ),
-
-                              if (resolvedRegion != null) ...[
-                              SizedBox(height: 14),
-                              Text(
-                                'Region:',
-                                style: TextStyle(color: Color(0xFF6B7280)),
-                              ),
-                            ],
                           ],
                         ),
+                        child: const Icon(
+                          Icons.check,
+                          color: Colors.white,
+                          size: 40,
+                        ),
                       ),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.end,
-                        children: [
-                          Text(
-                            reportId,
-                            style: const TextStyle(
-                              color: Color(0xFF0B2035),
-                              fontWeight: FontWeight.w600,
-                            ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'Successfully Sent',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF0B2035),
+                    ),
+                  ),
+                  const SizedBox(height: 22),
+
+                  // info card
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 18,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFFFFF),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: const Color(0xFFE8EEF3)),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.02),
+                            blurRadius: 6,
+                            offset: const Offset(0, 2),
                           ),
-                          const SizedBox(height: 12),
-                          if (resolvedName != null)
-                            Text(
-                              resolvedName,
-                              style: const TextStyle(
-                                color: Color(0xFF0B2035),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          const SizedBox(height: 12),
-                          Text(
-                            formatted,
-                            style: const TextStyle(
-                              color: Color(0xFF0B2035),
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          if (resolvedRegion != null) ...[
-                            const SizedBox(height: 12),
-                            Text(
-                              resolvedRegion,
-                              style: const TextStyle(
-                                color: Color(0xFF0B2035),
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
                         ],
                       ),
-                    ],
-                  ),
-                ),
-              ),
-
-              const SizedBox(height: 28),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children:  [
+                                const Text(
+                                  'Report ID:',
+                                  style: TextStyle(color: Color(0xFF6B7280)),
+                                ),
+                                const SizedBox(height: 12),
+                                if (resolvedName != null)
+                                  const Text('Name', style: TextStyle(color: Color(0xFF6B7280))),
+                                if (resolvedName != null) const SizedBox(height: 12),
+                                const Text(
+                                  'Date & Time:',
+                                  style: TextStyle(color: Color(0xFF6B7280)),
+                                ),
+                                if (resolvedRegion != null) ...[
+                                  const SizedBox(height: 12),
+                                  const Text(
+                                    'Region:',
+                                    style: TextStyle(color: Color(0xFF6B7280)),
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: Align(
+                              alignment: Alignment.topRight,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    reportId,
+                                    textAlign: TextAlign.right,
+                                    style: const TextStyle(
+                                      color: Color(0xFF0B2035),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 12),
+                                  if (resolvedName != null)
+                                    Text(
+                                      resolvedName,
+                                      textAlign: TextAlign.right,
+                                      style: const TextStyle(
+                                        color: Color(0xFF0B2035),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  if (resolvedName != null) const SizedBox(height: 12),
+                                  Text(
+                                    formatted,
+                                    textAlign: TextAlign.right,
+                                    style: const TextStyle(
+                                      color: Color(0xFF0B2035),
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                  if (resolvedRegion != null) ...[
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      resolvedRegion,
+                                      textAlign: TextAlign.right,
+                                      style: const TextStyle(
+                                        color: Color(0xFF0B2035),
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                    child: const Text(
-                      'Done',
-                      style: TextStyle(
-                        color: AppColors.onPrimary,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                    child: SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Text(
+                          'Done',
+                          style: TextStyle(
+                            color: AppColors.onPrimary,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ),
 
-              const SizedBox(height: 80),
-            ],
+                  const SizedBox(height: 32),
+                ],
+              ),
+            ),
           ),
         ),
       ),
