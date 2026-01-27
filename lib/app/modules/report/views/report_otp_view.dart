@@ -17,6 +17,8 @@ class ReportOtpView extends GetView<ReportOtpController> {
     final emailText = controller.email.isNotEmpty
         ? controller.email
         : 'your email';
+    final size = MediaQuery.of(context).size;
+    final boxSize = ((size.width - 80) / 6).clamp(48.0, 64.0);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF6F6FA),
@@ -27,146 +29,133 @@ class ReportOtpView extends GetView<ReportOtpController> {
       body: GestureDetector(
         onTap: () => controller.toggleKeypad(false),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Center everything except keypad
+            // Scrollable content to avoid overflow on small screens
             Expanded(
-              child: Center(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 24,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const SizedBox(height: 8),
-                      Text(
-                        'We sent a one-time code to $emailText. Check your email and enter the code below.',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          height: 1.5,
-                          color: Color(0xFF222222),
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: size.height * 0.45),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const SizedBox(height: 8),
+                        Text(
+                          'We sent a one-time code to $emailText. Check your email and enter the code below.',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            height: 1.5,
+                            color: Color(0xFF222222),
+                          ),
+                          textAlign: TextAlign.center,
                         ),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 28),
+                        const SizedBox(height: 22),
 
-                      // OTP boxes
-                      Obx(
-                        () => Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                          children: List.generate(6, (i) {
-                            final code = controller.code.value;
-                            final digit = (i < code.length) ? code[i] : '';
-                            final isFocused =
-                                i == code.length && code.length < 6;
-                            return _otpBox(digit, isFocused);
-                          }),
+                        // OTP boxes
+                        Obx(
+                          () => Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: List.generate(6, (i) {
+                              final code = controller.code.value;
+                              final digit = (i < code.length) ? code[i] : '';
+                              final isFocused = i == code.length && code.length < 6;
+                              return _otpBox(digit, isFocused, boxSize);
+                            }),
+                          ),
                         ),
-                      ),
 
-                      const SizedBox(height: 28),
-                      Obx(
-                        () => Center(
-                          child: Column(
-                            children: [
-                              const Text(
-                                "Didn't receive code?",
-                                style: TextStyle(color: Colors.black87),
-                              ),
-                              const SizedBox(height: 8),
-                              controller.seconds.value > 0
-                                  ? RichText(
-                                      text: TextSpan(
-                                        text: 'You can resend code in ',
-                                        style: const TextStyle(
-                                          color: Colors.black54,
-                                        ),
-                                        children: [
-                                          TextSpan(
-                                            text:
-                                                '${controller.seconds.value}s',
-                                            style: const TextStyle(
-                                              color: Color(0xFF3B82F6),
-                                              fontWeight: FontWeight.bold,
-                                            ),
+                        const SizedBox(height: 22),
+                        Obx(
+                          () => Center(
+                            child: Column(
+                              children: [
+                                const Text(
+                                  "Didn't receive code?",
+                                  style: TextStyle(color: Colors.black87),
+                                ),
+                                const SizedBox(height: 8),
+                                controller.seconds.value > 0
+                                    ? RichText(
+                                        text: TextSpan(
+                                          text: 'You can resend code in ',
+                                          style: const TextStyle(
+                                            color: Colors.black54,
                                           ),
-                                        ],
-                                      ),
-                                    )
-                                  : TextButton(
-                                      onPressed:
-                                          (controller.isResending.value ||
-                                                  controller.isLoading.value)
-                                              ? null
-                                              : controller.resendOtp,
-                                      child: controller.isResending.value
-                                          ? const SizedBox(
-                                              height: 16,
-                                              width: 16,
-                                              child: CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                                valueColor:
-                                                    AlwaysStoppedAnimation<Color>(
-                                                  Color(0xFF3B82F6),
+                                          children: [
+                                            TextSpan(
+                                              text: '${controller.seconds.value}s',
+                                              style: const TextStyle(
+                                                color: Color(0xFF3B82F6),
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    : TextButton(
+                                        onPressed: (controller.isResending.value || controller.isLoading.value)
+                                            ? null
+                                            : controller.resendOtp,
+                                        child: controller.isResending.value
+                                            ? const SizedBox(
+                                                height: 16,
+                                                width: 16,
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                                                ),
+                                              )
+                                            : const Text(
+                                                'Resend code',
+                                                style: TextStyle(
+                                                  color: Color(0xFF3B82F6),
                                                 ),
                                               ),
-                                            )
-                                          : const Text(
-                                              'Resend code',
-                                              style: TextStyle(
-                                                color: Color(0xFF3B82F6),
-                                              ),
-                                            ),
-                                    ),
-                            ],
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 28),
-
-                      Obx(
-                        () => SizedBox(
-                          height: 52,
-                          child: ElevatedButton(
-                            onPressed:
-                                (controller.code.value.length == 6 &&
-                                        !controller.isLoading.value)
-                                    ? controller.verifyOtp
-                                    : null,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              disabledBackgroundColor:
-                                  AppColors.primary.withOpacity(0.6),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10),
-                              ),
+                                      ),
+                              ],
                             ),
-                            child: controller.isLoading.value
-                                ? const SizedBox(
-                                    height: 20,
-                                    width: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      valueColor:
-                                          AlwaysStoppedAnimation<Color>(
-                                              Colors.white),
-                                    ),
-                                  )
-                                : const Text(
-                                    'CONFIRM',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
                           ),
                         ),
-                      ),
-                    ],
+
+                        const SizedBox(height: 22),
+
+                        Obx(
+                          () => SizedBox(
+                            height: 52,
+                            child: ElevatedButton(
+                              onPressed: (controller.code.value.length == 6 && !controller.isLoading.value)
+                                  ? controller.verifyOtp
+                                  : null,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.primary,
+                                disabledBackgroundColor: AppColors.primary.withOpacity(0.6),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                              ),
+                              child: controller.isLoading.value
+                                  ? const SizedBox(
+                                      height: 20,
+                                      width: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                      ),
+                                    )
+                                  : const Text(
+                                      'CONFIRM',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
@@ -175,7 +164,7 @@ class ReportOtpView extends GetView<ReportOtpController> {
             // Show keypad only when active
             Obx(
               () => controller.showKeypad.value
-                  ? _keypad(controller)
+                  ? _keypad(controller, size)
                   : const SizedBox.shrink(),
             ),
           ],
@@ -184,12 +173,12 @@ class ReportOtpView extends GetView<ReportOtpController> {
     );
   }
 
-  Widget _otpBox(String digit, bool focused) {
+  Widget _otpBox(String digit, bool focused, double boxSize) {
     return GestureDetector(
       onTap: () => controller.toggleKeypad(true),
       child: Container(
-        width: 72,
-        height: 72,
+        width: boxSize,
+        height: boxSize,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
@@ -208,7 +197,7 @@ class ReportOtpView extends GetView<ReportOtpController> {
           child: Text(
             digit,
             style: const TextStyle(
-              fontSize: 22,
+              fontSize: 20,
               fontWeight: FontWeight.w700,
               color: Colors.black87,
             ),
@@ -218,8 +207,9 @@ class ReportOtpView extends GetView<ReportOtpController> {
     );
   }
 
-  Widget _keypad(ReportOtpController controller) {
+  Widget _keypad(ReportOtpController controller, Size size) {
     final labels = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '*', '0', '⌫'];
+    final keypadHeight = (size.height * 0.38).clamp(240.0, 320.0);
     return Container(
       decoration: const BoxDecoration(
         color: Colors.white,
@@ -229,7 +219,7 @@ class ReportOtpView extends GetView<ReportOtpController> {
       // Constrain keypad height to avoid unbounded/overflow during hot-reload or
       // unexpected layout changes. Adjust height as needed for different screens.
       child: SizedBox(
-        height: 300,
+        height: keypadHeight,
         child: GridView.count(
           crossAxisCount: 3,
           shrinkWrap: true,
