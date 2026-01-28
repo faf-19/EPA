@@ -2,6 +2,7 @@
 import 'dart:typed_data';
 
 import 'package:eprs/app/modules/report/components/dash_border.dart';
+import 'package:eprs/app/modules/report/components/report_type_description_card.dart';
 import 'package:eprs/app/routes/app_pages.dart';
 import 'package:eprs/app/widgets/custom_app_bar.dart';
 import 'package:eprs/core/enums/report_type_enum.dart';
@@ -70,66 +71,7 @@ class _ReportViewState extends State<ReportView> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // --- Insert this Card ABOVE the Evidence Card ---
-              
-                Card(
-                  color: const Color(0xFFFFFFFF),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  // elevation: 6,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-
-                        // Dynamic title & description based on `reportType`
-                        Builder(builder: (_) {
-                          String title;
-                          String desc;
-                          switch (widget.reportType) {
-                            case 'pollution':
-                              title = 'Pollution Description';
-                              desc = 'Describe the pollution observed (air, water, or soil), its source, and any visible impact on the environment or public health.';
-                              break;
-                            case 'waste':
-                              title = 'Waste Description';
-                              desc = 'Describe the type of waste (household, industrial, construction), exact location, and whether it is actively being dumped or is an abandoned pile.';
-                              break;
-                            case 'chemical':
-                              title = 'Chemical / Hazardous Material Description';
-                              desc = 'Provide details on the chemical or hazardous material (labels if visible), estimated quantity, and any immediate danger (smoke, spills, fumes). Avoid close contact.';
-                              break;
-                            default:
-                              title = 'Sound Description';
-                              desc = 'Provide a clear description of the issue, including location, time observed, and any other details that can help inspection teams.';
-                          }
-
-                          return Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                title,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              Text(
-                                desc,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.black54,
-                                ),
-                              ),
-                            ],
-                          );
-                        }),
-                      ],
-                    ),
-                  ),
-                ),
+              ReportTypeDescriptionCard(reportType: widget.reportType),
 
               const SizedBox(height: 12),
               // Pollution Category Card
@@ -2184,81 +2126,4 @@ class _ReportViewState extends State<ReportView> {
 }
 
 
-
-// Custom waveform painter that creates animated waves based on audio amplitude
-// Uses decibel readings from noise meter to create real-time visualization
-class _WaveformPainter extends CustomPainter {
-  final double amplitude;
-  final Color color;
-  final bool isActive;
-  static final List<double> _waveData = List.generate(60, (_) => 0.0);
-
-  _WaveformPainter({
-    required this.amplitude,
-    required this.color,
-    required this.isActive,
-  });
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (!isActive) {
-      // Draw flat line when not recording
-      final paint = Paint()
-        ..color = color.withOpacity(0.3)
-        ..strokeWidth = 2
-        ..style = PaintingStyle.stroke;
-      canvas.drawLine(
-        Offset(0, size.height / 2),
-        Offset(size.width, size.height / 2),
-        paint,
-      );
-      return;
-    }
-
-    // Update wave data with new amplitude
-    _waveData.removeAt(0);
-    _waveData.add(amplitude);
-
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = 3.5
-      ..strokeCap = StrokeCap.round
-      ..style = PaintingStyle.stroke;
-
-    final centerY = size.height / 2;
-    final barWidth = size.width / _waveData.length;
-    final maxHeight = size.height * 0.45;
-
-    // Draw waveform bars with spacing
-    for (int i = 0; i < _waveData.length; i++) {
-      final x = i * barWidth + barWidth / 2;
-      final barHeight = _waveData[i] * maxHeight;
-      
-      // Add minimum height for visibility
-      final minHeight = maxHeight * 0.1;
-      final finalHeight = barHeight < minHeight ? minHeight : barHeight;
-      
-      // Draw top bar
-      canvas.drawLine(
-        Offset(x, centerY - finalHeight),
-        Offset(x, centerY),
-        paint,
-      );
-      
-      // Draw bottom bar (mirrored)
-      canvas.drawLine(
-        Offset(x, centerY),
-        Offset(x, centerY + finalHeight),
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(_WaveformPainter oldDelegate) {
-    return oldDelegate.amplitude != amplitude ||
-        oldDelegate.color != color ||
-        oldDelegate.isActive != isActive;
-  }
-}
 
