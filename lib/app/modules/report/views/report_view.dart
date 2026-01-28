@@ -2,6 +2,7 @@
 import 'dart:typed_data';
 
 import 'package:eprs/app/modules/report/components/dash_border.dart';
+import 'package:eprs/app/modules/report/components/date_time_card.dart';
 import 'package:eprs/app/modules/report/components/report_type_description_card.dart';
 import 'package:eprs/app/modules/report/components/sound_period_card.dart';
 import 'package:eprs/app/routes/app_pages.dart';
@@ -361,104 +362,11 @@ class _ReportViewState extends State<ReportView> {
               const SizedBox(height: 12),
               
               // Time & Date Card
-              Card(
-                color: AppColors.onPrimary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                // elevation: 6,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: const [
-                          Text(
-                            'Time and Date',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          SizedBox(width: 6),
-                          Text(
-                            '*',
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-
-                      const SizedBox(height: 12),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Obx(() {
-                              final d = controller.selectedDate.value;
-                              final label = d == null
-                                  ? 'Select Date'
-                                  : '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
-                              return OutlinedButton(
-                                onPressed: () => controller.pickDate(context),
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  side: const BorderSide(color: Color(0xFFD4D4D4)),
-                                ),
-                                child: Text(
-                                  label,
-                                  style: TextStyle(
-                                    color: d == null ? Colors.grey.shade600 : Colors.black87,
-                                  ),
-                                ),
-                              );
-                            }),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Obx(() {
-                              final t = controller.selectedTime.value;
-                              String label;
-                              if (t == null) {
-                                label = 'Select Time';
-                              } else {
-                                final hour = t.hourOfPeriod == 0 ? 12 : t.hourOfPeriod;
-                                final minute = t.minute.toString().padLeft(2, '0');
-                                final period = t.period == DayPeriod.am ? 'AM' : 'PM';
-                                label = '$hour:$minute $period';
-                              }
-                              return OutlinedButton(
-                                onPressed: () => controller.pickTime(context),
-                                style: OutlinedButton.styleFrom(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 16,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
-                                  ),
-                                  side: const BorderSide(color: Color(0xFFD4D4D4)),
-                                ),
-                                child: Text(
-                                  label,
-                                  style: TextStyle(
-                                    color: t == null ? Colors.grey.shade600 : Colors.black87,
-                                  ),
-                                ),
-                              );
-                            }),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+              DateTimeCard(
+                selectedDate: controller.selectedDate,
+                selectedTime: controller.selectedTime,
+                onPickDate: () => controller.pickDate(context),
+                onPickTime: () => controller.pickTime(context),
               ),
 
               const SizedBox(height: 12),
