@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:eprs/app/modules/report/components/dash_border.dart';
 import 'package:eprs/app/modules/report/components/report_type_description_card.dart';
+import 'package:eprs/app/modules/report/components/sound_period_card.dart';
 import 'package:eprs/app/routes/app_pages.dart';
 import 'package:eprs/app/widgets/custom_app_bar.dart';
 import 'package:eprs/core/enums/report_type_enum.dart';
@@ -355,87 +356,7 @@ class _ReportViewState extends State<ReportView> {
 
               //time of the day card for sound report
               if (widget.reportType == ReportTypeEnum.sound.name)
-                Card(
-                  color: const Color(0xFFFFFFFF),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Time of Day',
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16,
-                            color: Colors.black87
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Obx(() {
-                          final current = controller.soundPeriod.value;
-                          return Row(
-                            children: [
-                              Expanded(
-                                child: OutlinedButton(
-                                  onPressed: () => controller.soundPeriod.value = 'Day',
-                                  style: OutlinedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 14,
-                                      vertical: 14,
-                                    ),
-                                    side: BorderSide(
-                                      color: current == 'Day' ? AppColors.primary : Color.fromRGBO(212, 212, 212, 1),
-                                      width: current == 'Day' ? 1.1 : 1,
-                                    ),
-                                    backgroundColor: current == 'Day' ? AppColors.primary.withOpacity(0.08) : Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    'Day',
-                                    style: TextStyle(
-                                      color: current == 'Day' ? AppColors.primary : Colors.black87,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: OutlinedButton(
-                                  onPressed: () => controller.soundPeriod.value = 'Night',
-                                  style: OutlinedButton.styleFrom(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 14,
-                                      vertical: 14,
-                                    ),
-                                    side: BorderSide(
-                                      color: current == 'Night' ? AppColors.primary : Color.fromRGBO(212, 212, 212, 1),
-                                      width: current == 'Night' ? 1.1 : 1,
-                                    ),
-                                    backgroundColor: current == 'Night' ? AppColors.primary.withOpacity(0.08) : Colors.white,
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                  ),
-                                  child: Text(
-                                    'Night',
-                                    style: TextStyle(
-                                      color: current == 'Night' ? AppColors.primary : Colors.black87,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          );
-                        }),
-                      ],
-                    ),
-                  ),
-                ),
+                SoundPeriodCard(soundPeriod: controller.soundPeriod),
 
               const SizedBox(height: 12),
               
