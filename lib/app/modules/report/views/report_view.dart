@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:eprs/app/modules/report/components/dash_border.dart';
 import 'package:eprs/app/modules/report/components/date_time_card.dart';
+import 'package:eprs/app/modules/report/components/location_description_card.dart';
 import 'package:eprs/app/modules/report/components/report_type_description_card.dart';
 import 'package:eprs/app/modules/report/components/sound_period_card.dart';
 import 'package:eprs/app/routes/app_pages.dart';
@@ -929,144 +930,15 @@ class _ReportViewState extends State<ReportView> {
               
               const SizedBox(height: 12),
 
-              // a specific location card
-              Card(
-                color: AppColors.onPrimary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                // elevation: 6,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(13, 12, 13, 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                        Row(
-                        children: const [
-                          Text(
-                            'Specific Location',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          SizedBox(width: 6),
-                          Text(
-                            '*',
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-
-                       ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        // controller: controller.descriptionController,
-                        
-                        maxLines: 1,
-                        decoration: InputDecoration(
-                          hintStyle: TextStyle(fontSize: 13),
-                          fillColor: const Color.fromRGBO(202, 213, 226, 0.2),
-                          filled: true,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Color.fromRGBO(212, 212, 212, 1)),
-                          ),
-                         
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
-                              color: Color.fromRGBO(212, 212, 212, 1),
-                              width: 0.4, // 👉 thinner
-                            ),
-                          ),
-
-                          // Focused border (also missing)
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
-                              color: Color.fromRGBO(212, 212, 212, 1), // green
-                              width: 0.8, // slightly thicker fFor visibility
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              LabeledTextFieldCard(
+                title: 'Specific Location',
+                maxLines: 1,
               ),
-
-
               const SizedBox(height: 12),
-
-              // Description Card
-              Card(
-                color: AppColors.onPrimary,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                // elevation: 6,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(13, 12, 13, 12),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: const [
-                          Text(
-                            'Description',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                          SizedBox(width: 6),
-                          Text(
-                            '*',
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-
-                       ),
-                      const SizedBox(height: 12),
-                      TextFormField(
-                        controller: controller.descriptionController,
-                        maxLines: 3,
-                        decoration: InputDecoration(
-                          hintStyle: TextStyle(fontSize: 13),
-                          fillColor: const Color.fromRGBO(202, 213, 226, 0.2),
-                          filled: true,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(color: Color.fromRGBO(212, 212, 212, 1)),
-                          ),
-                         
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
-                              color: Color.fromRGBO(212, 212, 212, 1),
-                              width: 0.4, // 👉 thinner
-                            ),
-                          ),
-
-                          // Focused border (also missing)
-                          focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                            borderSide: BorderSide(
-                              color: Color.fromRGBO(212, 212, 212, 1), // green
-                              width: 0.8, // slightly thicker for visibility
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              LabeledTextFieldCard(
+                title: 'Description',
+                maxLines: 3,
+                controller: controller.descriptionController,
               ),
 
 
