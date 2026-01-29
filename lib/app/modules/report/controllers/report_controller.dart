@@ -202,6 +202,55 @@ final isLoadingPollutionCategories = false.obs;
   final currentDecibel = 0.0.obs; // Current decibel reading
   final maxDecibel = 0.0.obs; // Maximum decibel reading during recording
 
+  // ----------------------------
+  // SOUND AREA DECIBEL RULES
+  // ----------------------------
+  SoundAreaModel? _getSelectedSoundArea() {
+    final selectedId = selectedSoundAreaId.value;
+    if (selectedId == null) return null;
+    for (final area in soundAreas) {
+      if (area.id == selectedId) return area;
+    }
+    return null;
+  }
+
+  double? _resolveMinDecibelForAreaName(String name, {required bool isNight}) {
+    final n = name.toLowerCase();
+
+    if (n.contains('residential')) return isNight ? 45 : 55;
+    if (n.contains('commercial')) return isNight ? 55 : 65;
+    if (n.contains('industrial')) return isNight ? 70 : 75;
+
+    final isPreschool = n.contains('pre') && n.contains('school');
+    final isSchoolIndoor = n.contains('school') && (n.contains('indoor') || n.contains('class'));
+    if (isPreschool || isSchoolIndoor) return isNight ? 30 : 35;
+
+    final isSchoolOutdoor = n.contains('school') && (n.contains('outdoor') || n.contains('play'));
+    if (isSchoolOutdoor) return 55;
+
+    if (n.contains('hospital') || n.contains('ward')) return 30;
+
+    if (n.contains('ceremony') || n.contains('festival') || n.contains('entertainment') || n.contains('event')) {
+      return 100;
+    }
+
+    return null;
+  }
+
+  double? get minRequiredDecibel {
+    if (reportType != ReportTypeEnum.sound.name) return null;
+    final area = _getSelectedSoundArea();
+    if (area == null) return null;
+    final isNight = soundPeriod.value.toLowerCase() == 'night';
+    return _resolveMinDecibelForAreaName(area.name, isNight: isNight);
+  }
+
+  bool get isBelowMinDecibel {
+    final minDb = minRequiredDecibel;
+    if (minDb == null) return false;
+    return maxDecibel.value < minDb;
+  }
+
   @override
   void onInit() {
     super.onInit();
@@ -2002,6 +2051,16 @@ Future<void> pickTime(BuildContext context) async {
         Get.snackbar(
           'Error',
           'Please add an audio recording',
+          snackPosition: SnackPosition.BOTTOM,
+        );
+        return;
+      }
+
+      final minDb = minRequiredDecibel;
+      if (minDb != null && maxDecibel.value < minDb) {
+        Get.snackbar(
+          'Error',
+          'Recorded sound level is below the minimum required (${minDb.toStringAsFixed(0)} dB) for the selected land use type',
           snackPosition: SnackPosition.BOTTOM,
         );
         return;

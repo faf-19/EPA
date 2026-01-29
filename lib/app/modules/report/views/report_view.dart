@@ -1,5 +1,4 @@
 
-import 'dart:typed_data';
 
 import 'package:eprs/app/modules/report/components/dash_border.dart';
 import 'package:eprs/app/modules/report/components/date_time_card.dart';
@@ -843,7 +842,9 @@ class _ReportViewState extends State<ReportView> {
               Obx(() => SizedBox(
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: controller.isSubmitting.value ? null : () => controller.submitReport(isSoundReport),
+                  onPressed: controller.isSubmitting.value || (isSoundReport && controller.isBelowMinDecibel)
+                      ? null
+                      : () => controller.submitReport(isSoundReport),
                   style: ButtonStyle(
                     // Keep the button green for all states (including disabled)
                     backgroundColor: WidgetStateProperty.all<Color>(AppColors.primary),
@@ -1118,6 +1119,74 @@ class _ReportViewState extends State<ReportView> {
                 ),
               ],
             ),
+            const SizedBox(height: 12),
+            Obx(() {
+              final minDb = controller.minRequiredDecibel;
+              final maxDb = controller.maxDecibel.value;
+              if (minDb == null) return const SizedBox.shrink();
+              final isBelow = maxDb < minDb;
+              return Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF3F7F4),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          'Min required ${minDb.toStringAsFixed(0)} dB',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF3F7F4),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          'Max recorded ${maxDb.toStringAsFixed(1)} dB',
+                          style: TextStyle(
+                            color: Colors.grey.shade600,
+                            fontSize: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (isBelow) ...[
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(
+                        color: Colors.red.shade50,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(color: Colors.red.shade200),
+                      ),
+                      child: Row(
+                        children: const [
+                          Icon(Icons.warning_amber_rounded, color: Colors.red, size: 18),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'Recorded sound level is below the minimum required for the selected land use type.',
+                              style: TextStyle(color: Colors.red, fontSize: 12),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ],
+              );
+            }),
             const SizedBox(height: 20),
             // Three buttons: Stop, Cancel, Start/Pause/Resume
             Row(
