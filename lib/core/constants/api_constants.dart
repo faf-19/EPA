@@ -1,8 +1,8 @@
 /// API constants for the application
 class ApiConstants {
   // Base URL - Update this with your actual backend URL
-  static const String baseUrl = 'http://196.188.240.103:4032/api/';
-  static const String fileBaseUrl = 'http://196.188.240.103:4032/';
+  static const String baseUrl = '/';
+  static const String fileBaseUrl = '/';
   // static const String baseUrl = 'http://10.179.217.61:5000/api/';
   
   // Authentication endpoints
@@ -13,9 +13,9 @@ class ApiConstants {
   static const String resendOtpEndpoint = '/customer-accounts/resend-otp';
     // Guest report OTP endpoints (full URLs; bypass baseUrl prefix)
     static const String requestReportOtpEndpoint =
-      'http://196.188.240.103:4032/api/guest/request-otp';
+      'guest/request-otp';
     static const String verifyReportOtpEndpoint =
-      'http://196.188.240.103:4032/api/guest/verify-otp';
+      'guest/verify-otp';
   
   // Location endpoints (full URLs using baseUrl)
   static const String regionsEndpoint = '${baseUrl}regions';
