@@ -842,7 +842,7 @@ class _ReportViewState extends State<ReportView> {
               Obx(() => SizedBox(
                 height: 52,
                 child: ElevatedButton(
-                  onPressed: controller.isSubmitting.value || (isSoundReport && controller.isBelowMinDecibel)
+                  onPressed: controller.isSubmitting.value
                       ? null
                       : () => controller.submitReport(isSoundReport),
                   style: ButtonStyle(
@@ -1043,6 +1043,7 @@ class _ReportViewState extends State<ReportView> {
       final isPaused = controller.isPaused.value;
       final isRecording = controller.isRecording.value;
       final isWeb = kIsWeb;
+      final isCompact = MediaQuery.of(context).size.width < 360;
 
       // Idle state: show start prompt instead of auto-starting
       return Container(
@@ -1080,12 +1081,14 @@ class _ReportViewState extends State<ReportView> {
             waveformWidget,
             const SizedBox(height: 16),
             // Frequency and Duration display
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 12,
+              runSpacing: 8,
               children: [
                 Obx(() {
-                  final decibel = controller.isRecording.value 
-                      ? controller.currentDecibel.value 
+                  final decibel = controller.isRecording.value
+                      ? controller.currentDecibel.value
                       : 0.0;
                   return Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -1102,7 +1105,6 @@ class _ReportViewState extends State<ReportView> {
                     ),
                   );
                 }),
-                const SizedBox(width: 12),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                   decoration: BoxDecoration(
@@ -1127,8 +1129,10 @@ class _ReportViewState extends State<ReportView> {
               final isBelow = maxDb < minDb;
               return Column(
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 12,
+                    runSpacing: 8,
                     children: [
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -1144,7 +1148,6 @@ class _ReportViewState extends State<ReportView> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 12),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                         decoration: BoxDecoration(
@@ -1161,7 +1164,7 @@ class _ReportViewState extends State<ReportView> {
                       ),
                     ],
                   ),
-                  if (isBelow) ...[
+                  if (controller.showMinDecibelWarning.value && isBelow) ...[
                     const SizedBox(height: 10),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
@@ -1189,10 +1192,11 @@ class _ReportViewState extends State<ReportView> {
             }),
             const SizedBox(height: 20),
             // Three buttons: Stop, Cancel, Start/Pause/Resume
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            Wrap(
+              alignment: WrapAlignment.center,
+              spacing: 16,
+              runSpacing: 12,
               children: [
-
                 // Cancel button
                 _buildRecordingButton(
                   icon: Icons.cancel_outlined,

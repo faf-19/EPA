@@ -201,6 +201,7 @@ final isLoadingPollutionCategories = false.obs;
   StreamSubscription<noise_meter.NoiseReading>? _noiseSubscription;
   final currentDecibel = 0.0.obs; // Current decibel reading
   final maxDecibel = 0.0.obs; // Maximum decibel reading during recording
+  final showMinDecibelWarning = false.obs;
 
   // ----------------------------
   // SOUND AREA DECIBEL RULES
@@ -226,7 +227,7 @@ final isLoadingPollutionCategories = false.obs;
     if (isPreschool || isSchoolIndoor) return isNight ? 30 : 35;
 
     final isSchoolOutdoor = n.contains('school') && (n.contains('outdoor') || n.contains('play'));
-    if (isSchoolOutdoor) return 55;
+    if (isSchoolOutdoor) return 80;
 
     if (n.contains('hospital') || n.contains('ward')) return 30;
 
@@ -410,6 +411,7 @@ final isLoadingPollutionCategories = false.obs;
     // Clear noise meter readings
     currentDecibel.value = 0.0;
     maxDecibel.value = 0.0;
+    showMinDecibelWarning.value = false;
     _noiseSubscription?.cancel();
     _noiseSubscription = null;
 
@@ -1575,6 +1577,7 @@ Future<void> pickTime(BuildContext context) async {
       // Reset decibel readings
       currentDecibel.value = 0.0;
       maxDecibel.value = 0.0;
+      showMinDecibelWarning.value = false;
 
       // Start noise meter
       _startNoiseMeter();
@@ -1767,7 +1770,6 @@ Future<void> pickTime(BuildContext context) async {
       isPaused.value = false;
       recordingDuration.value = Duration.zero;
       currentDecibel.value = 0.0;
-      maxDecibel.value = 0.0;
       _pausedDuration = Duration.zero;
       _recordingStartTime = null;
       _pauseStartTime = null;
@@ -1810,6 +1812,7 @@ Future<void> pickTime(BuildContext context) async {
     recordingDuration.value = Duration.zero;
     currentDecibel.value = 0.0;
     maxDecibel.value = 0.0;
+    showMinDecibelWarning.value = false;
     _pausedDuration = Duration.zero;
     _recordingStartTime = null;
     _pauseStartTime = null;
@@ -2056,6 +2059,7 @@ Future<void> pickTime(BuildContext context) async {
         return;
       }
 
+      showMinDecibelWarning.value = true;
       final minDb = minRequiredDecibel;
       if (minDb != null && maxDecibel.value < minDb) {
         Get.snackbar(
@@ -2065,6 +2069,7 @@ Future<void> pickTime(BuildContext context) async {
         );
         return;
       }
+      showMinDecibelWarning.value = false;
     }
 
     if (!termsAccepted.value) {
