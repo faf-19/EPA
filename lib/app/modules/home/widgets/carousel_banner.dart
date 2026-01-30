@@ -16,12 +16,36 @@ class CarouselBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      // ✅ Loading state
-      if (controller.imageUrls.isEmpty) {
+      if (controller.isNewsLoading.value) {
         return const SizedBox(
           height: 220,
           child: Center(
             child: CircularProgressIndicator(),
+          ),
+        );
+      }
+
+      if (controller.imageUrls.isEmpty) {
+        return SizedBox(
+          height: 220,
+          child: Center(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFFE5E7EB)),
+              ),
+              child: const Text(
+                'No news available right now. Please check back later.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  color: AppColors.accentBlue,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
           ),
         );
       }

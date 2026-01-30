@@ -17,6 +17,7 @@ class HomeController extends GetxController {
   final RxString userName = 'Guest'.obs;
   final RxString phoneNumber = ''.obs;
   final RxInt currentCarouselIndex = 0.obs;
+  final RxBool isNewsLoading = true.obs;
 
   HomeController({required this.getNewsUseCase});
   // Carousel controller lives on the HomeController so it is not recreated
@@ -81,6 +82,7 @@ String _monthName(int month) {
   
  Future<void> fetchNews() async {
   try {
+    isNewsLoading.value = true;
     
     final List<NewsModel> newsList =
         await getNewsUseCase.execute();
@@ -113,6 +115,8 @@ String _monthName(int month) {
   } catch (e, stackTrace) {
     print('❌ Error fetching news: $e');
     print('Stack trace: $stackTrace');
+  } finally {
+    isNewsLoading.value = false;
   }
 }
 
