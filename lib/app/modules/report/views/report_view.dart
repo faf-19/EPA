@@ -130,7 +130,7 @@ class _ReportViewState extends State<ReportView> {
                           String? value = controller.selectedPollutionCategoryId.value;
                           final validValues =
                               relevantItems.map((entry) => entry['id']).whereType<String>().toSet();
-                          if (value != null && !validValues.contains(value)) {
+                          if (!validValues.contains(value)) {
                             // Clear stale selection after rebuild to satisfy dropdown constraint
                             WidgetsBinding.instance.addPostFrameCallback((_) {
                               controller.selectPollutionCategory(null);

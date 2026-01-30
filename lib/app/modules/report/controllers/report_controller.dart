@@ -223,15 +223,20 @@ final isLoadingPollutionCategories = false.obs;
     if (n.contains('industrial')) return isNight ? 70 : 75;
 
     final isPreschool = n.contains('pre') && n.contains('school');
-    final isSchoolIndoor = n.contains('school') && (n.contains('indoor') || n.contains('class'));
+    final isSchoolIndoor =
+        n.contains('school') && (n.contains('indoor') || n.contains('class'));
     if (isPreschool || isSchoolIndoor) return isNight ? 30 : 35;
 
-    final isSchoolOutdoor = n.contains('school') && (n.contains('outdoor') || n.contains('play'));
+    final isSchoolOutdoor =
+        n.contains('school') && (n.contains('outdoor') || n.contains('play'));
     if (isSchoolOutdoor) return 80;
 
     if (n.contains('hospital') || n.contains('ward')) return 30;
 
-    if (n.contains('ceremony') || n.contains('festival') || n.contains('entertainment') || n.contains('event')) {
+    if (n.contains('ceremony') ||
+        n.contains('festival') ||
+        n.contains('entertainment') ||
+        n.contains('event')) {
       return 100;
     }
 
@@ -686,11 +691,7 @@ Future<void> pickTime(BuildContext context) async {
       selectedDate.value?.day == now.day;
 
   // Current time in 12-hour format to help disable periods
-  final int nowHour12 = (now.hour == 0 || now.hour == 12)
-      ? 12
-      : (now.hour > 12 ? now.hour - 12 : now.hour);
   final bool nowIsAM = now.hour < 12;
-  final int nowMinute = now.minute;
 
   // ─── SINGLE SOURCE OF TRUTH (FIX) ───
   bool isFutureTime(int hour12, int minute, bool am) {
