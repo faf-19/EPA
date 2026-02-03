@@ -2183,7 +2183,7 @@ Future<void> pickTime(BuildContext context) async {
 
       if (woredaId.isNotEmpty) {
         formData.fields.add(MapEntry('Woreda_id', woredaId));
-        print('✅ Added Woreda_id: $woredaId');
+        print('Added Woreda_id: $woredaId');
       } else {
         print('⚠️ Woreda ID is empty');
       }
@@ -2214,7 +2214,7 @@ Future<void> pickTime(BuildContext context) async {
 
         formData.fields.add(MapEntry('actDate', dateStr));
         formData.fields.add(MapEntry('actTime', timeStr));
-        print('✅ Added actDate: $dateStr, actTime: $timeStr');
+        print('Added actDate: $dateStr, actTime: $timeStr');
       }
 
       // Add pollution category ID (use from route if available, otherwise fetch from API)
