@@ -2219,7 +2219,7 @@ Future<void> pickTime(BuildContext context) async {
 
       // Add pollution category ID (use from route if available, otherwise fetch from API)
       String? categoryId = selectedPollutionCategoryId.value;
-      if (categoryId == null || categoryId.isEmpty) {
+      if (categoryId?.isEmpty ?? true) {
         print('Pollution category ID not in route, fetching from API...');
         categoryId = await _fetchPollutionCategoryId(reportType);
       }
